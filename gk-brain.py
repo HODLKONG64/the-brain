@@ -179,6 +179,130 @@ def get_day_type() -> str:
         return "DAY TYPE: SINGLE-FOCUS — He does mostly 1 or 2 things all day (all-day writing at home, or all-day fishing, or all-day van tour). Make the immersion deep."
 
 
+# ── Art creation — dedicated page search ─────────────────────────────────────
+
+# All official links to crawl for dedicated character pages (AC-1/AC-12)
+OFFICIAL_ART_LINKS = [
+    "https://substack.com/@graffpunks/posts",
+    "https://graffpunks.substack.com/",
+    "https://graffpunks.live/",
+    "https://graffitikings.co.uk/",
+    "https://gkniftyheads.com/",
+    "https://medium.com/@GKniftyHEADS",
+    "https://medium.com/@graffpunksuk",
+    "https://neftyblocks.com/collection/gkstonedboys",
+    "https://www.youtube.com/@GKniftyHEADS",
+]
+
+# Random face expressions for AC-8
+FACE_EXPRESSIONS = [
+    "surprised with wide eyes",
+    "grinning wide showing teeth",
+    "squinting focused intense stare",
+    "jaw dropped in disbelief",
+    "smirking sly half-grin",
+    "eyes wide in pure awe",
+    "brow furrowed serious and determined",
+    "cackling head thrown back",
+    "winking one eye closed",
+    "thousand yard stare dead-eyed",
+    "tongue out sideways cocky",
+    "grimacing under pressure",
+    "gleaming smile full confidence",
+    "nostril flared furious",
+    "dreamy eyes half-closed",
+]
+
+
+
+# Named thresholds for art page detection (AC-1 through AC-4)
+MIN_MENTION_COUNT_FOR_DEDICATED_PAGE = 3   # page must mention the subject at least this many times
+MAX_IMAGES_FROM_PAGE = 6                    # maximum reference images to extract from a dedicated page
+MIN_TOKEN_LENGTH = 2                        # character names shorter than this are ignored when tokenising
+
+def find_character_dedicated_page(character_name: str) -> dict:
+    """
+    Search official links for a page solely dedicated to the given character/subject.
+    Returns a dict: {found: bool, url: str|None, images: list[str], description: str}
+
+    AC-1, AC-2, AC-3, AC-4 — see brain-rules.md ART CREATION RULE.
+    """
+    name_lower = character_name.lower().replace("-", " ").replace("_", " ")
+    name_tokens = [t for t in name_lower.split() if len(t) > MIN_TOKEN_LENGTH]
+
+    result = {"found": False, "url": None, "images": [], "description": ""}
+
+    for link in OFFICIAL_ART_LINKS:
+        try:
+            r = requests.get(link, timeout=8)
+            soup = BeautifulSoup(r.text, "html.parser")
+
+            # Score this page: how much of its visible text is about the character?
+            page_text = soup.get_text(separator=" ").lower()
+            match_count = sum(page_text.count(token) for token in name_tokens)
+
+            # Require at least 3 mentions to treat it as "dedicated"
+            if match_count >= MIN_MENTION_COUNT_FOR_DEDICATED_PAGE:
+                images = [
+                    img["src"]
+                    for img in soup.find_all("img")
+                    if img.get("src") and not img["src"].startswith("data:")
+                ]
+                result = {
+                    "found": True,
+                    "url": link,
+                    "images": images[:MAX_IMAGES_FROM_PAGE],
+                    "description": f"Dedicated page found for '{character_name}' at {link} ({match_count} mentions).",
+                }
+                return result
+        except Exception:
+            continue
+
+    result["description"] = (
+        f"No dedicated page found for '{character_name}' — using Layer 1 + Layer 2 base templates (AC-9)."
+    )
+    return result
+
+
+def build_image_prompt_prefix(character_name: str, lore_mood: str, dedicated_page: dict) -> str:
+    """
+    Build the mandatory image prompt prefix per the ART CREATION RULE (AC-5 through AC-8).
+    Head + bonnet as one unit, 90% shape fidelity, random face expression.
+    """
+    expression = random.choice(FACE_EXPRESSIONS)
+
+    if dedicated_page["found"]:
+        ref_note = (
+            f"exact dedicated webpage reference for {character_name} from {dedicated_page['url']}"
+        )
+        if dedicated_page["images"]:
+            ref_note += f" (key images: {' '.join(dedicated_page['images'][:3])})"
+    else:
+        ref_note = (
+            f"Layer 1 upper body base + Layer 2 GraffPUNKS bonnet shape "
+            f"(rounded yellow head/torso, exact eagle beak centre, eagle birds each side, "
+            f"white feathers above eyes, green hair pulled through, yellow leather, ears out sides)"
+        )
+
+    return (
+        f"Use 100% {ref_note}. "
+        f"Head + bonnet as one inseparable unit. "
+        f"Face expression: {expression} (matching lore mood: {lore_mood}). "
+        f"90% shape fidelity to reference — colours, textures, and scene elements may vary freely. "
+        f"Scene details:"
+    )
+
+
+def log_dedicated_page(character_name: str, url: str) -> None:
+    """Append a newly found dedicated art page to lore-history.md (AC-14)."""
+    entry = f"\n[DEDICATED ART PAGE] {character_name}: {url}\n"
+    try:
+        with open(LORE_HISTORY_FILE, "a", encoding="utf-8") as f:
+            f.write(entry)
+    except Exception:
+        pass
+
+
 def crawl_substack_for_art_and_content():
     try:
         r = requests.get("https://substack.com/@graffpunks/posts", timeout=10)
@@ -255,7 +379,7 @@ def get_post_mode(now: datetime) -> str:
     else:
         # Determine if this is a "working on lore at home" window or general awake
         # Between 09:00–17:00 UTC on non-travel days has the highest chance of home writing
-        if 9 <= hour < 17 and weekday in (3,):  # Thursday = heavy writing day
+        if 9 <= hour < 17 and weekday == 3:  # Thursday is the heavy Moonboys writing day (MR-D2/WINDOW 1)
             lore_window = (
                 "AWAKE LORE WINDOW (WINDOW 1 — ARTIST AT HOME WORKING ON MOONBOYS LORE): "
                 "This is one of the 2 daily windows where a full Crypto Moonboys fame run can be told. "
@@ -291,6 +415,19 @@ def generate_lore_pair():
     fame_slot = get_fame_cycle_slot(now)
     day_type = get_day_type()
 
+    # ── Art creation: find dedicated pages for active characters (AC-1 through AC-14) ──
+    # Use a generic "GraffPunks character" search if we don't know the exact characters yet;
+    # the LLM will use specific names it picks for the fame slot.  We also try the main
+    # Substack so at least Substack images are always available.
+    substack_page = find_character_dedicated_page("GraffPunks Moonboys")
+    art_prefix = build_image_prompt_prefix(
+        character_name="the featured character(s)",
+        lore_mood="matching the current lore post theme and time of day",
+        dedicated_page=substack_page,
+    )
+    if substack_page["found"]:
+        log_dedicated_page("GraffPunks Moonboys (general)", substack_page["url"])
+
     prompt = f"""
     {BRAIN_RULES}
     {CHARACTER_BIBLE}
@@ -312,11 +449,19 @@ def generate_lore_pair():
 
     {day_type}
 
+    ART CREATION RULE (mandatory for BOTH image prompts in this post):
+    Every image prompt MUST start with this exact prefix, then add the full scene description:
+    "{art_prefix}"
+    For each character featured, the head + bonnet must be treated as one inseparable unit.
+    Use the dedicated page reference if one was found during this run's crawl, otherwise use
+    Layer 1 + Layer 2 base templates. Add a random face expression matching the lore mood.
+    90% shape fidelity. Colours and scene details may vary freely.
+
     Generate the next 2 back-to-back lore posts exactly as the rules say.
     Each post MUST start with the exact UTC time and log entry number:
     [Current Date] — [Current Time] UTC — GraffPunks Network Log Entry #[number]
     Use the Eternal Codex for all characters.
-    For each post, also generate a detailed image prompt for Grok Imagine that references the Substack art style and any found images.
+    For each post, generate a detailed image prompt using the ART CREATION RULE prefix above.
     Separate with ---POST-2---
     """
 
