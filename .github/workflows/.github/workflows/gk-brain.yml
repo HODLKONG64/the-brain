@@ -1,0 +1,23 @@
+name: GK BRAIN - 2 Hour Lore + Replies
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  gk-brain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install openai python-telegram-bot requests
+      - name: Run GK BRAIN
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
+        run: python gk-brain.py
