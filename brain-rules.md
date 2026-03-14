@@ -1,6 +1,6 @@
 # ETERNAL CODEX FILE STORED ON THE WORLD CHAIN
 # GK BRAIN MASTER RULES — ULTIMATE MEGA COMPLETE VERSION
-# 100% of all 74 user posts + all previous brain-rules.md versions + all character-bible.md versions + all expansions + all storylines + all characters + all rules locked in. Nothing removed.
+# 100% of all user posts + all previous brain-rules.md versions + all character-bible.md versions + all expansions + all storylines + all characters + all rules locked in. Nothing removed.
 
 ## CRYPTO MOONBOYS BANK/BRAIN MEMORY UPDATE RULE (locked from all chats)
 The agent must update its own memory (Crypto Moonboys bank/brain) with any new conflicting details found on any official site during the 2-hour crawl. It automatically scrapes all new official content and starts using the new updated details as current canon moving forward. This overrides any previous agent-made lore or details. Any old data stored by the agent is to be 100% deleted and never to be used again by the agent when new official data is found.
