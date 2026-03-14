@@ -20,7 +20,7 @@ with open("brain-rules.md", "r", encoding="utf-8") as f:
 with open("character-bible.md", "r", encoding="utf-8") as f:
     CHARACTER_BIBLE = f.read()
 
-# Reply tracker with per-user 20/day limit
+# Reply tracker (20 per user per 24h)
 REPLIED_FILE = "reply-tracker.json"
 if os.path.exists(REPLIED_FILE):
     with open(REPLIED_FILE) as f:
@@ -29,10 +29,9 @@ else:
     reply_tracker = {}
 
 def get_news_and_weather():
-    # Simple news crawl stub (expand with real API later)
     try:
         weather = requests.get("https://wttr.in/London?format=%C+%t").text.strip()
-        return f"Weather: {weather} | News: Latest crypto/political/graffiti headlines from last 2 hours."
+        return f"Weather: {weather} | Latest crypto/political/graffiti news from last 2 hours."
     except:
         return "Weather and news checked."
 
@@ -82,8 +81,11 @@ def main():
     post_to_telegram(post2)
     print("✅ Post 2 sent")
 
-    # Save reply tracker
     with open(REPLIED_FILE, "w") as f:
+        json.dump(reply_tracker, f)
+
+if __name__ == "__main__":
+    main()
         json.dump(reply_tracker, f)
 
 if __name__ == "__main__":
