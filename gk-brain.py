@@ -1,10 +1,11 @@
+import asyncio
 import os
 import json
-import time
 import random
 from datetime import datetime, timezone
 from openai import OpenAI
 import telegram
+from telegram import BotCommand
 import requests
 from bs4 import BeautifulSoup
 
@@ -14,7 +15,6 @@ GROK_API_KEY = os.getenv("GROK_API_KEY")
 CHANNEL_CHAT_IDS = os.getenv("CHANNEL_CHAT_IDS").split(",")
 
 grok = OpenAI(base_url="https://api.x.ai/v1", api_key=GROK_API_KEY)
-bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
 
 # Load all locked content (100% of conversation)
 with open("brain-rules.md", "r", encoding="utf-8") as f:
@@ -49,7 +49,140 @@ if os.path.exists(REPLIED_FILE):
 else:
     reply_tracker = {}
 
-# ── Hidden keyword trigger list ──────────────────────────────────────────────
+# Persistent bot state: tracks the last processed update_id so the bot never
+# re-handles the same Telegram message across the 2-hour cron runs.
+BOT_STATE_FILE = "bot-state.json"
+if os.path.exists(BOT_STATE_FILE):
+    with open(BOT_STATE_FILE) as f:
+        bot_state = json.load(f)
+else:
+    bot_state = {"last_update_id": 0}
+
+
+# ── Telegram command definitions ─────────────────────────────────────────────
+# These are registered with BotFather so they appear in the / command menu.
+TELEGRAM_COMMANDS = [
+    BotCommand("start",      "Welcome to GK BRAIN — quick-start guide"),
+    BotCommand("help",       "Full list of all commands"),
+    BotCommand("lore",       "Show the latest lore post"),
+    BotCommand("status",     "Current brain status: fame slot, mode, last post"),
+    BotCommand("whosnext",   "Which characters star in the next 6-hour fame slot"),
+    BotCommand("characters", "List all main characters in the Eternal Codex"),
+    BotCommand("factions",   "List all factions with brief descriptions"),
+    BotCommand("hardfork",   "Explain the Hardfork Games (rules, stages, prizes)"),
+    BotCommand("links",      "All official GraffPunks links"),
+    BotCommand("expand",     "Expand the last posted lore further"),
+    BotCommand("about",      "Quick-bio for a character — usage: /about LadyINK"),
+    BotCommand("artrule",    "Show the locked art creation rule and image prompt prefix"),
+]
+
+# Human-readable descriptions used in /help
+COMMAND_HELP_TEXT = """🤖 *GK BRAIN — ALL COMMANDS*
+
+📖 *LORE & CONTENT*
+/lore — Latest lore post
+/expand — Continue the last lore further
+/about [name] — Quick-bio for any character (e.g. /about LadyINK)
+/whosnext — Characters starring in the next 6-hour fame slot
+
+📚 *WORLD INFO*
+/characters — Full character list from the Eternal Codex
+/factions — All factions (Crowned Royal Moongirls, HODL X Warriors, etc.)
+/hardfork — The Hardfork Games: rules, 3 stages, prizes
+
+🎨 *ART*
+/artrule — The locked art creation rule (head+bonnet shape, 90% fidelity, image prompt prefix)
+
+🔗 *LINKS & STATUS*
+/links — All official GraffPunks links (Substack, NFT, socials)
+/status — Brain status: current fame slot, awake/dream mode, last post time
+
+ℹ️ *HELP*
+/start — Quick-start guide
+/help — This message
+
+━━━━━━━━━━━━━━━━━━━━
+All replies are text-only. Max 20 interactions/user/day (resets midnight UTC).
+Keyword triggers required — say the magic words to unlock the lore. 🌙"""
+
+STATIC_COMMAND_RESPONSES = {
+    "/start": (
+        "🌙 *GK BRAIN ONLINE*\n\n"
+        "I am the Crypto Moonboys lore engine — broadcasting from deep inside City Block Topia.\n\n"
+        "Every 2 hours I post a new lore entry from the GraffPunks saga.\n"
+        "Every 6 hours a new character gets their fame slot.\n\n"
+        "Type /help for all commands.\n"
+        "Type /lore to read the latest post.\n"
+        "Type /links for all official GraffPunks links.\n\n"
+        "The infinite saga is live. 🎨🖤"
+    ),
+    "/factions": (
+        "🏙️ *FACTIONS OF BLOCKTOPIA*\n\n"
+        "👑 *Crowned Royal Moongirls* — Elite ascended women with living neon halo crowns. "
+        "Run City Block Topia alongside the HODL X Warriors.\n\n"
+        "⚔️ *HODL X Warriors* — Champions who won the Hardfork Games. "
+        "Defenders of Blocktopia, paired with Crowned Royal Moongirls.\n\n"
+        "🚀 *Bitcoin X Kids* — Three paths: Space Programme, City Worker, or Escape. "
+        "Most who escape regret it and wish to return.\n\n"
+        "🏃 *OG Bitcoin Kids* — First generation to escape. "
+        "Their stories are cautionary tales of regret and freedom.\n\n"
+        "🎭 *Bald-headed Wannabe Moonboys (40)* — Outside Blocktopia trying to earn entry. "
+        "NOT the same as bald-headed Moonboys born inside.\n\n"
+        "🏢 *The Grid* — Everyday citizens of City Block Topia. Workers, residents, the backbone."
+    ),
+    "/hardfork": (
+        "⚡ *THE HARDFORK GAMES*\n\n"
+        "The ultimate competition inside Blocktopia. Three stages:\n\n"
+        "1️⃣ *Parkour Gauntlet* — Navigate the city's lethal geometry at full sprint.\n"
+        "2️⃣ *Spray Cipher* — Encode your identity in a living mural that the chain must verify.\n"
+        "3️⃣ *Final Hardfork* — A one-on-one consensus battle — split the chain or merge it.\n\n"
+        "🏆 *PRIZE*: Winners become HODL X Warriors and are paired with a Crowned Royal Moongirl.\n\n"
+        "The Games run on an unpredictable schedule — no warning, no mercy."
+    ),
+    "/links": (
+        "🔗 *OFFICIAL GRAFFPUNKS LINKS*\n\n"
+        "📰 Substack (lore + art): https://substack.com/@graffpunks/posts\n"
+        "🎨 GraffPunks Live: https://graffpunks.live/\n"
+        "🖼️ Graffiti Kings: https://graffitikings.co.uk/\n"
+        "🃏 GKniftyHEADS NFT: https://gkniftyheads.com/\n"
+        "📝 Medium (GKniftyHEADS): https://medium.com/@GKniftyHEADS\n"
+        "📝 Medium (GraffPunks): https://medium.com/@graffpunksuk\n"
+        "🎮 NeftyBlocks: https://neftyblocks.com/collection/gkstonedboys\n"
+        "▶️ YouTube: https://www.youtube.com/@GKniftyHEADS\n\n"
+        "All official content crawled every 2 hours for new lore and art references. 🔄"
+    ),
+    "/artrule": (
+        "🎨 *ART CREATION RULE (locked forever)*\n\n"
+        "Before generating any image, the agent must:\n\n"
+        "1️⃣ *Find the dedicated page* — Crawl all official links for a page 100% solely dedicated "
+        "to the character/bonnet/theme.\n\n"
+        "2️⃣ *Head + bonnet as ONE unit* — Lock in the head + bonnet silhouette together. "
+        "90% shape fidelity required — always.\n\n"
+        "3️⃣ *Random face expression* — Matches the lore mood of that post.\n\n"
+        "4️⃣ *No dedicated page?* — Use Layer 1 (upper body base) + Layer 2 (GraffPUNKS bonnet). "
+        "Still 90% fidelity. Temporary until a dedicated page is found.\n\n"
+        "5️⃣ *Crawl before every post* — Official sites checked for new pages/details before any image.\n\n"
+        "📋 *MANDATORY IMAGE PROMPT PREFIX*:\n"
+        "_\"Use 100% Layer 1 upper body base + 100% Layer 2 bonnet shape "
+        "(or the exact dedicated webpage reference if found). "
+        "Head + bonnet as one unit. Random face expression to match the lore theme. "
+        "90% shape fidelity. Black charcoal pencil style if requested.\"_"
+    ),
+    "/characters": (
+        "👥 *MAIN CHARACTERS — ETERNAL CODEX*\n\n"
+        "• *Lady-INK* — Artist's real girlfriend. Mixed-race, looks like Beyoncé. "
+        "Black tracksuit, trainers, rucksack of paint. Bridge between real world and Blocktopia.\n"
+        "• *Elder Codex-7* — Last surviving Chain Scribe. Year 3008 Grid Archives.\n"
+        "• *Charlie Buster* — Legendary UK street artist. Leake Street Tunnel. NFT creator.\n"
+        "• *Bone Idol Ink* — Tattoo artist. Turns skin and walls into permanent Moonboys stories.\n"
+        "• *Delicious Again Peter* — Chef who turns food into narrative graffiti concepts.\n"
+        "• *AI-Chunks* — AI artist merging real graffiti with Blocktopia digital art.\n"
+        "• *Jodie Zoom* — Key GraffPunks crew member.\n\n"
+        "Groups: Crowned Royal Moongirls, HODL X Warriors, Bitcoin X Kids (3 paths), "
+        "OG Bitcoin Kids, Bald-headed Wannabe Moonboys (40), The Grid.\n\n"
+        "Type /about [name] for a full character bio."
+    ),
+}
 TRIGGER_KEYWORDS = [
     "expand", "continue", "more about", "storyline", "what happens next",
     "tell me more", "crypto moonboys", "moonboys", "moonboy", "lore",
@@ -490,27 +623,267 @@ def generate_lore_pair():
     return post1, post2
 
 
-def post_to_telegram(text):
-    for chat_id in CHANNEL_CHAT_IDS:
+async def post_to_telegram_async(text: str) -> None:
+    """Send a message to all registered channel chat IDs."""
+    async with telegram.Bot(token=TELEGRAM_BOT_TOKEN) as tg:
+        for chat_id in CHANNEL_CHAT_IDS:
+            try:
+                await tg.send_message(chat_id=chat_id.strip(), text=text)
+                await asyncio.sleep(2)
+            except Exception as exc:
+                print(f"  ⚠️  send_message failed for {chat_id}: {exc}")
+
+
+def post_to_telegram(text: str) -> None:
+    """Synchronous wrapper around the async Telegram send."""
+    asyncio.run(post_to_telegram_async(text))
+
+
+# ── Telegram command processing ───────────────────────────────────────────────
+
+async def register_bot_commands_async() -> None:
+    """Register the command list with BotFather so it appears in the / menu."""
+    async with telegram.Bot(token=TELEGRAM_BOT_TOKEN) as tg:
+        await tg.set_my_commands(TELEGRAM_COMMANDS)
+
+
+def register_bot_commands() -> None:
+    asyncio.run(register_bot_commands_async())
+
+
+def build_lore_command_reply() -> str:
+    """Return the last lore post from lore-history.md (most recent entry)."""
+    if not os.path.exists(LORE_HISTORY_FILE):
+        return "No lore posts yet — the saga starts on the next run. 🌙"
+    with open(LORE_HISTORY_FILE, "r", encoding="utf-8") as f:
+        content = f.read()
+    # Find the last --- NEW POSTS block
+    blocks = content.split("--- NEW POSTS")
+    if len(blocks) < 2:
+        return "No lore posts yet — the saga starts on the next run. 🌙"
+    last_block = "--- NEW POSTS" + blocks[-1]
+    # Return a trimmed excerpt (Telegram 4096 char limit)
+    excerpt = last_block.strip()[:3800]
+    return excerpt + "\n\n[…use /expand to continue the lore]"
+
+
+def build_status_reply() -> str:
+    """Return current brain status: fame slot, mode, last post time."""
+    now = datetime.now(timezone.utc)
+    slot = get_fame_cycle_slot(now)
+    mode = get_post_mode(now)
+    slot_line = slot.splitlines()[0] if slot else "Unknown slot"
+    mode_line = mode.splitlines()[0] if mode else "Unknown mode"
+    return (
+        f"🤖 *GK BRAIN STATUS*\n\n"
+        f"🕐 Time: {now.strftime('%Y-%m-%d %H:%M UTC')}\n"
+        f"🎭 Mode: {mode_line}\n"
+        f"⭐ Fame: {slot_line}\n\n"
+        f"Posts sent every 2 hours. Lore history stored in lore-history.md.\n"
+        f"Characters rotate every 6 hours. Art crawls all official links before each post. 🔄"
+    )
+
+
+def build_whosnext_reply() -> str:
+    """Return info on the next 6-hour fame slot."""
+    now = datetime.now(timezone.utc)
+    next_slot_index = (now.hour // 6 + 1) % 4
+    next_slot_name = FAME_SLOT_NAMES[next_slot_index]
+    hours_until = (6 - (now.hour % 6)) % 6 or 6
+    return (
+        f"⭐ *NEXT FAME SLOT*\n\n"
+        f"Coming up: *{next_slot_name}*\n"
+        f"Starting in ~{hours_until} hour(s)\n\n"
+        f"The agent selects 1–3 characters who haven't had a recent fame run. "
+        f"Check lore-history.md for the full rotation log.\n\n"
+        f"Use /lore to read the current fame-slot posts as they go live. 🌙"
+    )
+
+
+def build_about_reply(character_name: str) -> str:
+    """Ask Grok for a quick character bio using the full canon."""
+    if not character_name.strip():
+        return (
+            "Please tell me which character! Usage: /about LadyINK\n\n"
+            "Type /characters for the full list."
+        )
+    prompt = (
+        f"{BRAIN_RULES}\n{CHARACTER_BIBLE}\n{MASTER_CANON}\n\n"
+        f"Give a 150-word punchy bio for this character from the GraffPunks / Crypto Moonboys saga: "
+        f"'{character_name}'. "
+        f"Use the Eternal Codex style. Text only — no images. "
+        f"If the character is not in the canon, say so and suggest a similar one."
+    )
+    try:
+        response = grok.chat.completions.create(
+            model="grok-4-fast",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return f"Could not fetch bio for '{character_name}' — try again on the next run. 🌙"
+
+
+def build_expand_reply() -> str:
+    """Expand the most recent lore post by generating a short continuation."""
+    prompt = (
+        f"{BRAIN_RULES}\n{CHARACTER_BIBLE}\n{MASTER_CANON}\n\n"
+        f"PREVIOUS LORE (last 4000 chars):\n{LORE_HISTORY[-4000:]}\n\n"
+        "A Telegram user has asked to expand the last lore. "
+        "Continue the most recent story arc naturally — 200–300 words, "
+        "mind-log style, first person, as the artist expanding the saga in real time. "
+        "Text only, no images."
+    )
+    try:
+        response = grok.chat.completions.create(
+            model="grok-4-fast",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return "Lore expansion failed — try again on the next run. 🌙"
+
+
+def process_command(command: str, args: str, user_id: str) -> str | None:
+    """
+    Route a Telegram slash command to its handler and return the reply text.
+    Returns None if the command is unknown.
+    """
+    cmd = command.lower().strip()
+
+    if cmd == "/start":
+        return STATIC_COMMAND_RESPONSES["/start"]
+    if cmd in ("/help", "/commands"):
+        return COMMAND_HELP_TEXT
+    if cmd == "/lore":
+        return build_lore_command_reply()
+    if cmd == "/status":
+        return build_status_reply()
+    if cmd == "/whosnext":
+        return build_whosnext_reply()
+    if cmd == "/characters":
+        return STATIC_COMMAND_RESPONSES["/characters"]
+    if cmd == "/factions":
+        return STATIC_COMMAND_RESPONSES["/factions"]
+    if cmd == "/hardfork":
+        return STATIC_COMMAND_RESPONSES["/hardfork"]
+    if cmd == "/links":
+        return STATIC_COMMAND_RESPONSES["/links"]
+    if cmd == "/artrule":
+        return STATIC_COMMAND_RESPONSES["/artrule"]
+    if cmd == "/expand":
+        return build_expand_reply()
+    if cmd == "/about":
+        return build_about_reply(args)
+
+    return None  # unknown command — fall through to keyword handling
+
+
+async def process_incoming_updates_async() -> None:
+    """
+    Fetch all Telegram updates received since the last run, process commands and
+    user messages, and persist the new update offset so nothing is replayed.
+    """
+    offset = bot_state.get("last_update_id", 0) + 1
+
+    async with telegram.Bot(token=TELEGRAM_BOT_TOKEN) as tg:
         try:
-            bot.send_message(chat_id=chat_id.strip(), text=text)
-            time.sleep(2)
-        except Exception:
-            pass
+            updates = await tg.get_updates(offset=offset, timeout=5)
+        except Exception as exc:
+            print(f"  ⚠️  get_updates failed: {exc}")
+            return
+
+        for update in updates:
+            bot_state["last_update_id"] = update.update_id
+
+            msg = update.message
+            if not msg or not msg.text:
+                continue
+
+            chat_id = str(msg.chat_id)
+            user_id = str(msg.from_user.id) if msg.from_user else chat_id
+            text = msg.text.strip()
+
+            reply = None
+
+            # ── Slash command handling ──────────────────────────────────────
+            if text.startswith("/"):
+                parts = text.split(maxsplit=1)
+                # Strip @BotUsername suffix if present (e.g. /help@GKBrainBot)
+                raw_cmd = parts[0].split("@")[0]
+                args = parts[1] if len(parts) > 1 else ""
+                reply = process_command(raw_cmd, args, user_id)
+                if reply is None:
+                    # Unknown command — treat as normal message
+                    reply = handle_user_message(user_id, text)
+
+            # ── Regular message handling ────────────────────────────────────
+            else:
+                reply = handle_user_message(user_id, text)
+
+            if reply:
+                try:
+                    await tg.send_message(chat_id=chat_id, text=reply)
+                    await asyncio.sleep(1)
+                except Exception as exc:
+                    print(f"  ⚠️  reply failed for {chat_id}: {exc}")
+
+    # Persist updated offset
+    with open(BOT_STATE_FILE, "w") as f:
+        json.dump(bot_state, f)
 
 
-def main():
+def process_incoming_updates() -> None:
+    asyncio.run(process_incoming_updates_async())
+
+
+async def main_async() -> None:
     print("GK BRAIN running at", datetime.now(timezone.utc))
+
+    # 1. Register commands with BotFather (so / menu is always up-to-date)
+    try:
+        async with telegram.Bot(token=TELEGRAM_BOT_TOKEN) as tg:
+            await tg.set_my_commands(TELEGRAM_COMMANDS)
+        print("✅ Bot commands registered")
+    except Exception as exc:
+        print(f"  ⚠️  Command registration failed: {exc}")
+
+    # 2. Process any pending user messages / commands since the last run
+    await process_incoming_updates_async()
+    print("✅ Incoming updates processed")
+
+    # 3. Generate and post the 2-hour lore pair
     post1, post2 = generate_lore_pair()
 
-    post_to_telegram(post1)
+    async with telegram.Bot(token=TELEGRAM_BOT_TOKEN) as tg:
+        for chat_id in CHANNEL_CHAT_IDS:
+            try:
+                await tg.send_message(chat_id=chat_id.strip(), text=post1)
+            except Exception as exc:
+                print(f"  ⚠️  Post 1 failed for {chat_id}: {exc}")
     print("✅ Post 1 sent")
 
-    post_to_telegram(post2)
+    await asyncio.sleep(3)
+
+    async with telegram.Bot(token=TELEGRAM_BOT_TOKEN) as tg:
+        for chat_id in CHANNEL_CHAT_IDS:
+            try:
+                await tg.send_message(chat_id=chat_id.strip(), text=post2)
+            except Exception as exc:
+                print(f"  ⚠️  Post 2 failed for {chat_id}: {exc}")
     print("✅ Post 2 sent")
 
+    # 4. Persist trackers
     with open(REPLIED_FILE, "w") as f:
         json.dump(reply_tracker, f)
+    with open(BOT_STATE_FILE, "w") as f:
+        json.dump(bot_state, f)
+
+
+def main() -> None:
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":

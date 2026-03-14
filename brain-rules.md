@@ -115,6 +115,35 @@ Thursday night: 1 post about him and Lady-INK travelling the world painting graf
 ## ETERNAL CODEX FILE STORED ON THE WORLD CHAIN (28-section template locked from all versions)
 Every character uses the full 28-section Eternal Codex template (persona, appearance, habits, relationships, Hardfork role, Blocktopia status, artist connection, storyline library, dream variations, holiday/seasonal variations, random daily moments, etc.). New characters auto-generate full codex based on existing style until official online data appears.
 
+## TELEGRAM COMMANDS (locked — full command list)
+The GK BRAIN bot registers these slash commands with BotFather on every run.
+They appear in the Telegram / menu and are processed at the start of each 2-hour run via `getUpdates`.
+
+| Command | Description |
+|---|---|
+| /start | Welcome message + quick-start guide |
+| /help | Full list of all commands |
+| /lore | Show the latest lore post |
+| /status | Current brain status: active fame slot, awake/dream mode, current UTC time |
+| /whosnext | Which characters star in the next 6-hour fame slot |
+| /characters | Full character list from the Eternal Codex |
+| /factions | All factions with brief descriptions (Crowned Royal Moongirls, HODL X Warriors, etc.) |
+| /hardfork | Explain the Hardfork Games: 3 stages, rules, and prize |
+| /links | All official GraffPunks links (Substack, NFT, socials) |
+| /expand | Expand/continue the last posted lore further (200–300 words, mind-log style) |
+| /about [name] | Quick Eternal Codex bio for any character — usage: /about LadyINK |
+| /artrule | Show the full locked art creation rule and mandatory image prompt prefix |
+
+### Command Processing Rules (locked)
+- **TC-1**: At the start of every 2-hour run, before posting, the agent calls `getUpdates` to fetch all pending Telegram messages since the last run.
+- **TC-2**: Slash commands bypass the keyword trigger gate — they are always processed regardless of trigger keywords.
+- **TC-3**: Slash commands do NOT count against the user's 20-interaction daily limit.
+- **TC-4**: The `/expand` and `/about` commands DO use the Grok API and produce AI-generated responses inside the GraffPunks lore style.
+- **TC-5**: The `/lore`, `/status`, `/whosnext`, `/characters`, `/factions`, `/hardfork`, `/links`, `/artrule`, `/start`, and `/help` commands return static or locally-computed responses without calling the AI API.
+- **TC-6**: Unknown slash commands fall through to the standard `handle_user_message` flow (keyword gate + 20-limit applies).
+- **TC-7**: The update offset is saved in `bot-state.json` after each run so no update is ever processed twice.
+- **TC-8**: Commands are registered with BotFather via `set_my_commands` on every run to keep the / menu current.
+
 ## TELEGRAM USER INTERACTION & LORE EXPANSION RULES (locked from all chats)
 
 ### 1. Daily Interaction Limit (locked)

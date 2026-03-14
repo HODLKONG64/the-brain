@@ -57,6 +57,26 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - `lore-history.md` → Stores every post ever made for 7-day continuity.
 - `lore-planner.md` → 30-day lore planner (March 14 – April 12) with 2-hour UTC slot breakdown. Agent uses matching slot as context seed each run.
 - `reply-tracker.json` → Tracks Telegram reply limits per user (count, date, failed_attempts).
+- `bot-state.json` → Persists the last processed Telegram update_id so commands are never replayed.
+
+## TELEGRAM COMMANDS
+All commands are registered with BotFather on every run and processed at the start of each 2-hour run.
+Slash commands bypass the keyword trigger gate and do NOT count against the 20/day reply limit.
+
+| Command | What it does |
+|---|---|
+| `/start` | Welcome message + quick-start guide |
+| `/help` | Full list of all commands |
+| `/lore` | Show the latest lore post |
+| `/status` | Brain status: active fame slot, awake/dream mode, UTC time |
+| `/whosnext` | Characters starring in the next 6-hour fame slot |
+| `/characters` | Full character list from the Eternal Codex |
+| `/factions` | All factions with brief descriptions |
+| `/hardfork` | The Hardfork Games: 3 stages, rules, prize |
+| `/links` | All official GraffPunks links |
+| `/expand` | Continue the last lore post (200–300 words, AI-generated) |
+| `/about [name]` | Eternal Codex bio for any character — e.g. `/about LadyINK` |
+| `/artrule` | The locked art creation rule + mandatory image prompt prefix |
 
 ## HOW TO RUN / TEST
 1. Commit all files.
