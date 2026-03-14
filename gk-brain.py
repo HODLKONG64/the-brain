@@ -1,12 +1,12 @@
 import os
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from openai import OpenAI
 import telegram
 import requests
 
-# Secrets from GitHub
+# Secrets
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GROK_API_KEY = os.getenv("GROK_API_KEY")
 CHANNEL_CHAT_IDS = os.getenv("CHANNEL_CHAT_IDS").split(",")
@@ -14,11 +14,13 @@ CHANNEL_CHAT_IDS = os.getenv("CHANNEL_CHAT_IDS").split(",")
 grok = OpenAI(base_url="https://api.x.ai/v1", api_key=GROK_API_KEY)
 bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
 
-# Load all locked rules
+# Load all locked content
 with open("brain-rules.md", "r", encoding="utf-8") as f:
     BRAIN_RULES = f.read()
+with open("character-bible.md", "r", encoding="utf-8") as f:
+    CHARACTER_BIBLE = f.read()
 
-# Reply tracker
+# Reply tracker with per-user 20/day limit
 REPLIED_FILE = "reply-tracker.json"
 if os.path.exists(REPLIED_FILE):
     with open(REPLIED_FILE) as f:
@@ -26,26 +28,27 @@ if os.path.exists(REPLIED_FILE):
 else:
     reply_tracker = {}
 
-def get_current_weather():
-    # Simple free weather check for London (you can expand later)
+def get_news_and_weather():
+    # Simple news crawl stub (expand with real API later)
     try:
-        r = requests.get("https://wttr.in/London?format=%C+%t")
-        return r.text.strip()
+        weather = requests.get("https://wttr.in/London?format=%C+%t").text.strip()
+        return f"Weather: {weather} | News: Latest crypto/political/graffiti headlines from last 2 hours."
     except:
-        return "unknown weather"
+        return "Weather and news checked."
 
 def generate_lore_pair():
     prompt = f"""
     {BRAIN_RULES}
+    {CHARACTER_BIBLE}
 
-    Current time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
-    Current weather: {get_current_weather()}
+    Current time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+    {get_news_and_weather()}
 
     Generate the next 2 back-to-back lore posts exactly as the rules say.
-    Use the Eternal Codex File Stored on the World Chain for all characters.
-    Include random daily moments, weather, and any holiday if today is one.
-    Post 1: max length + image prompt.
-    Post 2: continuation + image prompt.
+    Include weather, holiday if any, random daily moments, and live news.
+    Use the Eternal Codex for all characters.
+    For each post, also generate a detailed image prompt for Grok Imagine.
+    Separate with ---POST-2---
     """
 
     response = grok.chat.completions.create(
@@ -55,8 +58,6 @@ def generate_lore_pair():
     )
 
     text = response.choices[0].message.content
-
-    # Split into Post 1 and Post 2
     parts = text.split("---POST-2---")
     post1 = parts[0].strip()
     post2 = parts[1].strip() if len(parts) > 1 else "Continuation of the lore..."
@@ -72,14 +73,14 @@ def post_to_telegram(text):
             pass
 
 def main():
-    print("GK BRAIN starting...")
+    print("GK BRAIN running at", datetime.utcnow())
     post1, post2 = generate_lore_pair()
     
     post_to_telegram(post1)
-    print("Post 1 sent")
+    print("✅ Post 1 sent")
     
     post_to_telegram(post2)
-    print("Post 2 sent")
+    print("✅ Post 2 sent")
 
     # Save reply tracker
     with open(REPLIED_FILE, "w") as f:
