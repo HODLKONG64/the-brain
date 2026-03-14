@@ -20,6 +20,8 @@ with open("brain-rules.md", "r", encoding="utf-8") as f:
     BRAIN_RULES = f.read()
 with open("character-bible.md", "r", encoding="utf-8") as f:
     CHARACTER_BIBLE = f.read()
+with open("MASTER-CHARACTER-CANON.md", "r", encoding="utf-8") as f:
+    MASTER_CANON = f.read()
 
 # Persistent lore history for true 7-day continuity
 LORE_HISTORY_FILE = "lore-history.md"
@@ -64,6 +66,7 @@ def generate_lore_pair():
     prompt = f"""
     {BRAIN_RULES}
     {CHARACTER_BIBLE}
+    {MASTER_CANON}
     {substack_info}
     
     PREVIOUS LORE HISTORY (last 7 days - continue directly from here):

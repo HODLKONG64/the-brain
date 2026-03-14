@@ -14,7 +14,7 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 ## EVERY ACTION THE AGENT TAKES EVERY 2 HOURS (exact sequence)
 1. Crawls https://substack.com/@graffpunks/posts FIRST for new content/images.
 2. Checks all locked links for updates.
-3. Loads brain-rules.md + character-bible.md + lore-history.md.
+3. Loads brain-rules.md + character-bible.md + MASTER-CHARACTER-CANON.md + lore-history.md.
 4. Generates 2 back-to-back lore posts (maximum length + image prompts).
 5. Appends new posts to lore-history.md for 7-day continuity.
 6. Posts both to the Telegram channel.
@@ -43,6 +43,7 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 ## FILE STRUCTURE & PURPOSE
 - `brain-rules.md` → All core rules, routines, dreams, continuity, 3 meanings, etc.
 - `character-bible.md` → Character consistency, art layers, image prompt template.
+- `MASTER-CHARACTER-CANON.md` → Complete Crypto Moonboys universe character index (all tiers, factions, timeline). Loaded every run — agent auto-uses any updated canon data going forward.
 - `gk-brain.py` → The actual agent code (loads files, generates posts, posts to Telegram).
 - `gk-brain.yml` → GitHub Actions workflow (runs every 2 hours + manual trigger).
 - `lore-history.md` → Stores every post ever made for 7-day continuity.
