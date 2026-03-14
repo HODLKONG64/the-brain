@@ -1,6 +1,12 @@
 # ETERNAL CODEX FILE STORED ON THE WORLD CHAIN
-# GK BRAIN MASTER RULES — ULTIMATE COMPLETE VERSION
-# 100% of all 74 user posts + all previous brain-rules.md versions + all expansions + all storylines + all characters + all rules locked in.
+# GK BRAIN MASTER RULES — ULTIMATE MEGA COMPLETE VERSION
+# 100% of all 74 user posts + all previous brain-rules.md versions + all character-bible.md versions + all expansions + all storylines + all characters + all rules locked in. Nothing removed.
+
+## CRYPTO MOONBOYS BANK/BRAIN MEMORY UPDATE RULE (locked from all chats)
+The agent must update its own memory (Crypto Moonboys bank/brain) with any new conflicting details found on any official site during the 2-hour crawl. It automatically scrapes all new official content and starts using the new updated details as current canon moving forward. This overrides any previous agent-made lore or details. Any old data stored by the agent is to be 100% deleted and never to be used again by the agent when new official data is found.
+
+## SUBSTACK IMAGE LEARNING RULE (locked from all chats)
+The agent is to learn/lock in the look, shape, feel of each character, faction uniform, shape, colours, silhouette, and overall look from https://substack.com/@graffpunks/posts. This Substack features many posts about all factions with their own page of images of named characters to learn from. If there is no link yet solely dedicated to any character, the agent creates its own temporary reference until it finds new data when crawling. The agent crawls this link every 2 hours for new content text and images about all characters and updates to use going forward.
 
 ## SUBSTACK CRAWL PRIORITY (locked from all versions)
 The agent must crawl https://substack.com/@graffpunks/posts FIRST every 2 hours for any conflicting data or new content. Use this to update the Eternal Codex, characters, lore, and all rules moving forward. If new official content conflicts with anything the agent previously made up, immediately scrap the old data and switch to the new official Substack content.
@@ -111,6 +117,6 @@ Use the Character Bible + Substack art style for all characters. The agent appen
 ## HOW TO ADD YOUR REFERENCE IMAGES
 Upload your best GraffPUNKS, Lady-INK, Jodie Zoom, Crypto Moongirls, bald-headed wannabe Moonboys, etc. reference images here in this chat or give public links (Imgur/X/Telegram). The agent will auto-include them in every image prompt for perfect consistency.
 
-This master file now contains **100% of every brain-rules.md and character-bible.md version** ever created in this chat. All rules, storylines, characters, and details are here in one place.
+This master file now contains **100% of every brain-rules.md and character-bible.md version** ever created to date. All rules, storylines, characters, and details are here in one place, if agent sees new details online conflicking with old saved lore agent is to automaticly store hew content details found for any real life GK/moonboy team or other persons mentioned on any offial weblink above, or any of the fantasy digital crypto moonboys content changes, save new and delete old saved data.
 
 The agent loads this file every run.
