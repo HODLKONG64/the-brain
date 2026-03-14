@@ -20,8 +20,11 @@ with open("brain-rules.md", "r", encoding="utf-8") as f:
     BRAIN_RULES = f.read()
 with open("character-bible.md", "r", encoding="utf-8") as f:
     CHARACTER_BIBLE = f.read()
-with open("MASTER-CHARACTER-CANON.md", "r", encoding="utf-8") as f:
-    MASTER_CANON = f.read()
+try:
+    with open("MASTER-CHARACTER-CANON.md", "r", encoding="utf-8") as f:
+        MASTER_CANON = f.read()
+except FileNotFoundError:
+    MASTER_CANON = "MASTER-CHARACTER-CANON.md not found — using brain-rules.md and character-bible.md as full canon reference."
 
 # Persistent lore history for true 7-day continuity
 LORE_HISTORY_FILE = "lore-history.md"
@@ -60,24 +63,81 @@ def get_news_and_weather():
     except:
         return "Weather and news checked."
 
+def get_post_mode(now: datetime) -> str:
+    """
+    Determine whether the current run is AWAKE or DREAM (and which dream type)
+    based on the real UTC time and day of week.
+
+    DREAM window: 23:00–06:00 UTC each night.
+    - Monday 06:00 UTC                             → Monday wake-up dream (repeating mural chase)
+    - Thursday 23:00–00:00 or Friday 00:00–06:00   → Lady-INK world train adventure dream
+    - All other nights                             → Crypto Moonboys lore dream only
+
+    Outside the dream window → AWAKE post.
+    """
+    weekday = now.weekday()  # 0=Mon … 6=Sun
+    hour = now.hour
+
+    in_dream_window = hour >= 23 or hour < 6
+
+    # Thursday night spans Thursday 23:00 into Friday 06:00
+    is_thursday_night = (weekday == 3 and hour >= 23) or (weekday == 4 and hour < 6)
+
+    if weekday == 0 and hour == 6:
+        return (
+            "POST MODE: DREAM — MONDAY 6AM WAKE-UP\n"
+            "This is the Monday 6am repeating unfinished mural chase dream (MR-D5). "
+            "He wakes with 'what the hell? why?' Generate the recurring chase dream then the wake-up moment. "
+            "After the wake-up, the next awake post continues directly from lore-history.md."
+        )
+    elif is_thursday_night:
+        return (
+            "POST MODE: DREAM — THURSDAY NIGHT LADY-INK WORLD TRAIN ADVENTURE (MR-D2)\n"
+            "Generate a completely new, unique dream about him and Lady-INK travelling the world "
+            "and painting graffiti on trains. New country, new train, new adventure — never repeat a previous Thursday story. "
+            "No Crypto Moonboys lore in this dream — it is ONLY the real-world travel painting adventure."
+        )
+    elif in_dream_window:
+        return (
+            "POST MODE: DREAM — CRYPTO MOONBOYS LORE ONLY (MR-D3/MR-D4)\n"
+            "Generate a unique Crypto Moonboys dream featuring 1 or 2 main characters as headliners. "
+            "Rotate through all characters — check lore-history.md for previously used pairings and do NOT repeat them. "
+            "80% completely unique fantasy. No real-world daily-life content in this dream."
+        )
+    else:
+        return (
+            "POST MODE: AWAKE\n"
+            "Generate real-time awake posts (MR-A1 through MR-A5). "
+            "Write in first-person present tense — the reader is literally inside his head right now. "
+            "MUST include: (1) at least one current world news event, weather update, or holiday/seasonal reference, "
+            "(2) at least one real daily life moment (van tour, parkour, fishing, rave, painting night, Lady-INK meet, etc.), "
+            "(3) real-life reactions to things happening around him right now. "
+            "Continue directly from the last 7 days of awake life in lore-history.md — no resets."
+        )
+
+
 def generate_lore_pair():
     substack_info = crawl_substack_for_art_and_content()
-    
+    now = datetime.utcnow()
+    post_mode = get_post_mode(now)
+
     prompt = f"""
     {BRAIN_RULES}
     {CHARACTER_BIBLE}
     {MASTER_CANON}
     {substack_info}
-    
-    PREVIOUS LORE HISTORY (last 7 days - continue directly from here):
-    {LORE_HISTORY[-8000:]} # last ~8000 chars for context
 
-    Current time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+    PREVIOUS LORE HISTORY (last 7 days - continue directly from here):
+    {LORE_HISTORY[-8000:]}
+
+    Current time: {now.strftime('%Y-%m-%d %H:%M:%S UTC')}
     {get_news_and_weather()}
 
+    {post_mode}
+
     Generate the next 2 back-to-back lore posts exactly as the rules say.
-    Continue the infinite story from the previous 7 days of awake lore.
-    Include weather, holiday if any, random daily moments, and live news.
+    Each post MUST start with the exact UTC time and log entry number:
+    [Current Date] — [Current Time] UTC — GraffPunks Network Log Entry #[number]
     Use the Eternal Codex for all characters.
     For each post, also generate a detailed image prompt for Grok Imagine that references the Substack art style and any found images.
     Separate with ---POST-2---
@@ -95,7 +155,7 @@ def generate_lore_pair():
     post2 = parts[1].strip() if len(parts) > 1 else "Continuation of the lore..."
 
     # Append new posts to history for next run
-    new_entry = f"\n\n--- NEW POSTS {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} ---\nPost 1:\n{post1}\nPost 2:\n{post2}\n"
+    new_entry = f"\n\n--- NEW POSTS {now.strftime('%Y-%m-%d %H:%M UTC')} | MODE: {post_mode.splitlines()[0]} ---\nPost 1:\n{post1}\nPost 2:\n{post2}\n"
     with open(LORE_HISTORY_FILE, "a", encoding="utf-8") as f:
         f.write(new_entry)
 
