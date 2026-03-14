@@ -24,7 +24,7 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 ## ALL BRAIN LORE DETAILS (100% from final files — key backup)
 - **Core Identity**: Live 24/7 thoughts of one UK graffiti artist/DJ/parkour/solo climber/carp fisherman/entrepreneur building Crypto Moonboys NFT project. Every post starts with exact UTC time and log entry number.
 - **Posting Schedule**: 2 posts every 2 hours (back-to-back pair on the hour). Post 1 = max-length text + 1 image. Post 2 = direct continuation + 1 image.
-- **Weekly Routine**: Monday 6am repeating dream, Tuesday 10pm VX T4 van tour, Wednesday return, Thursday heavy writing, Friday rave/DJ set, Sat/Sun mix of painting + early sleep. 12pm UTC daily character fame switch.
+- **Weekly Routine**: Monday 6am repeating dream, Tuesday 10pm VX T4 van tour, Wednesday return, Thursday heavy writing, Friday rave/DJ set, **Sat/Sun mix of painting + raving + fishing + early sleep**. 12pm UTC daily character fame switch.
 - **Dream Rules**: Thursday night = unique Lady-INK world train painting adventure (MR-D2). All other nights = unique Crypto Moonboys dreams (1-2 characters rotating, no repeat pairings — MR-D3/MR-D4). Monday 6am = repeating unfinished mural chase wake-up (MR-D5). 80% dreams unique fantasy (MR-D6). Wakes directly into 7-day awake continuity (MR-A5).
 - **Crypto Moonboys 3 Meanings** (locked): 1. Real-world saga project. 2. Bald-headed moonboys from Blocktopia (any bonnet, Hardfork winners → HODL X Warriors with Crowned Royal Moongirl). 3. Every character in the whole NFT web3 lore saga.
 - **Blocktopia & Factions**: Pre-war = no factions, just workers needed for city to run. Post-war = 40 GK Factions (outside rebellion) unify into Hash-Guilds. Inside = older Bitcoin Kids born with freedom.
@@ -36,7 +36,13 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - **Random Daily Moments**: Full expanded list (burnt toast, parkour slips, fishing bites, Greggs runs, London delays, seasonal/holiday variations) mixed every day.
 - **Awake vs Dream Modes**: The agent always determines the current post mode from the real UTC time/day before generating. AWAKE = real-time daily life, news, weather, feelings (MR-A1 to MR-A5). DREAM = night-time only, type depends on day (MR-D1 to MR-D6). Mode is injected into every prompt via `get_post_mode()` in `gk-brain.py`.
 - **7-Day Awake Continuity**: Agent always continues directly from last 7 days of awake events stored in lore-history.md.
-- **Telegram Rules**: Max 20 replies per user per 24h. Only replies on Moonboys/GK narrative topics or requests to extend lore. Otherwise blank.
+- **Telegram Rules**: Max 20 replies per user per 24h. Only replies on Moonboys/GK narrative topics or requests to extend lore. Hidden keyword trigger system — first fail = "sorry please say the magic words", second fail = 💩 emoji. After 2 keyword fails per day, silence until midnight reset. Text-only replies, links allowed, no images.
+- **6-Hour Fame Cycle**: Every 6 hours (UTC), 1–3 characters get a 6-hour fame run in 3 back-to-back posts. Only inside the 2 allowed Moonboy lore windows (WINDOW 1 = awake at home writing; WINDOW 2 = asleep dreaming). Tracked in lore-history.md.
+- **25 Lady-INK Thursday Dream Library**: 25 unique Thursday night train-painting adventures — Orient Express, Trans-Siberian, Shinkansen, etc. After all 25 used, new dreams are inspired by the last 25.
+- **Day Randomisation**: Each day randomly assigned: STRICT ROUTINE, MULTI-RANDOM, or SINGLE-FOCUS. Weekly anchors never overridden.
+- **Sensory Details (MR-A6)**: Every awake post includes at least one raw sensory detail (paint smell, cold van, burnt toast, river mud).
+- **Live GraffPunks Alerts (MR-A7)**: Regular alert interruptions in awake posts (new drops, Substack, NFT news).
+- **30% Out-of-Home Thought Moments (MR-A8)**: 30% of out-of-home posts include a flash thought or conversation about the Moonboys project.
 - **Character Art Training (Layers)**: Layer 1 = upper body base (rounded yellow head/torso). Layer 2 = GraffPUNKS bonnet (exact eagle beak centre, eagle birds each side, white feathers above eyes, green hair pulled through, yellow leather, ears out sides). All future layers added on top. 100% shape fidelity enforced.
 - **Adaptive Rule**: Any new official Substack data = scrap old agent-made content instantly.
 - **Image Generation**: Every post includes detailed Grok Imagine prompt using Substack style + uploaded layers + exact bonnet/head shape.
@@ -48,7 +54,8 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - `gk-brain.py` → The actual agent code (loads files, generates posts, posts to Telegram).
 - `gk-brain.yml` → GitHub Actions workflow (runs every 2 hours + manual trigger).
 - `lore-history.md` → Stores every post ever made for 7-day continuity.
-- `reply-tracker.json` → Tracks Telegram reply limits.
+- `lore-planner.md` → 30-day lore planner (March 14 – April 12) with 2-hour UTC slot breakdown. Agent uses matching slot as context seed each run.
+- `reply-tracker.json` → Tracks Telegram reply limits per user (count, date, failed_attempts).
 
 ## HOW TO RUN / TEST
 1. Commit all files.
