@@ -5,7 +5,7 @@ from datetime import datetime
 from openai import OpenAI
 import telegram
 import requests
-from bs4 import BeautifulSoup  # added for Substack crawling
+from bs4 import BeautifulSoup
 
 # Secrets
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -21,6 +21,14 @@ with open("brain-rules.md", "r", encoding="utf-8") as f:
 with open("character-bible.md", "r", encoding="utf-8") as f:
     CHARACTER_BIBLE = f.read()
 
+# Persistent lore history for true 7-day continuity
+LORE_HISTORY_FILE = "lore-history.md"
+if os.path.exists(LORE_HISTORY_FILE):
+    with open(LORE_HISTORY_FILE, "r", encoding="utf-8") as f:
+        LORE_HISTORY = f.read()
+else:
+    LORE_HISTORY = "No previous lores yet — starting the infinite saga."
+
 # Reply tracker (20 per user per 24h)
 REPLIED_FILE = "reply-tracker.json"
 if os.path.exists(REPLIED_FILE):
@@ -30,16 +38,13 @@ else:
     reply_tracker = {}
 
 def crawl_substack_for_art_and_content():
-    """Crawls https://substack.com/@graffpunks/posts every 2 hours for new text/images"""
     try:
         r = requests.get("https://substack.com/@graffpunks/posts", timeout=10)
         soup = BeautifulSoup(r.text, 'html.parser')
-        
-        # Extract any images and text descriptions
         images = [img['src'] for img in soup.find_all('img') if img.get('src')]
         text_snippets = [p.text.strip() for p in soup.find_all('p') if len(p.text.strip()) > 20]
         
-        art_reference = "Use exact GraffPunks Substack artwork style for all characters: shapes, uniforms, silhouettes, colours, looks. Found images: " + " ".join(images[:5]) if images else "Fallback to GraffPunks Substack style from all posts."
+        art_reference = "Use exact GraffPunks Substack artwork style for all characters and factions: shapes, uniforms, silhouettes, colours, look. Found images: " + " ".join(images[:5]) if images else "Fallback to GraffPunks Substack style from all posts."
         new_content = "New Substack content: " + " | ".join(text_snippets[:3]) if text_snippets else "No new content — make up consistent lore until official data conflicts."
         
         return art_reference + "\n" + new_content
@@ -60,11 +65,15 @@ def generate_lore_pair():
     {BRAIN_RULES}
     {CHARACTER_BIBLE}
     {substack_info}
+    
+    PREVIOUS LORE HISTORY (last 7 days - continue directly from here):
+    {LORE_HISTORY[-8000:]} # last ~8000 chars for context
 
     Current time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
     {get_news_and_weather()}
 
     Generate the next 2 back-to-back lore posts exactly as the rules say.
+    Continue the infinite story from the previous 7 days of awake lore.
     Include weather, holiday if any, random daily moments, and live news.
     Use the Eternal Codex for all characters.
     For each post, also generate a detailed image prompt for Grok Imagine that references the Substack art style and any found images.
@@ -81,6 +90,11 @@ def generate_lore_pair():
     parts = text.split("---POST-2---")
     post1 = parts[0].strip()
     post2 = parts[1].strip() if len(parts) > 1 else "Continuation of the lore..."
+
+    # Append new posts to history for next run
+    new_entry = f"\n\n--- NEW POSTS {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} ---\nPost 1:\n{post1}\nPost 2:\n{post2}\n"
+    with open(LORE_HISTORY_FILE, "a", encoding="utf-8") as f:
+        f.write(new_entry)
 
     return post1, post2
 
