@@ -91,7 +91,7 @@ COMMAND_HELP_TEXT = """🤖 *GK BRAIN — ALL COMMANDS*
 /hardfork — The Hardfork Games: rules, 3 stages, prizes
 
 🎨 *ART*
-/artrule — The locked art creation rule (head+bonnet shape, 90% fidelity, image prompt prefix)
+/artrule — The locked art creation rule (head+bonnet shape, 96% fidelity, clothing uniform lock, image prompt prefix)
 
 🔗 *LINKS & STATUS*
 /links — All official GraffPunks links (Substack, NFT, socials)
@@ -157,16 +157,22 @@ STATIC_COMMAND_RESPONSES = {
         "1️⃣ *Find the dedicated page* — Crawl all official links for a page 100% solely dedicated "
         "to the character/bonnet/theme.\n\n"
         "2️⃣ *Head + bonnet as ONE unit* — Lock in the head + bonnet silhouette together. "
-        "90% shape fidelity required — always.\n\n"
+        "96% shape fidelity required — all 3D elements locked. 4% creative zone for minor details only.\n\n"
         "3️⃣ *Random face expression* — Matches the lore mood of that post.\n\n"
-        "4️⃣ *No dedicated page?* — Use Layer 1 (upper body base) + Layer 2 (GraffPUNKS bonnet). "
-        "Still 90% fidelity. Temporary until a dedicated page is found.\n\n"
-        "5️⃣ *Crawl before every post* — Official sites checked for new pages/details before any image.\n\n"
+        "4️⃣ *Clothing = main uniform always* — Unless a Uniform Exception Trigger (UF-1–UF-8) is "
+        "explicitly active in the lore. Holiday, scenery change, Hardfork Games, dream mode, "
+        "weather, arc milestone, or new official data can trigger an exception.\n\n"
+        "5️⃣ *No dedicated page?* — Use Layer 1 (upper body base) + Layer 2 (GraffPUNKS bonnet). "
+        "Still 96% fidelity. Temporary until a dedicated page is found.\n\n"
+        "6️⃣ *No bonnet?* — Agent creates a unique bonnet from known bonnet inspirations (BF-3). "
+        "Replaced immediately when official data is found.\n\n"
+        "7️⃣ *Crawl before every post* — Official sites checked for new pages/details before any image.\n\n"
         "📋 *MANDATORY IMAGE PROMPT PREFIX*:\n"
         "_\"Use 100% Layer 1 upper body base + 100% Layer 2 bonnet shape "
         "(or the exact dedicated webpage reference if found). "
         "Head + bonnet as one unit. Random face expression to match the lore theme. "
-        "90% shape fidelity. Black charcoal pencil style if requested.\"_"
+        "96% shape fidelity. Clothing: main faction uniform (unless UF exception active). "
+        "Black charcoal pencil style if requested.\"_"
     ),
     "/characters": (
         "👥 *MAIN CHARACTERS — ETERNAL CODEX*\n\n"
@@ -344,7 +350,189 @@ FACE_EXPRESSIONS = [
     "gleaming smile full confidence",
     "nostril flared furious",
     "dreamy eyes half-closed",
+    "teeth gritted in defiance",
+    "soft nostalgic half-smile",
+    "manic wide grin with raised eyebrows",
+    "tears streaming but still smiling",
+    "hollow exhausted thousand-stare after a long night",
 ]
+
+
+# ── Infinite Variation Entropy System (IVES) axis pools ──────────────────────
+# Each axis is rolled independently every post (IVES-1).
+# The resulting combination is injected into the lore generation prompt as
+# VARIATION_CONTEXT to maximise uniqueness across 5+ years of output.
+
+IVES_AXES = {
+    "A_perspective": [
+        "First-person artist mind-log",
+        "Third-person omniscient narrator",
+        "Character inner monologue",
+        "Overheard conversation fragment",
+        "Chain Archive log entry (Elder Codex-7 voice)",
+        "Dream journal entry",
+        "Field report from a HODL X Warrior",
+        "Letter from Lady-INK",
+        "Breaking news from the GraffPunks Network",
+        "Prophecy fragment from the Sacred Chain Ontology",
+    ],
+    "B_location": [
+        "Artist's home studio",
+        "Leake Street Tunnel",
+        "City Block Topia central plaza",
+        "Blocktopia outer walls",
+        "Alien Backend hyper-space",
+        "Hardfork Games arena",
+        "London rooftop",
+        "Night fishing spot",
+        "Van touring route",
+        "Festival / rave floor",
+        "Underwater Blocktopia sector",
+        "Space Programme launch zone",
+        "OG Bitcoin Kids exile road",
+        "Wannabe Moonboys' border camp",
+        "GraffPunks Network HQ",
+    ],
+    "C_time_of_day": [
+        "3am dark",
+        "Dawn breaking",
+        "Mid-morning",
+        "Noon blaze",
+        "Afternoon slant light",
+        "Golden hour",
+        "Dusk",
+        "Midnight",
+    ],
+    "C_weather": [
+        "Clear and sharp",
+        "Light drizzle",
+        "Heavy rain",
+        "Thick fog",
+        "Snow settling",
+        "Heatwave shimmer",
+        "Thunderstorm rolling in",
+        "Overcast flat light",
+        "Rainbow after storm",
+        "Aurora / Northern Lights",
+    ],
+    "D_emotional_register": [
+        "Triumph",
+        "Loss and grief",
+        "Confusion and searching",
+        "Rage",
+        "Peace and stillness",
+        "Fear",
+        "Euphoria",
+        "Nostalgia",
+        "Dark humour",
+        "Wonder and awe",
+        "Paranoia",
+        "Love",
+        "Bittersweet",
+        "Defiance",
+        "Exhausted but proud",
+    ],
+    "E_lore_theme": [
+        "New character reveal",
+        "Arc climax",
+        "Arc setup — planting seeds",
+        "Aftermath of battle",
+        "Daily ritual or routine",
+        "Reunion",
+        "Betrayal hint",
+        "Prophecy fulfillment",
+        "Discovery of a new part of Blocktopia",
+        "Real-world artist moment mirrored in lore",
+        "Character growth milestone",
+        "Faction politics shift",
+        "Dream-bleeds-into-reality moment",
+        "Hidden backstory fragment",
+        "Time-jump forward or backward",
+        "New bonnet or art reveal",
+        "Hardfork Games moment",
+        "OG Bitcoin Kids regret arc",
+        "Escape attempt",
+        "Return to Blocktopia",
+    ],
+    "F_narrative_structure": [
+        "Opens in action, ends in reflection",
+        "Opens calm, ends with revelation",
+        "One punchy log line then expanded image description",
+        "Dialogue-heavy scene",
+        "Poetic or fragmented mind-log",
+        "Technical chain archive format",
+        "News flash style",
+        "Letter or message format",
+        "Stream of consciousness",
+        "Two-act: daytime moment then night consequence",
+    ],
+    "H_art_style": [
+        "Standard GraffPunks full colour",
+        "Black charcoal pencil sketch",
+        "Neon on black — nightlife scene",
+        "Bleached overexposed midday heat",
+        "Watercolour wash",
+        "Blueprint schematic style — Alien Backend",
+        "Grainy analogue film",
+        "Ultra-vivid graffiti spray aesthetic",
+        "Monochrome plus single accent colour",
+        "Glitch-art digital distortion",
+    ],
+    "I_scene_intensity": [
+        "Quiet and intimate",
+        "Action and kinetic",
+        "Epic and cinematic",
+        "Comedic and absurdist",
+        "Tense and suspenseful",
+        "Mysterious and cryptic",
+        "Surreal and dreamlike",
+        "Documentary and real-feeling",
+        "Mythic and legendary scale",
+    ],
+    "J_wild_card": [
+        "A new GraffPunks character is implied but not named — plant a seed",
+        "The lore references real-world news from the last 24 hours",
+        "A Hardfork Games secret rule is hinted at",
+        "Lady-INK leaves a coded message somewhere in the scene",
+        "The Alien Backend glitches and leaks a future event",
+        "The artist finds an unexpected GraffPunks connection in real life",
+        "An OG Bitcoin Kid is spotted in the real world",
+        "A forgotten character from lore-history gets a callback",
+        "The bonnet of a character changes in a subtle 4% way — first time it is noticed",
+        "A completely new location in Blocktopia is discovered and named for the first time",
+        None,  # 'None' = skip wild card this post (roughly 1 in 11 posts)
+    ],
+}
+
+
+def build_variation_context() -> str:
+    """
+    Roll all IVES axes independently and return the VARIATION_CONTEXT block
+    to inject into the lore generation prompt (IVES-1).
+    """
+    rolls = {axis: random.choice(options) for axis, options in IVES_AXES.items()}
+    lines = [
+        "VARIATION_CONTEXT (IVES — roll independently for this post):",
+        f"  Perspective    : {rolls['A_perspective']}",
+        f"  Location       : {rolls['B_location']}",
+        f"  Time of day    : {rolls['C_time_of_day']}",
+        f"  Weather        : {rolls['C_weather']}",
+        f"  Emotion        : {rolls['D_emotional_register']}",
+        f"  Lore theme     : {rolls['E_lore_theme']}",
+        f"  Narrative form : {rolls['F_narrative_structure']}",
+        f"  Art style      : {rolls['H_art_style']}",
+        f"  Scene intensity: {rolls['I_scene_intensity']}",
+    ]
+    if rolls["J_wild_card"] is not None:
+        lines.append(f"  Wild card      : {rolls['J_wild_card']}")
+    lines += [
+        "",
+        "These are SUGGESTIONS that tune the creative output — they must never override",
+        "active arc continuity, RCG conflict rules, or uniform/bonnet fidelity rules.",
+        "If any axis would cause a continuity break, adjust only that axis and note why.",
+    ]
+    return "\n".join(lines)
+
 
 
 
@@ -400,7 +588,7 @@ def find_character_dedicated_page(character_name: str) -> dict:
 def build_image_prompt_prefix(character_name: str, lore_mood: str, dedicated_page: dict) -> str:
     """
     Build the mandatory image prompt prefix per the ART CREATION RULE (AC-5 through AC-8).
-    Head + bonnet as one unit, 90% shape fidelity, random face expression.
+    Head + bonnet as one unit, 96% shape fidelity, random face expression.
     """
     expression = random.choice(FACE_EXPRESSIONS)
 
@@ -421,7 +609,10 @@ def build_image_prompt_prefix(character_name: str, lore_mood: str, dedicated_pag
         f"Use 100% {ref_note}. "
         f"Head + bonnet as one inseparable unit. "
         f"Face expression: {expression} (matching lore mood: {lore_mood}). "
-        f"90% shape fidelity to reference — colours, textures, and scene elements may vary freely. "
+        f"96% shape fidelity to reference — 4% creative zone for minor surface details only. "
+        f"Clothing: main faction uniform unless uniform exception trigger active (see UF rules). "
+        f"Bonnet 3D elements (all locked at 96%): name primary shape + central feature + side features + upper features + material + hair/ear integration explicitly in prompt. "
+        f"Colours, textures, background, and scene elements may vary freely within the 4% zone. "
         f"Scene details:"
     )
 
@@ -547,6 +738,7 @@ def generate_lore_pair():
     post_mode = get_post_mode(now)
     fame_slot = get_fame_cycle_slot(now)
     day_type = get_day_type()
+    variation_context = build_variation_context()
 
     # ── Art creation: find dedicated pages for active characters (AC-1 through AC-14) ──
     # Use a generic "GraffPunks character" search if we don't know the exact characters yet;
@@ -582,13 +774,24 @@ def generate_lore_pair():
 
     {day_type}
 
+    {variation_context}
+
     ART CREATION RULE (mandatory for BOTH image prompts in this post):
     Every image prompt MUST start with this exact prefix, then add the full scene description:
     "{art_prefix}"
     For each character featured, the head + bonnet must be treated as one inseparable unit.
     Use the dedicated page reference if one was found during this run's crawl, otherwise use
     Layer 1 + Layer 2 base templates. Add a random face expression matching the lore mood.
-    90% shape fidelity. Colours and scene details may vary freely.
+    96% shape fidelity for bonnet + all 3D elements. 4% creative zone for minor details only.
+    Clothing: ALWAYS the character's main faction uniform unless a UF exception trigger is active.
+    Colours and scene details may vary freely within the 4% zone.
+
+    RULE CONFLICT GATE (run before generating):
+    1. CHECK ACCURACY: does any rule below conflict with the latest crawled data? If yes, update first.
+    2. CHECK CONTINUITY: does any axis in VARIATION_CONTEXT contradict the last 7 days of lore history? Adjust only that axis.
+    3. CHECK FLOW: will this post feel organic and alive, or mechanical? Prioritise narrative voice.
+    4. CHECK UNIFORMS: verify UF-0 — if no exception trigger is present in the lore, use main uniform.
+    5. CHECK BONNET: verify BF-1/BF-2 — 96% fidelity lock, 4% creative zone only.
 
     Generate the next 2 back-to-back lore posts exactly as the rules say.
     Each post MUST start with the exact UTC time and log entry number:
