@@ -320,8 +320,12 @@ def get_day_type() -> str:
 
 # ── Art creation — dedicated page search ─────────────────────────────────────
 
-# All official links to crawl for dedicated character pages (AC-1/AC-12)
+# All official links to crawl for dedicated character pages (AC-1/AC-12).
+# Full list from gk-brain-complete.md — covers all GK/Moonboys properties,
+# Charlie Buster & Treef Project, and real-people canon links.
+# Social-media platforms that block scraping are intentionally excluded.
 OFFICIAL_ART_LINKS = [
+    # Core GraffPunks / GK / Moonboys properties
     "https://substack.com/@graffpunks/posts",
     "https://graffpunks.substack.com/",
     "https://graffpunks.live/",
@@ -329,8 +333,37 @@ OFFICIAL_ART_LINKS = [
     "https://gkniftyheads.com/",
     "https://medium.com/@GKniftyHEADS",
     "https://medium.com/@graffpunksuk",
+    "https://medium.com/@GRAFFITIKINGS",
+    "https://medium.com/@games4punks",
+    "https://medium.com/@HODLWARRIORS",
     "https://neftyblocks.com/collection/gkstonedboys",
+    "https://neftyblocks.com/collection/noballgamess",
+    "https://nfthive.io/collection/noballgamess",
+    "https://dappradar.com/nft-collection/crypto-moonboys",
     "https://www.youtube.com/@GKniftyHEADS",
+    # Charlie Buster & Treef Project
+    "https://medium.com/@iamcharliebuster",
+    "https://medium.com/@treefproject",
+    "https://substack.com/@treefproject/posts",
+    "https://substack.com/@noballgames/posts",
+    # Real-people & extra canon
+    "https://medium.com/@boneidolink",
+    "https://deliciousagainpeter.com/",
+    "https://www.reddit.com/user/graffpunks/",
+]
+
+# Crypto and graffiti news sites — crawled by get_news_and_weather() for
+# topical references in awake lore posts (NR-1 rule).
+NEWS_LINKS = [
+    "https://cointelegraph.com/",
+    "https://decrypt.co/",
+    "https://beincrypto.com/",
+    "https://theblock.co/",
+    "https://bitcoinmagazine.com/",
+    "https://cryptoslate.com/",
+    "https://streetartnews.net/",
+    "https://www.graffitistreet.com/news/",
+    "https://arrestedmotion.com/",
 ]
 
 # Random face expressions for AC-8
@@ -628,34 +661,92 @@ def log_dedicated_page(character_name: str, url: str) -> None:
 
 
 def crawl_substack_for_art_and_content():
-    try:
-        r = requests.get("https://substack.com/@graffpunks/posts", timeout=10)
-        soup = BeautifulSoup(r.text, "html.parser")
-        images = [img["src"] for img in soup.find_all("img") if img.get("src")]
-        text_snippets = [p.text.strip() for p in soup.find_all("p") if len(p.text.strip()) > 20]
+    """
+    Crawl the primary official art/content sources and return a combined
+    art-reference + new-content string for injection into the lore prompt.
 
-        art_reference = (
-            "Use exact GraffPunks Substack artwork style for all characters and factions: shapes, uniforms, silhouettes, colours, look. Found images: "
-            + " ".join(images[:5])
-            if images
-            else "Fallback to GraffPunks Substack style from all posts."
-        )
-        new_content = (
-            "New Substack content: " + " | ".join(text_snippets[:3])
-            if text_snippets
-            else "No new content — make up consistent lore until official data conflicts."
-        )
-        return art_reference + "\n" + new_content
-    except Exception:
-        return "Substack crawl failed — use existing Character Bible and make up consistent GraffPunks style until new official data appears."
+    Priority sites (crawled first for the best signal):
+      1. GraffPunks Substack (primary art and lore source)
+      2. GraffPunks Live
+      3. GKniftyHEADS (NFT collection)
+      4. Graffiti Kings
+    Remaining OFFICIAL_ART_LINKS are used for dedicated-page searches only.
+    """
+    PRIORITY_CRAWL_URLS = [
+        "https://substack.com/@graffpunks/posts",
+        "https://graffpunks.live/",
+        "https://gkniftyheads.com/",
+        "https://graffitikings.co.uk/",
+    ]
+
+    all_images: list[str] = []
+    all_snippets: list[str] = []
+    sources_hit: list[str] = []
+
+    for url in PRIORITY_CRAWL_URLS:
+        try:
+            r = requests.get(url, timeout=8)
+            soup = BeautifulSoup(r.text, "html.parser")
+            images = [img["src"] for img in soup.find_all("img") if img.get("src") and not img["src"].startswith("data:")]
+            snippets = [p.text.strip() for p in soup.find_all("p") if len(p.text.strip()) > 20]
+            if images or snippets:
+                all_images.extend(images[:3])
+                all_snippets.extend(snippets[:2])
+                sources_hit.append(url)
+        except Exception:
+            continue
+
+    if not all_images and not all_snippets:
+        return "Official site crawl failed — use existing Character Bible and make up consistent GraffPunks style until new official data appears."
+
+    art_reference = (
+        "Use exact GraffPunks artwork style for all characters and factions: shapes, uniforms, silhouettes, colours, look. "
+        f"Sources checked: {', '.join(sources_hit)}. "
+        "Found reference images: " + " ".join(all_images[:6])
+        if all_images
+        else f"Fallback to GraffPunks style from {', '.join(sources_hit)}."
+    )
+    new_content = (
+        "New official content: " + " | ".join(all_snippets[:4])
+        if all_snippets
+        else "No new textual content found — continue consistent lore until official data conflicts."
+    )
+    return art_reference + "\n" + new_content
 
 
 def get_news_and_weather():
+    """
+    Fetch London weather and try to pull a headline from crypto/graffiti news
+    sites (NEWS_LINKS) for topical references in awake lore posts (NR-1 rule).
+    """
+    weather = "unknown"
     try:
         weather = requests.get("https://wttr.in/London?format=%C+%t", timeout=10).text.strip()
-        return f"Weather: {weather} | Latest crypto/political/graffiti news from last 2 hours."
     except Exception:
-        return "Weather and news checked."
+        pass
+
+    news_headlines: list[str] = []
+    for url in NEWS_LINKS:
+        if len(news_headlines) >= 3:
+            break
+        try:
+            r = requests.get(url, timeout=8, headers={"User-Agent": "Mozilla/5.0"})
+            soup = BeautifulSoup(r.text, "html.parser")
+            # Grab the first meaningful headline/paragraph from each news site
+            for tag in soup.find_all(["h1", "h2", "h3"]):
+                headline = tag.get_text(strip=True)
+                if len(headline) > 20:
+                    news_headlines.append(headline[:120])
+                    break
+        except Exception:
+            continue
+
+    news_str = (
+        "Latest headlines: " + " | ".join(news_headlines)
+        if news_headlines
+        else "Latest crypto/graffiti news from the last 2 hours."
+    )
+    return f"Weather: {weather} | {news_str}"
 
 
 def get_post_mode(now: datetime) -> str:
