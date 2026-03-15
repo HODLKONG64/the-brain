@@ -2,6 +2,8 @@
 
 This repository runs the **GK BRAIN** — an autonomous Telegram posting agent that generates the infinite Crypto Moonboys lore saga 24/7.
 
+> 📖 **Want the full in-depth explanation?** Read **[AGENT-EXPLAINER.md](./AGENT-EXPLAINER.md)** — a complete technical and conceptual deep-dive into exactly what this bot does and how every part of it works (infrastructure, AI prompting, art rules, variation system, commands, memory, and more).
+
 ## AGENT KEY ROLES
 - Live 24/7 mind-log narrator of a real-feeling UK graffiti artist/DJ/parkour climber/fisherman/entrepreneur.
 - Maintains perfect 7-day awake continuity using lore-history.md.
@@ -58,6 +60,7 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - `lore-planner.md` → 30-day lore planner (March 14 – April 12) with 2-hour UTC slot breakdown. Agent uses matching slot as context seed each run.
 - `reply-tracker.json` → Tracks Telegram reply limits per user (count, date, failed_attempts).
 - `bot-state.json` → Persists the last processed Telegram update_id so commands are never replayed.
+- `AGENT-EXPLAINER.md` → Full in-depth technical and conceptual explanation of the entire system (20 sections, ~50KB).
 
 ## TELEGRAM COMMANDS
 All commands are registered with BotFather on every run and processed at the start of each 2-hour run.
