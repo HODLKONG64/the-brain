@@ -850,6 +850,22 @@ def save_lore_history(post1: str, post2: str) -> None:
 # Telegram posting
 # ---------------------------------------------------------------------------
 
+def _send_photo(chat_id: str, image: bytes | str) -> dict:
+    """
+    Send a photo to a Telegram chat.
+
+    If ``image`` is bytes (raw image data), upload via multipart/form-data.
+    If ``image`` is a string (URL or file_id), pass it as a JSON field.
+    """
+    if isinstance(image, bytes):
+        return _telegram_api(
+            "sendPhoto",
+            files={"photo": ("photo", image, "application/octet-stream")},
+            chat_id=chat_id,
+        )
+    return _telegram_api("sendPhoto", chat_id=chat_id, photo=image)
+
+
 def post_to_telegram(lore1, image1, lore2, image2) -> None:
     """Post both lore entries to all configured Telegram channels."""
     if not TELEGRAM_BOT_TOKEN or not CHANNEL_CHAT_IDS:

@@ -24,4 +24,5 @@ jobs:
           CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
           FANDOM_USERNAME: ${{ secrets.FANDOM_USERNAME }}
           FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         run: python gk-brain.py
