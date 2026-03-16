@@ -41,9 +41,9 @@
 
 ---
 
-## WIKI RULE
+## WIKI RULES
 
-### `(rule-wiki)` — Update Wiki After Telegram Post
+### `(rule-wiki)` — Update Wiki After Telegram Post (Simple Append)
 1. After **both** Telegram posts are sent successfully:
 2. Load `wiki-update-queue.json`.
 3. For each entry: call `wiki-updater.py`.
@@ -51,6 +51,48 @@
 5. On success: delete the entry from `wiki-update-queue.json`.
 6. On failure: log error, retain entry for next cycle retry.
 7. After all entries processed: delete `crawl-snapshot.json` (fresh start next cycle).
+
+### `(rule-wiki-smart)` — Intelligent Wiki Merge (Smart Layer)
+1. After **both** Telegram posts are sent successfully:
+2. Load `wiki-update-queue.json`.
+3. For each entry, run `wiki-smart-merger.py`:
+   - **Smart Merge (primary):** Read current wiki page → detect existing sections →
+     check whether this data is already present (duplicate guard) →
+     if data is **missing**, insert it into the matching section (see `wiki-merge-rules.md`).
+   - **Simple Append (fallback / always):** Append a timestamped log entry to
+     `GK_BRAIN_Agent_Log` regardless of smart merge outcome.
+4. Mark entry `"wiki_done": true` on success; retain for retry on failure.
+5. After all entries processed: delete `crawl-snapshot.json`.
+
+#### Decision Tree for `(rule-wiki-smart)`
+
+```
+New update detected?
+        │
+        ▼
+Is update type in SECTION_MAP?  ──── No ──► Simple append to main page + log entry
+        │
+       Yes
+        ▼
+Does target section already contain this data?  ──── Yes ──► Log-only (no duplicate)
+        │
+        No
+        ▼
+Smart merge: insert bullet into matching section  ──── Fails ──► Simple append fallback
+        │
+      Success
+        ▼
+Always: append audit log entry to GK_BRAIN_Agent_Log
+```
+
+#### When to Use Simple vs Smart
+| Situation                              | Method        |
+|----------------------------------------|---------------|
+| Update type maps to a known section    | Smart merge   |
+| Update type is unknown / unclassified  | Simple append |
+| Smart merge raises an exception        | Simple append |
+| Data already present (duplicate guard) | Log-only      |
+| Agent log audit trail                  | Always append |
 
 ---
 
@@ -216,9 +258,15 @@ Format: `🔴 [GRAFFPUNKS NETWORK RADIO — LIVE] :: [artist hears alert]`
 1. Telegram posts sent ✅
 2. Load `wiki-update-queue.json` for this cycle.
 3. For each entry with `"wiki_update": true`:
-   - Call `wiki-updater.py` with the entry data.
-   - `wiki-updater.py` creates/updates Fandom wiki page.
+   - **Primary:** Call `wiki-smart-merger.py` — smart section merge + audit log.
+   - **Fallback:** If smart merger is unavailable, call `wiki-updater.py` (simple append).
 4. Mark entry `"wiki_done": true`.
 5. Delete processed entries from queue.
 6. Delete `crawl-snapshot.json` → fresh crawl next cycle.
 7. Sleep until next 2-hour cron ping.
+
+### Smart Merger Summary
+- `wiki-smart-merger.py` reads the current wiki page, detects existing sections,
+  checks for duplicate content, and inserts new data into the correct section.
+- Every run appends a log entry to `GK_BRAIN_Agent_Log` for full audit trail.
+- See `wiki-merge-rules.md` for the full category → section mapping and merge patterns.
