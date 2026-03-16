@@ -16,7 +16,9 @@ Execution flow:
 10. Delete crawl snapshot + sleep until next 2-hour cron ping.
 """
 
+import base64
 import os
+import random
 import re
 import json
 import time
@@ -144,8 +146,23 @@ LORE_PLANNER_FILE = os.path.join(BASE_DIR, "lore-planner.md")
 QUEUE_FILE = os.path.join(BASE_DIR, "wiki-update-queue.json")
 SNAPSHOT_FILE = os.path.join(BASE_DIR, "crawl-snapshot.json")
 
+# Reference art images (2 boys sets + 2 girls sets)
+_ASSETS_DIR = os.path.join(BASE_DIR, "assets", "layers")
+_BOY_IMAGES = [
+    os.path.join(_ASSETS_DIR, "boys_set_1", "boysimagesetone.png"),
+    os.path.join(_ASSETS_DIR, "bonnet_styles_boys_set_2", "boysimagesettwo.png"),
+]
+_GIRL_IMAGES = [
+    os.path.join(_ASSETS_DIR, "females_set_1", "girlsimagesetone.png"),
+    os.path.join(_ASSETS_DIR, "bonnet_styles_females_set_2", "girlsimagesettwo.png"),
+]
+
 # Stuck-agent timeout in seconds
 MAX_RUN_SECONDS = 300  # 5 minutes
+
+# Minimum keyword hits required to classify a lore post as female-focused.
+# Two hits reduces false positives from incidental pronoun use.
+_FEMALE_DETECTION_THRESHOLD = 2
 
 
 # ---------------------------------------------------------------------------
@@ -458,21 +475,67 @@ def _grok_chat(messages: list, model: str = "grok-3-latest") -> str:
     return resp.json()["choices"][0]["message"]["content"].strip()
 
 
-def _grok_image(prompt: str) -> bytes | None:
+def _detect_character_gender(lore_text: str) -> str:
+    """
+    Inspect lore text and return 'female' when a female character is clearly the
+    focus; otherwise return 'male'.
+
+    Female indicators: Lady-INK (or Lady INK), Jodie Zoom, moongirl, crowned royal,
+    she/her/hers, queen, sarah, female.  _FEMALE_DETECTION_THRESHOLD or more hits
+    → female.  Two hits required to reduce false positives from incidental pronouns.
+    """
+    female_keywords = [
+        "lady ink", "jodie", "zoom 2000",
+        "moongirl", "crowned royal",
+        " she ", " her ", " hers ", "herself",
+        "queen", "sarah", "female",
+    ]
+    # Pad with spaces so all boundary checks work consistently (including at
+    # start and end of string) without requiring regex word-boundary logic.
+    lore_padded = " " + lore_text.lower().replace("-", " ") + " "
+    hits = sum(1 for kw in female_keywords if kw in lore_padded)
+    return "female" if hits >= _FEMALE_DETECTION_THRESHOLD else "male"
+
+
+def _load_reference_image(gender: str) -> bytes | None:
+    """
+    Load one of the two reference art files for *gender* ('male' or 'female'),
+    chosen at random.  Returns raw PNG bytes or None if the file cannot be read.
+    """
+    paths = _GIRL_IMAGES if gender == "female" else _BOY_IMAGES
+    path = random.choice(paths)
+    try:
+        with open(path, "rb") as fh:
+            data = fh.read()
+        print(f"[image-ref] Loaded reference image: {os.path.basename(path)}")
+        return data
+    except OSError as exc:
+        print(f"[image-ref] Could not load reference image {path}: {exc}")
+        return None
+
+
+def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | None:
     """
     Generate an image via Grok / Aurora image generation API.
+
+    When *reference_image* (raw PNG/JPEG bytes) is provided it is base64-encoded
+    and attached to the request so Aurora can anchor visual style and character
+    consistency to the supplied art reference.
+
     Returns raw image bytes or None on failure.
     """
     headers = {
         "Authorization": f"Bearer {GROK_API_KEY}",
         "Content-Type": "application/json",
     }
-    payload = {
+    payload: dict = {
         "model": "aurora",
         "prompt": prompt,
         "n": 1,
         "response_format": "url",
     }
+    if reference_image:
+        payload["image"] = base64.b64encode(reference_image).decode("utf-8")
     try:
         resp = requests.post(
             f"{GROK_API_BASE}/images/generations",
@@ -1035,8 +1098,12 @@ def main() -> None:
 
     # -- Step 9: Generate images --
     print("[gk-brain] Generating images...")
-    image1 = _grok_image(image_prompt1)
-    image2 = _grok_image(image_prompt2)
+    gender1 = _detect_character_gender(lore1)
+    gender2 = _detect_character_gender(lore2)
+    ref_image1 = _load_reference_image(gender1)
+    ref_image2 = _load_reference_image(gender2)
+    image1 = _grok_image(image_prompt1, reference_image=ref_image1)
+    image2 = _grok_image(image_prompt2, reference_image=ref_image2)
 
     # -- Step 10: Post to Telegram --
     print("[gk-brain] Posting to Telegram...")
