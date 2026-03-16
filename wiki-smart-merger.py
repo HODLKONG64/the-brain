@@ -29,10 +29,12 @@ Usage (from gk-brain.py or standalone):
 """
 
 import datetime
+import hashlib
 import json
 import os
 import re
 import time
+from urllib.parse import urlparse
 
 import requests
 
@@ -51,41 +53,46 @@ AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
 
 # Mapping: update type → wiki section heading (title-case, no '==' markers)
 SECTION_MAP: dict[str, str] = {
+    # Fishing
     "fishing-real": "Fishing Records",
     "fishing": "Fishing Records",
+    # Graffiti & Street Art
     "graffiti-news-real": "Graffiti & Street Art",
     "graffiti": "Graffiti & Street Art",
+    # NFT & Crypto
     "gkdata-real": "NFT Drops & Collections",
     "nft": "NFT Drops & Collections",
+    "crypto": "Crypto & Market News",
+    # Music & Events
     "rave-real": "Rave & Music Events",
     "rave": "Rave & Music Events",
+    "event": "Events & Meetups",
+    # News & Updates
     "news-real": "Latest News",
+    "news": "Latest News",
+    # Characters & Lore
     "character": "Characters",
-    "location": "Locations",
+    "character-profile": "Characters",
+    "lady-ink-hint": "Characters",
+    # Locations
+    "location": "Locations & Landmarks",
+    "place": "Locations & Landmarks",
+    # Art & Culture
     "art-movement": "Art Movements & Styles",
+    "art": "Art Movements & Styles",
+    # Dreams & Special Events
     "dream": "Dream & Raid Events",
     "raid": "Dream & Raid Events",
-    "lady-ink-hint": "Characters",
+    "special-event": "Special Events",
 }
 
-# Keywords used to scan existing section content for duplicate detection
-DUPLICATE_KEYWORDS: dict[str, list[str]] = {
-    "fishing-real": ["carp", "lb", "lake", "catch"],
-    "fishing": ["carp", "lake", "fishing"],
-    "graffiti-news-real": ["graffiti", "street art", "mural"],
-    "graffiti": ["graffiti", "tag", "spray"],
-    "gkdata-real": ["nft", "drop", "collection", "mint"],
-    "nft": ["nft", "drop", "collection"],
-    "rave-real": ["rave", "drum", "bass", "dj"],
-    "rave": ["rave", "drum", "bass"],
-    "news-real": ["news", "breaking"],
-    "character": [],
-    "location": [],
-    "art-movement": [],
-    "dream": ["dream", "raid"],
-    "raid": ["raid", "dream"],
-    "lady-ink-hint": ["lady-ink", "lady ink"],
-}
+# Default section for update types not present in SECTION_MAP
+DEFAULT_SECTION = "Uncategorized Updates"
+
+# Fingerprinting constants
+FINGERPRINT_CONTENT_LENGTH = 500   # chars of normalised content used for MD5
+FINGERPRINT_PREFIX_LENGTH = 16     # hex chars of MD5 hash stored in wiki comments
+CONTENT_SNIPPET_LENGTH = 200       # max chars of content shown in a wiki bullet
 
 
 # ---------------------------------------------------------------------------
@@ -238,17 +245,47 @@ def _section_contains(body: str, keywords: list[str]) -> bool:
     return any(kw.lower() in lower for kw in keywords)
 
 
+def _get_content_fingerprint(text: str) -> str:
+    """Create an MD5 hash fingerprint of content for deduplication."""
+    clean = " ".join(text.lower().split())[:FINGERPRINT_CONTENT_LENGTH]
+    return hashlib.md5(clean.encode()).hexdigest()
+
+
+def _extract_domain(url: str) -> str:
+    """Extract the bare domain name from a URL."""
+    try:
+        return urlparse(url).netloc.lower().replace("www.", "")
+    except Exception:
+        return url
+
+
 def _entry_already_present(body: str, update: dict) -> bool:
     """
-    Heuristic: check whether this specific update already appears in a section.
-    Uses the update title and a subset of duplicate keywords.
+    Smart duplicate detection using source URL, title+timestamp, and content
+    hash fingerprinting.
+
+    Returns True if this exact data is already on the wiki page.
     """
-    title = update.get("title", "").lower()
-    if title and title in body.lower():
+    # 1. Check by source URL (most reliable)
+    source_url = update.get("url") or update.get("source", "")
+    if source_url and source_url in body:
         return True
-    content = update.get("content", "").lower()[:120]
-    if content and content in body.lower():
-        return True
+
+    # 2. Check by title + date (exact match)
+    title = update.get("title", "")
+    timestamp = update.get("timestamp", "")
+    if title and timestamp:
+        date_part = timestamp[:10]  # YYYY-MM-DD
+        if re.search(re.escape(title) + r".*" + re.escape(date_part), body, re.IGNORECASE):
+            return True
+
+    # 3. Check by content fingerprint (first FINGERPRINT_PREFIX_LENGTH chars of MD5 hash)
+    content = update.get("content", "")
+    if content and len(content) > 50:
+        fingerprint = _get_content_fingerprint(content)
+        if fingerprint[:FINGERPRINT_PREFIX_LENGTH] in body:
+            return True
+
     return False
 
 
@@ -257,18 +294,35 @@ def _entry_already_present(body: str, update: dict) -> bool:
 # ---------------------------------------------------------------------------
 
 def _format_update_bullet(update: dict, display_time: str) -> str:
-    """Format a single update as a wiki bullet point for insertion."""
-    update_type = update.get("type", "update").replace("-", " ").title()
-    source = update.get("source", "")
+    """Format a single update as a wiki bullet point with source attribution."""
     title = update.get("title", "Update")
+    source_url = update.get("url") or update.get("source", "")
+    source_domain = _extract_domain(source_url) if source_url else ""
     content = update.get("content", "").strip()
-    source_link = f" ([{source} source])" if source else ""
 
-    lines = [
-        f"* '''{title}''' — {update_type} — {display_time}{source_link}",
-    ]
-    if content:
-        lines.append(f"  {content}")
+    # Embed content fingerprint as a hidden comment for future duplicate detection
+    fingerprint_comment = ""
+    if content and len(content) > 50:
+        fp = _get_content_fingerprint(content)
+        fingerprint_comment = f"<!-- fp:{fp[:FINGERPRINT_PREFIX_LENGTH]} -->"
+
+    if source_url:
+        lines = [
+            f"* '''[[{title}]]''' — {source_domain} — {display_time} {fingerprint_comment}",
+        ]
+        if content:
+            snippet = content[:CONTENT_SNIPPET_LENGTH]
+            suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
+            lines.append(f"  {snippet}{suffix}")
+    else:
+        lines = [
+            f"* '''{title}''' — {display_time} {fingerprint_comment}",
+        ]
+        if content:
+            snippet = content[:CONTENT_SNIPPET_LENGTH]
+            suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
+            lines.append(f"  {snippet}{suffix}")
+
     return "\n".join(lines)
 
 
@@ -281,13 +335,11 @@ def _smart_merge_update(
     Attempt to smart-merge one update into page_content.
 
     Returns (new_page_content, merged_ok).
-    merged_ok is False when the update was already present or the type is unknown.
+    merged_ok is False only when the update was already present.
+    Unknown update types are placed in DEFAULT_SECTION instead of being dropped.
     """
     update_type = update.get("type", "")
-    target_section = SECTION_MAP.get(update_type)
-
-    if not target_section:
-        return page_content, False
+    target_section = SECTION_MAP.get(update_type, DEFAULT_SECTION)
 
     sections = _parse_sections(page_content)
 
@@ -415,9 +467,10 @@ def run_smart_wiki_updates() -> dict:
                     if ok_smart:
                         main_page_content = new_main_content
                         smart_count += 1
+                        resolved_section = SECTION_MAP.get(update.get('type', ''), DEFAULT_SECTION)
                         print(
                             f"[wiki-smart-merger] Smart-merged '{update.get('title')}' "
-                            f"into section '{SECTION_MAP.get(update.get('type', ''))}'"
+                            f"into section '{resolved_section}'"
                         )
                     else:
                         merged = False

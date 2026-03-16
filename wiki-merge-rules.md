@@ -15,12 +15,16 @@ The merger identifies **Level-2 headings** (`== Heading ==`) as top-level sectio
 | `Fishing Records`          | Real carp catches, lake names, weights   |
 | `Graffiti & Street Art`    | Street art news, murals, tagging events  |
 | `NFT Drops & Collections`  | GKniftyHEADS NFT releases & mints       |
+| `Crypto & Market News`     | Crypto prices, market moves, news        |
 | `Rave & Music Events`      | UK drum & bass events, DJ appearances    |
+| `Events & Meetups`         | General events and community meetups     |
 | `Latest News`              | Breaking crypto / news weave snippets    |
 | `Characters`               | GKniftyHEADS characters + Lady-INK      |
-| `Locations`                | Locations discovered in lore            |
+| `Locations & Landmarks`    | Locations discovered in lore            |
 | `Art Movements & Styles`   | Noted art styles referenced in lore     |
 | `Dream & Raid Events`      | Dream sequences and raid storylines     |
+| `Special Events`           | One-off or seasonal special events      |
+| `Uncategorized Updates`    | Updates whose type is not yet mapped    |
 
 ### Detection Algorithm
 1. Read full wikitext of the target page.
@@ -40,18 +44,26 @@ The merger identifies **Level-2 headings** (`== Heading ==`) as top-level sectio
 | `graffiti`           | Graffiti & Street Art         |
 | `gkdata-real`        | NFT Drops & Collections       |
 | `nft`                | NFT Drops & Collections       |
+| `crypto`             | Crypto & Market News          |
 | `rave-real`          | Rave & Music Events           |
 | `rave`               | Rave & Music Events           |
+| `event`              | Events & Meetups              |
 | `news-real`          | Latest News                   |
+| `news`               | Latest News                   |
 | `character`          | Characters                    |
-| `location`           | Locations                     |
+| `character-profile`  | Characters                    |
+| `lady-ink-hint`      | Characters                    |
+| `location`           | Locations & Landmarks         |
+| `place`              | Locations & Landmarks         |
 | `art-movement`       | Art Movements & Styles        |
+| `art`                | Art Movements & Styles        |
 | `dream`              | Dream & Raid Events           |
 | `raid`               | Dream & Raid Events           |
-| `lady-ink-hint`      | Characters                    |
+| `special-event`      | Special Events                |
+| *(any other type)*   | Uncategorized Updates         |
 
-If an update type is **not in this table**, the merger falls back to the
-simple append strategy (see §4).
+All update types are now handled — unknown types go to `Uncategorized Updates`
+instead of being silently dropped.
 
 ---
 
@@ -82,11 +94,13 @@ When the target section does **not** exist:
 The section is appended at the bottom of the page.
 
 ### 3.3 Duplicate Guard
-Before inserting, the merger checks:
-- Is the update **title** already present in the section body?
-- Is the first 120 characters of **content** already present?
+Before inserting, the merger checks in this order:
+1. **Source URL** — is the exact URL already present anywhere on the page?
+2. **Title + date** — does a `title.*YYYY-MM-DD` regex match the page body?
+3. **Content fingerprint** — is the 16-char MD5 prefix (embedded as `<!-- fp:… -->`)
+   already present in the page body?
 
-If either check passes → skip smart merge for this entry (log only).
+If any check passes → skip smart merge for this entry (log only).
 
 ---
 
@@ -108,7 +122,6 @@ Or if append-only:
 ```
 
 ### When to Use Simple Append
-- Update type is **not** in the Category → Section mapping.
 - Smart merge raises an exception.
 - Entry is detected as already present (duplicate guard fires).
 - Credentials are unavailable (no-op for both layers).
@@ -122,7 +135,7 @@ Or if append-only:
 | Entry already in section          | Skip insert; log-only                       |
 | Section exists, entry is new      | Prepend bullet to section                   |
 | Section does not exist            | Create section at page bottom               |
-| Update type unknown               | Fall back to simple append                  |
+| Update type unknown               | Insert into Uncategorized Updates section   |
 | API edit fails                    | Fall back to simple append; log failure     |
 | Credentials missing               | Skip all wiki operations; print warning     |
 
