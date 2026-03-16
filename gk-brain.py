@@ -183,6 +183,17 @@ MAX_RUN_SECONDS = 300  # 5 minutes
 LORE_MAX_FAILS = 50
 IMAGE_MAX_FAILS = 50
 
+# Telegram character limits and split configuration.
+# MSG1 is a plain-text message (no image); MSG2 is an image caption.
+# A 50-char safety buffer is subtracted from each hard limit to avoid
+# off-by-one rejections from Telegram's API.
+_TG_MSG1_MAX = 4096 - 50   # 4046 — text-only message
+_TG_MSG2_MAX = 1024 - 50   # 974  — image caption
+# Fraction of the combined lore length assigned to Message 1 (~80 %).
+# This biases most narrative content to the text-only message where
+# there is more space, leaving a punchy conclusion for the caption.
+_TG_MSG1_RATIO = 0.8
+
 # Minimum keyword hits required to classify a lore post as female-focused.
 # Two hits reduces false positives from incidental pronoun use.
 _FEMALE_DETECTION_THRESHOLD = 2
@@ -211,12 +222,18 @@ def _telegram_post(method: str, **params) -> dict:
     return data
 
 
-def _telegram_send_photo(chat_id: str, photo: bytes) -> dict:
-    """Send a photo (raw bytes) to Telegram using multipart form data."""
+def _telegram_send_photo(chat_id: str, photo: bytes, caption: str | None = None) -> dict:
+    """Send a photo (raw bytes) to Telegram using multipart form data.
+
+    If ``caption`` is provided it is sent as the image caption (max 1024 chars).
+    """
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+    form_data: dict = {"chat_id": chat_id}
+    if caption:
+        form_data["caption"] = caption[:1024]
     resp = requests.post(
         url,
-        data={"chat_id": chat_id},
+        data=form_data,
         files={"photo": ("image.jpg", photo, "image/jpeg")},
         timeout=60,
     )
@@ -761,10 +778,15 @@ def generate_lore_pair(
         + (f"UPDATE CONTEXT:\n{update_context}\n\n" if update_context else "")
         + (f"RADIO ALERT TO USE:\n{radio_alert}\n\n" if radio_alert else "")
         + "INSTRUCTIONS:\n"
-        "Generate TWO lore posts (Post 1 and Post 2) as a back-to-back pair.\n"
+        "Generate TWO lore posts (Post 1 and Post 2) as a continuous narrative "
+        "that will be split across 2 Telegram messages.\n"
+        "TELEGRAM SPACE CONSTRAINTS:\n"
+        "- Post 1 (text only, NO image): ~3,800 characters maximum — must end at a "
+        "  natural paragraph break or cliffhanger so the story continues smoothly.\n"
+        "- Post 2 (sent WITH an image as caption): ~900 characters maximum — short, "
+        "  punchy conclusion that fits within Telegram's 1,024-char caption limit.\n"
         "Each post must:\n"
         "- Start with: [date] -- [time UTC] -- GraffPunks Network Log Entry #[number]\n"
-        "- Be maximum length (rich, immersive text)\n"
         "- Be a direct continuation of the previous lore\n"
         "- Follow the calendar activity and time theme exactly\n"
         "- Address ALL task points listed above — weave them into the narrative\n"
@@ -874,8 +896,51 @@ def _send_photo(chat_id: str, image: bytes | str) -> dict:
     return _telegram_api("sendPhoto", chat_id=chat_id, photo=image)
 
 
+def _calculate_telegram_split(total_lore: str) -> tuple:
+    """Calculate the optimal split for 2 Telegram messages.
+
+    Message 1 — text only:      4 096 chars max
+    Message 2 — image caption:  1 024 chars max
+
+    Splits at the nearest paragraph break (``\\n\\n``) before the target
+    point.  Falls back to the nearest sentence end, then a hard cut.
+
+    Returns: (part1, part2)
+    """
+    # Aim to fill ~_TG_MSG1_RATIO of the combined space with Message 1
+    target_split = int(len(total_lore) * _TG_MSG1_RATIO)
+    target_split = min(target_split, _TG_MSG1_MAX)
+
+    # Prefer a natural paragraph break
+    split_point = total_lore.rfind("\n\n", 0, target_split)
+
+    if split_point == -1:
+        # Fall back to a sentence boundary
+        split_point = total_lore.rfind(". ", 0, target_split)
+
+    if split_point == -1:
+        # Hard cut as last resort
+        split_point = target_split
+
+    part1 = total_lore[:split_point].strip()
+    part2 = total_lore[split_point:].strip()
+
+    # Enforce hard limits
+    part1 = part1[:_TG_MSG1_MAX]
+    part2 = part2[:_TG_MSG2_MAX]
+
+    return part1, part2
+
+
 def post_to_telegram(lore1, image1, lore2, image2) -> None:
-    """Post both lore entries to all configured Telegram channels."""
+    """Post both lore entries to all configured Telegram channels.
+
+    Message 1 — plain text only (up to 4 096 chars, no image).
+    Message 2 — image with caption (caption up to 1 024 chars).
+
+    The combined lore is split intelligently at a natural paragraph or
+    sentence boundary so neither message is truncated mid-sentence.
+    """
     if not TELEGRAM_BOT_TOKEN or not CHANNEL_CHAT_IDS:
         print("[telegram] Token or chat IDs not configured -- printing to stdout.")
         print("=== POST 1 ===")
@@ -884,30 +949,27 @@ def post_to_telegram(lore1, image1, lore2, image2) -> None:
         print(lore2)
         return
 
-    # Telegram messages have a 4096-character limit
-    MAX_MSG_LEN = 4096
+    # Combine both lore parts and calculate an intelligent split
+    combined_lore = lore1 + "\n\n" + lore2
+    msg1_text, msg2_text = _calculate_telegram_split(combined_lore)
 
     for chat_id in CHANNEL_CHAT_IDS:
         try:
-            # Post 1
-            text1 = lore1[:MAX_MSG_LEN]
-            if len(lore1) > MAX_MSG_LEN:
-                print(f"[telegram] Post 1 truncated from {len(lore1)} to {MAX_MSG_LEN} chars.")
-            _telegram_post("sendMessage", chat_id=chat_id, text=text1)
-            if image1:
-                _telegram_send_photo(chat_id, image1)
+            # Message 1: pure text — maximum lore space (_TG_MSG1_MAX chars)
+            print(f"[telegram] Message 1: {len(msg1_text)} chars (max {_TG_MSG1_MAX}, no image)")
+            _telegram_post("sendMessage", chat_id=chat_id, text=msg1_text)
 
             time.sleep(2)
 
-            # Post 2
-            text2 = lore2[:MAX_MSG_LEN]
-            if len(lore2) > MAX_MSG_LEN:
-                print(f"[telegram] Post 2 truncated from {len(lore2)} to {MAX_MSG_LEN} chars.")
-            _telegram_post("sendMessage", chat_id=chat_id, text=text2)
+            # Message 2: image with caption (caption max _TG_MSG2_MAX chars)
+            print(f"[telegram] Message 2: {len(msg2_text)} chars caption (max {_TG_MSG2_MAX}) + image")
             if image2:
-                _telegram_send_photo(chat_id, image2)
+                _telegram_send_photo(chat_id, image2, caption=msg2_text)
+            else:
+                # No image available — send as plain text (full 4096-char limit applies)
+                _telegram_post("sendMessage", chat_id=chat_id, text=msg2_text)
 
-            print(f"[telegram] Posted to {chat_id}")
+            print(f"[telegram] Posted to {chat_id} (smart split, no truncation)")
         except Exception as exc:
             print(f"[telegram] Error posting to {chat_id}: {exc}")
 
