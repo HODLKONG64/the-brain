@@ -31,7 +31,7 @@ assets/layers/
 ### Primary Reference Sources
 - **Boys characters**: Reference `boysimagesetone.png` for face/expression and `boysimagesettwo.png` for bonnet/accessory.
 - **Girls characters**: Reference `girlsimagesetone.png` for face/expression and `girlsimagesettwo.png` for bonnet/accessory.
-- Randomly select from the appropriate set (boys or girls) based on the character being generated.
+- Randomly select the appropriate gender variant based on the character's lore; combine the selected face expression with the matching bonnet/accessory set to compose the complete character.
 - 100% visual consistency must be maintained against these reference images.
 
 ### If NO Reference Images Can Be Found (fallback rules)
