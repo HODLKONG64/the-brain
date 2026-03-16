@@ -43,6 +43,15 @@ def _load_module(name: str, filepath: str):
 _update_detector = _load_module("update_detector", "update-detector.py")
 _wiki_updater = _load_module("wiki_updater", "wiki-updater.py")
 
+# Execution reporter
+try:
+    _execution_reporter_mod = _load_module("execution_reporter", "execution-reporter.py")
+    ExecutionReporter = _execution_reporter_mod.ExecutionReporter
+    print("[gk-brain] execution-reporter loaded.")
+except Exception as _e:
+    print(f"[gk-brain] execution-reporter unavailable ({_e}), reporting disabled.")
+    ExecutionReporter = None
+
 # Smart merger — preferred wiki update strategy (falls back to simple updater)
 try:
     _wiki_smart_merger = _load_module("wiki_smart_merger", "wiki-smart-merger.py")
@@ -932,7 +941,7 @@ def _calculate_telegram_split(total_lore: str) -> tuple:
     return part1, part2
 
 
-def post_to_telegram(lore1, image1, lore2, image2) -> None:
+def post_to_telegram(lore1, image1, lore2, image2) -> dict:
     """Post both lore entries to all configured Telegram channels.
 
     Message 1 — plain text only (up to 4 096 chars, no image).
@@ -940,6 +949,8 @@ def post_to_telegram(lore1, image1, lore2, image2) -> None:
 
     The combined lore is split intelligently at a natural paragraph or
     sentence boundary so neither message is truncated mid-sentence.
+
+    Returns a dict with posting metadata for the execution reporter.
     """
     if not TELEGRAM_BOT_TOKEN or not CHANNEL_CHAT_IDS:
         print("[telegram] Token or chat IDs not configured -- printing to stdout.")
@@ -947,17 +958,27 @@ def post_to_telegram(lore1, image1, lore2, image2) -> None:
         print(lore1)
         print("=== POST 2 ===")
         print(lore2)
-        return
+        return {}
 
     # Combine both lore parts and calculate an intelligent split
     combined_lore = lore1 + "\n\n" + lore2
     msg1_text, msg2_text = _calculate_telegram_split(combined_lore)
+
+    posting_info: dict = {
+        "msg1_text": msg1_text,
+        "msg2_text": msg2_text,
+        "msg1_status": "failed",
+        "msg2_status": "failed",
+        "msg2_has_image": bool(image2),
+        "image2_size_kb": round(len(image2) / 1024, 1) if image2 else 0.0,
+    }
 
     for chat_id in CHANNEL_CHAT_IDS:
         try:
             # Message 1: pure text — maximum lore space (_TG_MSG1_MAX chars)
             print(f"[telegram] Message 1: {len(msg1_text)} chars (max {_TG_MSG1_MAX}, no image)")
             _telegram_post("sendMessage", chat_id=chat_id, text=msg1_text)
+            posting_info["msg1_status"] = "success"
 
             time.sleep(2)
 
@@ -968,10 +989,13 @@ def post_to_telegram(lore1, image1, lore2, image2) -> None:
             else:
                 # No image available — send as plain text (full 4096-char limit applies)
                 _telegram_post("sendMessage", chat_id=chat_id, text=msg2_text)
+            posting_info["msg2_status"] = "success"
 
             print(f"[telegram] Posted to {chat_id} (smart split, no truncation)")
         except Exception as exc:
             print(f"[telegram] Error posting to {chat_id}: {exc}")
+
+    return posting_info
 
 
 # ---------------------------------------------------------------------------
@@ -1192,6 +1216,16 @@ def main() -> None:
 
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
+    # -- Initialise execution reporter --
+    reporter = None
+    if ExecutionReporter is not None:
+        try:
+            reporter = ExecutionReporter(
+                workflow_run_id=os.environ.get("GITHUB_RUN_ID")
+            )
+        except Exception as _rep_exc:
+            print(f"[reporter] Could not initialise reporter: {_rep_exc}")
+
     # -- Step 1: Seed genesis lore on first run --
     seed_genesis_lore()
 
@@ -1214,6 +1248,13 @@ def main() -> None:
         add_to_queue(updates)
     else:
         print("[gk-brain] No new updates detected.")
+
+    # Log updates to reporter
+    if reporter is not None:
+        try:
+            reporter.log_updates_found(updates)
+        except Exception as _rep_exc:
+            print(f"[reporter] log_updates_found failed: {_rep_exc}")
 
     # Filter out updates already used in previous cycles
     unused_updates = [u for u in updates if not u.get("used")]
@@ -1291,6 +1332,13 @@ def main() -> None:
 
     lore1, image_prompt1, lore2, image_prompt2 = best_lore_data  # type: ignore[misc]
 
+    # Log lore generation to reporter
+    if reporter is not None:
+        try:
+            reporter.log_lore_generated(lore1, lore2, image_prompt1, image_prompt2, rule_ctx)
+        except Exception as _rep_exc:
+            print(f"[reporter] log_lore_generated failed: {_rep_exc}")
+
     # -- Step 9: Generate images (50-fail graceful degradation) --
     print("[gk-brain] Generating images...")
     gender1 = _detect_character_gender(lore1)
@@ -1300,6 +1348,7 @@ def main() -> None:
 
     image1: bytes | None = None
     img_fail_counter_1 = 0
+    _img1_start = time.monotonic()
     while img_fail_counter_1 < IMAGE_MAX_FAILS:
         image1 = _grok_image(image_prompt1, reference_image=ref_image1)
         if image1 is not None:
@@ -1312,11 +1361,26 @@ def main() -> None:
         if img_fail_counter_1 < IMAGE_MAX_FAILS:
             sleep_secs = min(2 ** min(img_fail_counter_1, 5), 30)
             time.sleep(sleep_secs)
+    _img1_elapsed = time.monotonic() - _img1_start
     if img_fail_counter_1 >= IMAGE_MAX_FAILS:
         print(f"[image-gen] Post 1: all {IMAGE_MAX_FAILS} attempts failed — continuing text-only.")
+    if reporter is not None:
+        try:
+            reporter.log_image_generated(
+                post_num=1,
+                status="success" if image1 is not None else "failed",
+                attempts=img_fail_counter_1 + (1 if image1 is not None else 0),
+                prompt=image_prompt1,
+                image_bytes=image1,
+                generation_time_seconds=_img1_elapsed,
+                reference_image=f"{gender1}_set",
+            )
+        except Exception as _rep_exc:
+            print(f"[reporter] log_image_generated(1) failed: {_rep_exc}")
 
     image2: bytes | None = None
     img_fail_counter_2 = 0
+    _img2_start = time.monotonic()
     while img_fail_counter_2 < IMAGE_MAX_FAILS:
         image2 = _grok_image(image_prompt2, reference_image=ref_image2)
         if image2 is not None:
@@ -1328,12 +1392,53 @@ def main() -> None:
         if img_fail_counter_2 < IMAGE_MAX_FAILS:
             sleep_secs = min(2 ** min(img_fail_counter_2, 5), 30)
             time.sleep(sleep_secs)
+    _img2_elapsed = time.monotonic() - _img2_start
     if img_fail_counter_2 >= IMAGE_MAX_FAILS:
         print(f"[image-gen] Post 2: all {IMAGE_MAX_FAILS} attempts failed — continuing text-only.")
+    if reporter is not None:
+        try:
+            reporter.log_image_generated(
+                post_num=2,
+                status="success" if image2 is not None else "failed",
+                attempts=img_fail_counter_2 + (1 if image2 is not None else 0),
+                prompt=image_prompt2,
+                image_bytes=image2,
+                generation_time_seconds=_img2_elapsed,
+                reference_image=f"{gender2}_set",
+            )
+        except Exception as _rep_exc:
+            print(f"[reporter] log_image_generated(2) failed: {_rep_exc}")
 
     # -- Step 10: Post to Telegram --
     print("[gk-brain] Posting to Telegram...")
-    post_to_telegram(lore1, image1, lore2, image2)
+    telegram_info = post_to_telegram(lore1, image1, lore2, image2)
+
+    # Log Telegram posting to reporter
+    if reporter is not None and telegram_info:
+        try:
+            _now_iso = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+            reporter.log_telegram_posted(
+                message_num=1,
+                msg_type="text_only",
+                char_count=len(telegram_info.get("msg1_text", "")),
+                max_allowed=_TG_MSG1_MAX,
+                status=telegram_info.get("msg1_status", "unknown"),
+                chat_ids=CHANNEL_CHAT_IDS,
+                posted_at=_now_iso,
+            )
+            reporter.log_telegram_posted(
+                message_num=2,
+                msg_type="photo_with_caption" if telegram_info.get("msg2_has_image") else "text_only",
+                char_count=len(telegram_info.get("msg2_text", "")),
+                max_allowed=_TG_MSG2_MAX,
+                status=telegram_info.get("msg2_status", "unknown"),
+                chat_ids=CHANNEL_CHAT_IDS,
+                has_image=telegram_info.get("msg2_has_image", False),
+                image_size_kb=telegram_info.get("image2_size_kb", 0.0),
+                posted_at=_now_iso,
+            )
+        except Exception as _rep_exc:
+            print(f"[reporter] log_telegram_posted failed: {_rep_exc}")
 
     # -- Step 11: Save lore history --
     save_lore_history(lore1, lore2)
@@ -1356,21 +1461,56 @@ def main() -> None:
     if wiki_pending:
         print(f"[gk-brain] Updating wiki ({len(wiki_pending)} entries)...")
         smart_merge_succeeded = False
+        wiki_smart_count = 0
+        wiki_append_count = 0
+        wiki_failed_count = 0
         if _run_smart_wiki_updates is not None:
             try:
                 wiki_result = _run_smart_wiki_updates()
                 print(f"[gk-brain] Smart wiki merge result: {wiki_result}")
                 smart_merge_succeeded = True
+                wiki_smart_count = len(wiki_pending)
             except Exception as exc:
                 print(f"[gk-brain] Smart wiki merge failed ({exc}) — falling back to simple updater.")
         if not smart_merge_succeeded:
             try:
                 wiki_result = run_wiki_updates()
                 print(f"[gk-brain] Wiki update result: {wiki_result}")
+                wiki_append_count = len(wiki_pending)
             except Exception as exc:
                 print(f"[gk-brain] Wiki update failed: {exc}")
+                wiki_failed_count = len(wiki_pending)
+        if reporter is not None:
+            try:
+                wiki_entries = [
+                    {
+                        "type": u.get("type", ""),
+                        "title": u.get("title", ""),
+                        "wiki_section": u.get("wiki_section", u.get("category", "")),
+                        "status": "smart_merged" if smart_merge_succeeded else (
+                            "appended" if wiki_append_count > 0 else "failed"
+                        ),
+                        "timestamp": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
+                    }
+                    for u in wiki_pending
+                ]
+                reporter.log_wiki_updated(
+                    pending=len(wiki_pending),
+                    processed=len(wiki_pending) - wiki_failed_count,
+                    smart_merged=wiki_smart_count,
+                    appended=wiki_append_count,
+                    failed=wiki_failed_count,
+                    entries=wiki_entries,
+                )
+            except Exception as _rep_exc:
+                print(f"[reporter] log_wiki_updated failed: {_rep_exc}")
     else:
         print("[gk-brain] No wiki updates needed this cycle.")
+        if reporter is not None:
+            try:
+                reporter.log_wiki_updated(pending=0, processed=0)
+            except Exception as _rep_exc:
+                print(f"[reporter] log_wiki_updated failed: {_rep_exc}")
 
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()
@@ -1380,6 +1520,14 @@ def main() -> None:
         signal.alarm(0)
 
     print(f"[gk-brain] Cycle complete at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
+
+    # -- Step 14: Generate and save execution report --
+    if reporter is not None:
+        try:
+            reporter.finalize(status="SUCCESS")
+            reporter.generate_and_save()
+        except Exception as _rep_exc:
+            print(f"[reporter] generate_and_save failed: {_rep_exc}")
 
 
 if __name__ == "__main__":
