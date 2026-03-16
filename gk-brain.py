@@ -23,8 +23,6 @@ import re
 import json
 import time
 import datetime
-import signal
-import sys
 import traceback
 
 import requests
@@ -158,9 +156,6 @@ _GIRL_IMAGES = [
     os.path.join(_ASSETS_DIR, "bonnet_styles_females_set_2", "girlsimagesettwo.png"),
 ]
 
-# Stuck-agent timeout in seconds
-MAX_RUN_SECONDS = 300  # 5 minutes
-
 # Maximum lore/image generation attempts before using partial data and continuing
 LORE_MAX_FAILS = 50
 IMAGE_MAX_FAILS = 50
@@ -168,18 +163,6 @@ IMAGE_MAX_FAILS = 50
 # Minimum keyword hits required to classify a lore post as female-focused.
 # Two hits reduces false positives from incidental pronoun use.
 _FEMALE_DETECTION_THRESHOLD = 2
-
-
-# ---------------------------------------------------------------------------
-# Timeout / stuck-agent handling
-# ---------------------------------------------------------------------------
-
-def _handle_timeout(signum, frame):
-    """Called if the agent runs for more than MAX_RUN_SECONDS.
-    Logs the timeout and exits; never sends an 'AT THE DOCTORS' alert.
-    """
-    print("[gk-brain] TIMEOUT: agent exceeded 5 minutes. Exiting gracefully.")
-    sys.exit(1)
 
 
 def _telegram_post(method: str, **params) -> dict:
@@ -1090,11 +1073,6 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    # Set up stuck-agent timeout (Unix only; GitHub Actions runs on Linux)
-    if hasattr(signal, "SIGALRM"):
-        signal.signal(signal.SIGALRM, _handle_timeout)
-        signal.alarm(MAX_RUN_SECONDS)
-
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
     # -- Step 1: Seed genesis lore on first run --
@@ -1263,10 +1241,6 @@ def main() -> None:
 
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()
-
-    # Cancel the alarm
-    if hasattr(signal, "SIGALRM"):
-        signal.alarm(0)
 
     print(f"[gk-brain] Cycle complete at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
