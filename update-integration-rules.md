@@ -270,3 +270,17 @@ Format: `🔴 [GRAFFPUNKS NETWORK RADIO — LIVE] :: [artist hears alert]`
   checks for duplicate content, and inserts new data into the correct section.
 - Every run appends a log entry to `GK_BRAIN_Agent_Log` for full audit trail.
 - See `wiki-merge-rules.md` for the full category → section mapping and merge patterns.
+
+---
+
+## GODLIKE MODE
+
+### `(rule-godlike)` — Activate All 55 Systems
+- Engages all 55 integrated systems in the correct tier order.
+- Tier 1 (Data): validate → causal inference → knowledge graph → multi-source fusion → world state → anomaly detection → temporal alignment → source attribution → priority queue → deduplication.
+- Tier 2 (Planning): hierarchical plan → adaptive weights → theory of mind → constraints → symbolic reasoning → RL optimizer → transfer learning → uncertainty quantification.
+- Tier 3 (Character): memory bank → emotional state → skill levels → relationships → arc tracking → interpolation → personality → world bible → arc planner → memory references.
+- Tier 4 (Generation): emergent hooks → lore fusion → NPC dialogue → sentiment → style → tension curve → meta-narrative → gap filler → causal weaving → universe hints.
+- Tier 5 (QA): quality gate → contradiction check → ethical filter → source verify → coherence validate → plagiarism detect → consistency proof.
+- Tier 6 (Analytics): engagement track → performance metrics → learning feedback → recursive discovery → trend prediction → comparative analysis → debug report.
+- Tier 7 (Integration): multi-platform orchestrate → system health monitor.
