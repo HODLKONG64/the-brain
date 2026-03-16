@@ -574,11 +574,10 @@ def _load_reference_image(gender: str) -> bytes | None:
 
 def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | None:
     """
-    Generate an image via Grok / Aurora image generation API.
+    Generate an image via Grok Imagine image generation API.
 
-    When *reference_image* (raw PNG/JPEG bytes) is provided it is base64-encoded
-    and attached to the request so Aurora can anchor visual style and character
-    consistency to the supplied art reference.
+    Uses the model_xai-grok-imagine-image model for text-to-image generation.
+    When reference_image is provided, it is base64-encoded and passed as part of the request.
 
     Returns raw image bytes or None on failure.
     """
@@ -587,10 +586,10 @@ def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | No
         "Content-Type": "application/json",
     }
     payload: dict = {
-        "model": "aurora",
+        "model": "model_xai-grok-imagine-image",
         "prompt": prompt,
-        "n": 1,
-        "response_format": "url",
+        "numOutputs": 1,
+        "aspectRatio": "16:9",
     }
     if reference_image:
         payload["image"] = base64.b64encode(reference_image).decode("utf-8")
