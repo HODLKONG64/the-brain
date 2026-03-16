@@ -52,6 +52,15 @@ except Exception as _e:
     print(f"[gk-brain] wiki-smart-merger unavailable ({_e}), will use wiki-updater fallback.")
     _run_smart_wiki_updates = None
 
+# Cross-checker — compares saved data against wiki, filters to missing entries only
+try:
+    _wiki_cross_checker = _load_module("wiki_cross_checker", "wiki-cross-checker.py")
+    _cross_check_and_flag_missing = _wiki_cross_checker.cross_check_and_flag_missing
+    print("[gk-brain] wiki-cross-checker loaded.")
+except Exception as _e:
+    print(f"[gk-brain] wiki-cross-checker unavailable ({_e}), will skip cross-check.")
+    _cross_check_and_flag_missing = None
+
 detect_updates = _update_detector.detect_updates
 add_to_queue = _wiki_updater.add_to_queue
 run_wiki_updates = _wiki_updater.run_wiki_updates
@@ -1275,6 +1284,13 @@ def main() -> None:
 
     # -- Step 12: Wiki update (smart merge preferred, simple append fallback) --
     wiki_pending = [u for u in updates if u.get("wiki_update") and not u.get("wiki_done")]
+    if wiki_pending and _cross_check_and_flag_missing is not None:
+        print(f"[gk-brain] Cross-checking {len(wiki_pending)} entries against wiki...")
+        try:
+            wiki_pending = _cross_check_and_flag_missing()
+            print(f"[gk-brain] {len(wiki_pending)} updates missing from wiki — will process.")
+        except Exception as exc:
+            print(f"[gk-brain] Cross-check failed ({exc}) — proceeding with all pending updates.")
     if wiki_pending:
         print(f"[gk-brain] Updating wiki ({len(wiki_pending)} entries)...")
         smart_merge_succeeded = False
