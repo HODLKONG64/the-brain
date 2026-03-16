@@ -1188,7 +1188,8 @@ def main() -> None:
                     "GraffPunks style scene, UK urban environment, graffiti art.",
                 )
             if lore_fail_counter < LORE_MAX_FAILS:
-                time.sleep(min(2 ** min(lore_fail_counter, 5), 30))
+                sleep_secs = min(2 ** min(lore_fail_counter, 5), 30)
+                time.sleep(sleep_secs)
 
     if lore_fail_counter >= LORE_MAX_FAILS:
         print(f"[lore-gen] Completed lore after {LORE_MAX_FAILS} failures using partial data")
@@ -1214,7 +1215,8 @@ def main() -> None:
         if img_fail_counter_1 % 5 == 0:
             ref_image1 = _load_reference_image(gender1)
         if img_fail_counter_1 < IMAGE_MAX_FAILS:
-            time.sleep(min(2 ** min(img_fail_counter_1, 5), 30))
+            sleep_secs = min(2 ** min(img_fail_counter_1, 5), 30)
+            time.sleep(sleep_secs)
     if img_fail_counter_1 >= IMAGE_MAX_FAILS:
         print(f"[image-gen] Post 1: all {IMAGE_MAX_FAILS} attempts failed — continuing text-only.")
 
@@ -1229,7 +1231,8 @@ def main() -> None:
         if img_fail_counter_2 % 5 == 0:
             ref_image2 = _load_reference_image(gender2)
         if img_fail_counter_2 < IMAGE_MAX_FAILS:
-            time.sleep(min(2 ** min(img_fail_counter_2, 5), 30))
+            sleep_secs = min(2 ** min(img_fail_counter_2, 5), 30)
+            time.sleep(sleep_secs)
     if img_fail_counter_2 >= IMAGE_MAX_FAILS:
         print(f"[image-gen] Post 2: all {IMAGE_MAX_FAILS} attempts failed — continuing text-only.")
 

@@ -327,7 +327,7 @@ Task points are structured sub-tasks the agent **MUST** address in the generated
 - On subsequent runs: genesis seed is skipped (lore-history.md already populated).
 - This eliminates cold-start problems and activates all 55 systems from first click.
 
-**Genesis lore covers:**
+**Genesis lore covers (3,700+ words):**
 - Main characters: Alfie "Bitcoin KiD" Blaze, Jodie Zoom 2000, Sarah "Queen P-fly", Lady-INK
 - Clans: GraffPUNKS, HODL Warriors, Bald-Headed Moonboys (Sets 1 & 2), Bitcoin X Kids, Crowned Royal Moongirls
 - Factions: Elder Codex-7, NULL The Prophet, Council of Chains, The Mempool, DeFi Dragons, Art Insurgency, Dream Weavers
