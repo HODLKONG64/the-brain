@@ -246,14 +246,94 @@ Format: `🔴 [GRAFFPUNKS NETWORK RADIO — LIVE] :: [artist hears alert]`
 
 ### Stuck Agent Rule (>5 Minutes Without Output):
 - If the agent has not produced a Telegram post within 5 minutes of its scheduled run:
-  1. Send to Telegram: "AT THE DOCTORS, YOU WOULDN'T WANT TO SEE THIS :("
-  2. Log the error with timestamp.
-  3. Sleep until next 2-hour cycle.
-  4. On next wake: clear any partial state, restart fresh.
+  1. Log the timeout with timestamp.
+  2. Exit gracefully (no "AT THE DOCTORS" message).
+  3. On next wake: clear any partial state, restart fresh.
+
+### 50-Fail Graceful Degradation Rule (Lore Generation):
+- The agent **NEVER** exits mid-cycle due to lore generation errors.
+- Instead: increment a fail counter on each exception.
+- On each failure: preserve the best partial lore collected so far.
+- **At 50 consecutive failures:** Use partial/fallback lore compiled from collected context.
+- Log: `[lore-gen] Completed lore after 50 failures using partial data`
+- **Always post to Telegram** — never leave a cycle incomplete.
+
+```python
+# Lore generation with 50-fail graceful degradation
+fail_counter = 0
+best_lore = compile_fallback_from_context(block, rule_ctx)
+while fail_counter < 50:
+    try:
+        lore = generate_lore_with_all_task_points(...)
+        break  # success
+    except Exception as e:
+        fail_counter += 1
+        best_lore = compile_partial_lore_from_collected_data()
+if fail_counter >= 50:
+    lore = best_lore
+    print("[lore-gen] Completed after 50 failures")
+# Always post to Telegram
+post_to_telegram(lore, image)
+```
+
+### 50-Fail Graceful Degradation Rule (Image Generation):
+- Same 50-fail logic applies to image generation.
+- On failure: retry with different reference image.
+- At 50 failures: use last successful image (from previous cycle) OR text-only Telegram post.
+- **Image failure NEVER blocks the lore post** — Telegram post always goes out.
+
+### Old Rule (REMOVED — DO NOT USE):
+- ~~Send "AT THE DOCTORS, YOU WOULDN'T WANT TO SEE THIS :(" on lore generation failure~~
+- This behaviour has been removed. The agent now uses graceful degradation.
 
 ---
 
-## POST-TELEGRAM WIKI UPDATE FLOW
+## TASK POINTS EXECUTION RULE
+
+### `(rule-task-points)` — Execute All Calendar Task Points in Order
+Each calendar block in `lore-planner.md` now includes a **Task Points** column.
+Task points are structured sub-tasks the agent **MUST** address in the generated lore.
+
+**Format in lore-planner.md:**
+```
+| 06:00–08:00 | Mural-chase wake dream | (dream) (lady-ink) (monday-wake) | **1. Describe the mural location** \| **2. Lady-INK's role in dream** \| **3. Message/vision from dream** \| **4. Emotional state upon waking** |
+```
+
+**Execution pipeline:**
+1. ✅ Agent reads the current UTC block from the calendar.
+2. ✅ Agent extracts all rule tokens from the Rules column.
+3. ✅ Agent extracts all task points from the Task Points column (split on `\|`).
+4. ✅ Agent executes task points **in order** — each point is a narrative hook addressed in the lore.
+5. ✅ All task points are woven into the lore output naturally — not listed mechanically.
+6. ✅ Task point outcomes are saved to lore-history.md for continuity.
+
+**Rules for task point execution:**
+- Every task point listed must appear in the lore (Post 1 or Post 2).
+- Task points must be addressed **naturally** — they are hooks, not bullet points.
+- If a task point requires real data (weather, fishing news), the agent fetches it.
+- If data is unavailable, the agent invents a plausible, in-character response.
+- Task points from the previous block may be referenced for continuity.
+
+---
+
+## GENESIS LORE SEED RULE
+
+### `(rule-genesis-seed)` — First Run Lore Initialisation
+- On first run, if `lore-history.md` is empty or missing:
+  1. Load `genesis-lore.md` (Block Topia Genesis Narrative, 3,500+ words).
+  2. Write genesis lore into `lore-history.md` with a seed timestamp header.
+  3. All 55 systems now have immediate access to rich lore context.
+  4. Log: `[genesis] Seeded lore-history.md from genesis-lore.md.`
+- On subsequent runs: genesis seed is skipped (lore-history.md already populated).
+- This eliminates cold-start problems and activates all 55 systems from first click.
+
+**Genesis lore covers (3,700+ words):**
+- Main characters: Alfie "Bitcoin KiD" Blaze, Jodie Zoom 2000, Sarah "Queen P-fly", Lady-INK
+- Clans: GraffPUNKS, HODL Warriors, Bald-Headed Moonboys (Sets 1 & 2), Bitcoin X Kids, Crowned Royal Moongirls
+- Factions: Elder Codex-7, NULL The Prophet, Council of Chains, The Mempool, DeFi Dragons, Art Insurgency, Dream Weavers
+- World-building: Block Topia geography, six epochs (1980s→Year 3030), UK urban landscape
+
+---
 
 1. Telegram posts sent ✅
 2. Load `wiki-update-queue.json` for this cycle.

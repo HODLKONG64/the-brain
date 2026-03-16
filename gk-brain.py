@@ -145,6 +145,7 @@ MASTER_CANON_FILE = os.path.join(BASE_DIR, "MASTER-CHARACTER-CANON.md")
 LORE_PLANNER_FILE = os.path.join(BASE_DIR, "lore-planner.md")
 QUEUE_FILE = os.path.join(BASE_DIR, "wiki-update-queue.json")
 SNAPSHOT_FILE = os.path.join(BASE_DIR, "crawl-snapshot.json")
+GENESIS_LORE_FILE = os.path.join(BASE_DIR, "genesis-lore.md")
 
 # Reference art images (2 boys sets + 2 girls sets)
 _ASSETS_DIR = os.path.join(BASE_DIR, "assets", "layers")
@@ -160,6 +161,10 @@ _GIRL_IMAGES = [
 # Stuck-agent timeout in seconds
 MAX_RUN_SECONDS = 300  # 5 minutes
 
+# Maximum lore/image generation attempts before using partial data and continuing
+LORE_MAX_FAILS = 50
+IMAGE_MAX_FAILS = 50
+
 # Minimum keyword hits required to classify a lore post as female-focused.
 # Two hits reduces false positives from incidental pronoun use.
 _FEMALE_DETECTION_THRESHOLD = 2
@@ -170,9 +175,10 @@ _FEMALE_DETECTION_THRESHOLD = 2
 # ---------------------------------------------------------------------------
 
 def _handle_timeout(signum, frame):
-    """Called if the agent runs for more than MAX_RUN_SECONDS."""
-    print("[gk-brain] TIMEOUT: agent stuck for >5 minutes, sending alert and exiting.")
-    _send_telegram_alert("AT THE DOCTORS, YOU WOULDN'T WANT TO SEE THIS :(")
+    """Called if the agent runs for more than MAX_RUN_SECONDS.
+    Logs the timeout and exits; never sends an 'AT THE DOCTORS' alert.
+    """
+    print("[gk-brain] TIMEOUT: agent exceeded 5 minutes. Exiting gracefully.")
     sys.exit(1)
 
 
@@ -247,6 +253,38 @@ def load_lore_planner() -> str:
     return _read_file(LORE_PLANNER_FILE, "")
 
 
+def load_genesis_lore() -> str:
+    return _read_file(GENESIS_LORE_FILE, "")
+
+
+def seed_genesis_lore() -> None:
+    """
+    On first run, if lore-history.md is empty or missing, populate it from
+    genesis-lore.md so all 55 systems start with rich Block Topia lore context
+    instead of a cold-start placeholder.
+    """
+    existing = _read_file(LORE_HISTORY_FILE, "").strip()
+    if existing:
+        return  # Already has lore; nothing to seed
+
+    genesis = load_genesis_lore().strip()
+    if not genesis:
+        print("[genesis] genesis-lore.md not found or empty — skipping seed.")
+        return
+
+    now = datetime.datetime.now(datetime.UTC)
+    header = (
+        f"# Block Topia Genesis Lore — Seeded {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+        "<!-- This file was auto-seeded from genesis-lore.md on first run. -->\n\n"
+    )
+    try:
+        with open(LORE_HISTORY_FILE, "w", encoding="utf-8") as fh:
+            fh.write(header + genesis)
+        print("[genesis] Seeded lore-history.md from genesis-lore.md.")
+    except OSError as exc:
+        print(f"[genesis] Failed to seed lore-history.md: {exc}")
+
+
 # ---------------------------------------------------------------------------
 # Calendar / lore-planner parsing
 # ---------------------------------------------------------------------------
@@ -278,13 +316,14 @@ def get_current_block() -> dict:
     planner_text = load_lore_planner()
 
     # Parse lore-planner.md table rows matching this day
-    # Row format: | HH:MM–HH:MM | activity description | `(rule1)` `(rule2)` ... |
+    # Row format: | HH:MM–HH:MM | activity description | `(rule1)` `(rule2)` ... | task points |
     block = {
         "weekday": day_name,
         "start_hour": start_hour,
         "end_hour": end_hour,
         "activity": "Random day moment",
         "rules": ["(random)"],
+        "task_points": [],
     }
 
     in_day_section = False
@@ -299,9 +338,9 @@ def get_current_block() -> dict:
         if not in_day_section:
             continue
 
-        # Match table rows like: | 08:00–10:00 | activity | rules |
+        # Match table rows: | 08:00–10:00 | activity | rules | (optional task points) |
         m = re.match(
-            r"\|\s*(\d{2}):(\d{2})[–\-](\d{2}):(\d{2})\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|",
+            r"\|\s*(\d{2}):(\d{2})[–\-](\d{2}):(\d{2})\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|(?:\s*(.*?)\s*\|)?",
             line,
         )
         if not m:
@@ -311,11 +350,20 @@ def get_current_block() -> dict:
         row_end = int(m.group(3))
         activity_text = m.group(5)
         rules_text = m.group(6)
+        task_points_raw = m.group(7) or ""
 
         if row_start == start_hour and row_end == end_hour:
             rules = re.findall(r"\([a-z0-9_-]+\)", rules_text)
             block["activity"] = activity_text.strip()
             block["rules"] = rules if rules else ["(random)"]
+            # Parse task points: split on \| (escaped pipe inside table cell)
+            if task_points_raw.strip():
+                points = [
+                    re.sub(r"\*+", "", p).strip()
+                    for p in re.split(r"\s*\\\|\s*", task_points_raw)
+                    if p.strip()
+                ]
+                block["task_points"] = [p for p in points if p]
             break
 
     return block
@@ -346,6 +394,7 @@ def build_rule_context(block: dict) -> dict:
         "end_hour": block.get("end_hour", 2),
         "raw_rules": rules,
         "special": [],
+        "task_points": block.get("task_points", []),
     }
 
     for rule in rules:
@@ -580,6 +629,7 @@ def generate_lore_pair(
     character_bible: str,
     weather: str,
     substack_context: str,
+    godlike_context: str = "",
 ) -> tuple:
     """
     Generate two lore posts (text + image prompt) using Grok.
@@ -676,9 +726,21 @@ def generate_lore_pair(
         f"Time theme: {rule_ctx['time_theme']}\n"
         f"Calendar activity: {rule_ctx['activity']}\n\n"
         f"ACTIVITY CONTEXT:\n{activity_block}\n\n"
-        f"RECENT LORE HISTORY (last 7 days -- continue naturally from this):\n"
+        + (
+            "TASK POINTS (execute ALL of these in order — each point is a narrative hook "
+            "you must address in the lore):\n"
+            + "\n".join(
+                f"{i + 1}. {point}"
+                for i, point in enumerate(rule_ctx.get("task_points", []))
+            )
+            + "\n\n"
+            if rule_ctx.get("task_points")
+            else ""
+        )
+        + f"RECENT LORE HISTORY (last 7 days -- continue naturally from this):\n"
         f"{lore_history[-3000:]}\n\n"
         f"SUBSTACK CONTENT:\n{substack_context}\n\n"
+        + (f"GODLIKE SYSTEM CONTEXT:\n{godlike_context[:2000]}\n\n" if godlike_context else "")
         + (f"UPDATE CONTEXT:\n{update_context}\n\n" if update_context else "")
         + (f"RADIO ALERT TO USE:\n{radio_alert}\n\n" if radio_alert else "")
         + "INSTRUCTIONS:\n"
@@ -688,6 +750,7 @@ def generate_lore_pair(
         "- Be maximum length (rich, immersive text)\n"
         "- Be a direct continuation of the previous lore\n"
         "- Follow the calendar activity and time theme exactly\n"
+        "- Address ALL task points listed above — weave them into the narrative\n"
         "- Characters from different epochs (1980s vs Year 3009) must NOT appear in the "
         "  same post UNLESS this is a dream sequence\n"
         + (
@@ -1034,12 +1097,15 @@ def main() -> None:
 
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
-    # -- Step 1: Load all knowledge files --
+    # -- Step 1: Seed genesis lore on first run --
+    seed_genesis_lore()
+
+    # -- Step 2: Load all knowledge files --
     lore_history = load_lore_history()
     brain_rules = load_brain_rules()
     character_bible = load_character_bible()
 
-    # -- Step 2: Detect updates --
+    # -- Step 3: Detect updates --
     print("[gk-brain] Running update detector...")
     try:
         update_result = detect_updates()
@@ -1057,7 +1123,7 @@ def main() -> None:
     # Filter out updates already used in previous cycles
     unused_updates = [u for u in updates if not u.get("used")]
 
-    # -- Step 3 & 4: Calendar lookup + rule context --
+    # -- Step 4 & 5: Calendar lookup + rule context --
     block = get_current_block()
     rule_ctx = build_rule_context(block)
     print(
@@ -1065,45 +1131,110 @@ def main() -> None:
         f"{block['start_hour']:02d}:00-{block['end_hour']:02d}:00 UTC | "
         f"Rules: {block['rules']}"
     )
+    if block.get("task_points"):
+        print(f"[gk-brain] Task points ({len(block['task_points'])}): "
+              f"{block['task_points']}")
 
-    # -- Step 5: Weather --
+    # -- Step 6: Weather --
     weather = ""
     if rule_ctx["is_outside"]:
         weather = get_uk_weather()
         print(f"[gk-brain] Weather: {weather}")
 
-    # -- Step 6: Substack context --
+    # -- Step 7: Substack context --
     substack_context = crawl_substack_for_art_and_content()
 
     # -- Godlike: Run all 55 systems to enrich the prompt context --
     godlike_context = _run_godlike_systems(unused_updates, rule_ctx, lore_history)
 
-    # -- Step 7 & 8: Generate lore --
+    # -- Step 8: Generate lore (50-fail graceful degradation) --
     print("[gk-brain] Generating lore pair...")
-    try:
-        lore1, image_prompt1, lore2, image_prompt2 = generate_lore_pair(
-            rule_ctx=rule_ctx,
-            updates=unused_updates,
-            lore_history=lore_history,
-            brain_rules=brain_rules,
-            character_bible=character_bible,
-            weather=weather,
-            substack_context=substack_context,
-        )
-    except Exception as exc:
-        print(f"[gk-brain] Lore generation failed: {exc}")
-        traceback.print_exc()
-        _send_telegram_alert("AT THE DOCTORS, YOU WOULDN'T WANT TO SEE THIS :(")
-        sys.exit(1)
+    lore_fail_counter = 0
+    best_lore_data: tuple | None = None
+    lore1 = lore2 = image_prompt1 = image_prompt2 = ""
 
-    # -- Step 9: Generate images --
+    while lore_fail_counter < LORE_MAX_FAILS:
+        try:
+            lore1, image_prompt1, lore2, image_prompt2 = generate_lore_pair(
+                rule_ctx=rule_ctx,
+                updates=unused_updates,
+                lore_history=lore_history,
+                brain_rules=brain_rules,
+                character_bible=character_bible,
+                weather=weather,
+                substack_context=substack_context,
+                godlike_context=godlike_context,
+            )
+            best_lore_data = (lore1, image_prompt1, lore2, image_prompt2)
+            break
+        except Exception as exc:
+            lore_fail_counter += 1
+            print(f"[lore-gen] Attempt {lore_fail_counter}/{LORE_MAX_FAILS} failed: {exc}")
+            if not best_lore_data:
+                # Build a minimal fallback from collected context
+                now_str = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M UTC")
+                fallback_text = (
+                    f"{now_str} — GraffPunks Network Log Entry\n\n"
+                    f"[{block['weekday']} {block['start_hour']:02d}:00 UTC — "
+                    f"{rule_ctx['activity']}]\n\n"
+                    "The lore is being assembled from partial data. "
+                    "The block is active. The characters are present. "
+                    "The chain continues."
+                )
+                best_lore_data = (
+                    fallback_text,
+                    "GraffPunks style scene, UK urban environment, graffiti art.",
+                    fallback_text,
+                    "GraffPunks style scene, UK urban environment, graffiti art.",
+                )
+            if lore_fail_counter < LORE_MAX_FAILS:
+                sleep_secs = min(2 ** min(lore_fail_counter, 5), 30)
+                time.sleep(sleep_secs)
+
+    if lore_fail_counter >= LORE_MAX_FAILS:
+        print(f"[lore-gen] Completed lore after {LORE_MAX_FAILS} failures using partial data")
+
+    lore1, image_prompt1, lore2, image_prompt2 = best_lore_data  # type: ignore[misc]
+
+    # -- Step 9: Generate images (50-fail graceful degradation) --
     print("[gk-brain] Generating images...")
     gender1 = _detect_character_gender(lore1)
     gender2 = _detect_character_gender(lore2)
     ref_image1 = _load_reference_image(gender1)
     ref_image2 = _load_reference_image(gender2)
-    image1 = _grok_image(image_prompt1, reference_image=ref_image1)
-    image2 = _grok_image(image_prompt2, reference_image=ref_image2)
+
+    image1: bytes | None = None
+    img_fail_counter_1 = 0
+    while img_fail_counter_1 < IMAGE_MAX_FAILS:
+        image1 = _grok_image(image_prompt1, reference_image=ref_image1)
+        if image1 is not None:
+            break
+        img_fail_counter_1 += 1
+        print(f"[image-gen] Post 1 attempt {img_fail_counter_1}/{IMAGE_MAX_FAILS} failed.")
+        # Alternate reference image every 5 retries
+        if img_fail_counter_1 % 5 == 0:
+            ref_image1 = _load_reference_image(gender1)
+        if img_fail_counter_1 < IMAGE_MAX_FAILS:
+            sleep_secs = min(2 ** min(img_fail_counter_1, 5), 30)
+            time.sleep(sleep_secs)
+    if img_fail_counter_1 >= IMAGE_MAX_FAILS:
+        print(f"[image-gen] Post 1: all {IMAGE_MAX_FAILS} attempts failed — continuing text-only.")
+
+    image2: bytes | None = None
+    img_fail_counter_2 = 0
+    while img_fail_counter_2 < IMAGE_MAX_FAILS:
+        image2 = _grok_image(image_prompt2, reference_image=ref_image2)
+        if image2 is not None:
+            break
+        img_fail_counter_2 += 1
+        print(f"[image-gen] Post 2 attempt {img_fail_counter_2}/{IMAGE_MAX_FAILS} failed.")
+        if img_fail_counter_2 % 5 == 0:
+            ref_image2 = _load_reference_image(gender2)
+        if img_fail_counter_2 < IMAGE_MAX_FAILS:
+            sleep_secs = min(2 ** min(img_fail_counter_2, 5), 30)
+            time.sleep(sleep_secs)
+    if img_fail_counter_2 >= IMAGE_MAX_FAILS:
+        print(f"[image-gen] Post 2: all {IMAGE_MAX_FAILS} attempts failed — continuing text-only.")
 
     # -- Step 10: Post to Telegram --
     print("[gk-brain] Posting to Telegram...")
