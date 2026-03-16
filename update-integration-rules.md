@@ -55,14 +55,18 @@
 ### `(rule-wiki-smart)` — Intelligent Wiki Merge (Smart Layer)
 1. After **both** Telegram posts are sent successfully:
 2. Load `wiki-update-queue.json`.
-3. For each entry, run `wiki-smart-merger.py`:
+3. Run `wiki-cross-checker.py` to compare saved data against the wiki:
+   - Cross-check identifies updates missing from the wiki.
+   - Only genuinely missing/changed data is sent to the merger.
+4. For each missing entry, run `wiki-smart-merger.py`:
    - **Smart Merge (primary):** Read current wiki page → detect existing sections →
-     check whether this data is already present (duplicate guard) →
+     check whether this data is already present (URL, title+date, or content fingerprint) →
      if data is **missing**, insert it into the matching section (see `wiki-merge-rules.md`).
+   - Unknown update types go into the `Uncategorized Updates` section (no data loss).
    - **Simple Append (fallback / always):** Append a timestamped log entry to
      `GK_BRAIN_Agent_Log` regardless of smart merge outcome.
-4. Mark entry `"wiki_done": true` on success; retain for retry on failure.
-5. After all entries processed: delete `crawl-snapshot.json`.
+5. Mark entry `"wiki_done": true` on success; retain for retry on failure.
+6. After all entries processed: delete `crawl-snapshot.json`.
 
 #### Decision Tree for `(rule-wiki-smart)`
 
@@ -70,15 +74,28 @@
 New update detected?
         │
         ▼
-Is update type in SECTION_MAP?  ──── No ──► Simple append to main page + log entry
+Save ALL detected updates to wiki-update-queue.json (no keyword filtering)
         │
-       Yes
         ▼
-Does target section already contain this data?  ──── Yes ──► Log-only (no duplicate)
+Use KEY BITS for: lore, images, random thoughts, GraffPunks alerts, Telegram posts
+        │
+        ▼
+Run wiki-cross-checker.py: compare saved data vs Fandom wiki
+        │
+        ▼
+Is update already on wiki? (URL match / title+date / content fingerprint)
+        │
+       Yes ──► Log-only (no duplicate)
         │
         No
         ▼
-Smart merge: insert bullet into matching section  ──── Fails ──► Simple append fallback
+Is update type in SECTION_MAP?  ──── No ──► Insert into "Uncategorized Updates" section
+        │
+       Yes
+        ▼
+Smart merge: insert bullet with source attribution into matching section
+        │
+     Fails ──► Simple append fallback
         │
       Success
         ▼
@@ -86,13 +103,13 @@ Always: append audit log entry to GK_BRAIN_Agent_Log
 ```
 
 #### When to Use Simple vs Smart
-| Situation                              | Method        |
-|----------------------------------------|---------------|
-| Update type maps to a known section    | Smart merge   |
-| Update type is unknown / unclassified  | Simple append |
-| Smart merge raises an exception        | Simple append |
-| Data already present (duplicate guard) | Log-only      |
-| Agent log audit trail                  | Always append |
+| Situation                              | Method                              |
+|----------------------------------------|-------------------------------------|
+| Update type maps to a known section    | Smart merge → known section         |
+| Update type is unknown / unclassified  | Smart merge → Uncategorized Updates |
+| Smart merge raises an exception        | Simple append fallback              |
+| Data already present (duplicate guard) | Log-only                            |
+| Agent log audit trail                  | Always append                       |
 
 ---
 
@@ -347,8 +364,12 @@ Task points are structured sub-tasks the agent **MUST** address in the generated
 
 ### Smart Merger Summary
 - `wiki-smart-merger.py` reads the current wiki page, detects existing sections,
-  checks for duplicate content, and inserts new data into the correct section.
+  checks for duplicate content (by source URL, title+date, or content fingerprint),
+  and inserts new data into the correct section with full source attribution.
+- Unknown update types go into the `Uncategorized Updates` section — no data is lost.
 - Every run appends a log entry to `GK_BRAIN_Agent_Log` for full audit trail.
+- `wiki-cross-checker.py` compares the agent's saved data against the live wiki before
+  merging, ensuring only genuinely missing or changed data triggers wiki edits.
 - See `wiki-merge-rules.md` for the full category → section mapping and merge patterns.
 
 ---
