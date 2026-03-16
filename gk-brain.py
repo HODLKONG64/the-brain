@@ -26,6 +26,7 @@ import datetime
 import signal
 import sys
 import traceback
+import concurrent.futures
 
 import requests
 from bs4 import BeautifulSoup
@@ -135,6 +136,8 @@ CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
 GROK_API_BASE = "https://api.x.ai/v1"
+
+GODLIKE_MODULE_TIMEOUT = 10  # seconds per module
 
 # File paths
 BASE_DIR = os.path.dirname(__file__)
@@ -835,17 +838,24 @@ def cleanup_snapshot() -> None:
 # ---------------------------------------------------------------------------
 
 def _safe_call(mod, func_name: str, *args, **kwargs):
-    """Call mod.func_name safely; return None on any error."""
+    """Call mod.func_name safely with a per-module timeout; return None on any error or timeout."""
     if mod is None:
         return None
     fn = getattr(mod, func_name, None)
     if fn is None:
         return None
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
     try:
-        return fn(*args, **kwargs)
+        future = executor.submit(fn, *args, **kwargs)
+        return future.result(timeout=GODLIKE_MODULE_TIMEOUT)
+    except concurrent.futures.TimeoutError:
+        print(f"[godlike] {func_name} timed out after {GODLIKE_MODULE_TIMEOUT}s")
+        return None
     except Exception as exc:
         print(f"[godlike] {func_name} failed: {exc}")
         return None
+    finally:
+        executor.shutdown(wait=False)
 
 
 def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> str:
