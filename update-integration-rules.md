@@ -52,36 +52,47 @@
 6. On failure: log error, retain entry for next cycle retry.
 7. After all entries processed: delete `crawl-snapshot.json` (fresh start next cycle).
 
-### `(rule-wiki-smart)` — Intelligent Smart Merge Wiki Update (Preferred)
-Replaces `(rule-wiki)` as the primary wiki update strategy.
-Defined fully in `wiki-merge-rules.md`. Summary:
+### `(rule-wiki-smart)` — Intelligent Wiki Merge (Smart Layer)
+1. After **both** Telegram posts are sent successfully:
+2. Load `wiki-update-queue.json`.
+3. For each entry, run `wiki-smart-merger.py`:
+   - **Smart Merge (primary):** Read current wiki page → detect existing sections →
+     check whether this data is already present (duplicate guard) →
+     if data is **missing**, insert it into the matching section (see `wiki-merge-rules.md`).
+   - **Simple Append (fallback / always):** Append a timestamped log entry to
+     `GK_BRAIN_Agent_Log` regardless of smart merge outcome.
+4. Mark entry `"wiki_done": true` on success; retain for retry on failure.
+5. After all entries processed: delete `crawl-snapshot.json`.
 
-1. After **both** Telegram posts are sent successfully, call `wiki-smart-merger.py`.
-2. **Layer 1 — Smart Merge:**
-   - Read current wikitext of the main wiki page (`GKniftyHEADS_Wiki`).
-   - Parse existing `== Section ==` headings.
-   - Map the update category to its canonical section using the table in `wiki-merge-rules.md`.
-   - If the section exists: **prepend** the new entry at the top (newest first).
-   - If the section is missing: **create** it and append to the page.
-   - Write the updated page back via the MediaWiki API.
-3. **Layer 2 — Simple Append (audit trail, always runs):**
-   - Append one timestamped log line to `GK_BRAIN_Agent_Log` regardless of whether
-     the smart merge succeeded.
-4. **Sub-page creation:** Create a dedicated full-detail sub-page for every update at
-   `GK_BRAIN_Agent_Log/YYYY-MM-DD/<category>/<Title>`.
-5. **Fallback:** If `wiki-smart-merger.py` fails to import or errors out, automatically
-   fall back to `wiki-updater.py` simple-append behaviour.
-6. **Safety:** Never delete existing wiki content. One-time use enforced via
-   `"wiki_done": true` in `wiki-update-queue.json`.
+#### Decision Tree for `(rule-wiki-smart)`
 
-#### Category → Wiki Section Mapping
-| Detected Category | Wiki Section |
-|-------------------|--------------|
-| `gkdata-real` | GK & GraffPUNKS Official Updates |
-| `fishing-real` | Fishing Catches & Lake Adventures |
-| `graffiti-news-real` | Street Art & Graffiti News |
-| `news-real` | Crypto & Market News |
-| `rave-real` | Raves & DJ Events |
+```
+New update detected?
+        │
+        ▼
+Is update type in SECTION_MAP?  ──── No ──► Simple append to main page + log entry
+        │
+       Yes
+        ▼
+Does target section already contain this data?  ──── Yes ──► Log-only (no duplicate)
+        │
+        No
+        ▼
+Smart merge: insert bullet into matching section  ──── Fails ──► Simple append fallback
+        │
+      Success
+        ▼
+Always: append audit log entry to GK_BRAIN_Agent_Log
+```
+
+#### When to Use Simple vs Smart
+| Situation                              | Method        |
+|----------------------------------------|---------------|
+| Update type maps to a known section    | Smart merge   |
+| Update type is unknown / unclassified  | Simple append |
+| Smart merge raises an exception        | Simple append |
+| Data already present (duplicate guard) | Log-only      |
+| Agent log audit trail                  | Always append |
 
 ---
 
@@ -246,127 +257,30 @@ Format: `🔴 [GRAFFPUNKS NETWORK RADIO — LIVE] :: [artist hears alert]`
 
 1. Telegram posts sent ✅
 2. Load `wiki-update-queue.json` for this cycle.
-3. **Try `wiki-smart-merger.py` first** (`run_smart_wiki_updates()`):
-   - Smart-merge each update into the correct named section.
-   - Always append audit log entry regardless of merge outcome.
-4. **Fallback to `wiki-updater.py`** (`run_wiki_updates()`) if smart merger errors.
-5. Mark successfully processed entries `"wiki_done": true`.
+3. For each entry with `"wiki_update": true`:
+   - **Primary:** Call `wiki-smart-merger.py` — smart section merge + audit log.
+   - **Fallback:** If smart merger is unavailable, call `wiki-updater.py` (simple append).
+4. Mark entry `"wiki_done": true`.
+5. Delete processed entries from queue.
 6. Delete `crawl-snapshot.json` → fresh crawl next cycle.
 7. Sleep until next 2-hour cron ping.
 
+### Smart Merger Summary
+- `wiki-smart-merger.py` reads the current wiki page, detects existing sections,
+  checks for duplicate content, and inserts new data into the correct section.
+- Every run appends a log entry to `GK_BRAIN_Agent_Log` for full audit trail.
+- See `wiki-merge-rules.md` for the full category → section mapping and merge patterns.
+
 ---
 
-## HOW SAVED WEBSITE DATA FEEDS INTO LORE
+## GODLIKE MODE
 
-This section answers: *"Does the agent's rules tell it how to use saved new updated
-data from all sites (news, fishing, etc.) to build lore from all official saved
-websites listed in the GitHub files?"*
-
-**Yes.** Every URL in `gkandcryptomoonboywebsitestosave.md` is crawled by
-`update-detector.py` each cycle. When a page changes, the update is classified,
-saved to `wiki-update-queue.json`, and passed to the lore generator.
-
-### Complete Source-to-Lore Pipeline
-
-```
-gkandcryptomoonboywebsitestosave.md   (official URL list)
-          │
-          ▼
-update-detector.py                     (crawls all URLs, detects changes)
-          │
-          ├── Category: gkdata-real    → radio alert or 10% lore weave
-          ├── Category: news-real      → 5-10% lore weave
-          ├── Category: graffiti-news-real → 5-10% lore weave
-          ├── Category: fishing-real   → 5% lore mention (≥40 lb catch only)
-          └── Category: rave-real      → woven into (rave) block
-          │
-          ▼
-wiki-update-queue.json                 (saves all detected changes)
-          │
-          ▼
-gk-brain.py  generate_lore_pair()      (builds AI prompt with update context)
-          │
-          ▼
-Grok AI                                (generates lore with 5-10% real data)
-          │
-          ├── Telegram post (2 per cycle)
-          └── wiki-smart-merger.py     (updates wiki sections)
-```
-
-### Per-Category Lore Rules
-
-#### `gkdata-real` — Official GK / GraffPUNKS Data
-Sources: graffpunks.substack.com, graffpunks.live, gkniftyheads.com,
-graffitikings.co.uk, YouTube, Medium posts, NeftyBlocks, NFTHive, DappRadar,
-X/Twitter, collaborator sites (Charlie Buster, BoneIdoLink, Delicious Again Peter,
-TREEF Project, NoballGames, AI Chunks, Reddit).
-
-- **Major update** (new NFT drop, new collection, new project announcement):
-  → Format as GraffPUNKS Network Radio Alert:
-    `🔴 [GRAFFPUNKS NETWORK RADIO — ALERT] :: [summary in character voice]`
-- **Minor update** (new post, new image, page text change):
-  → Weave into **~10% of lore**: artist reads about it, hears about it, reacts.
-- Always mark as `"used": true` after one appearance.
-
-#### `news-real` — Crypto & Breaking News
-Sources: CoinDesk, CoinTelegraph, BeInCrypto, Decrypt, The Block,
-Bitcoin Magazine, CryptoSlate, Blockworks.
-
-- Extract the most relevant crypto, political, or street art story published
-  within the last 2 hours.
-- Weave into **~5-10% of lore**: natural character reaction
-  ("caught something on the news about…", "phone lit up with…").
-- Never exceed 10% of total lore text.
-- Always mark as used after one appearance.
-
-#### `graffiti-news-real` — Street Art & Graffiti News
-Sources: StreetArtNews, GraffitiStreet, GraffitiArtMagazine, ArrestedMotion.
-
-- Extract most recent street art story, contest, or artist feature.
-- Weave into **~5-10% of lore**: character hears about it from a mate, sees a clip
-  online, reads about it while waiting for a fishing bite.
-- Only use if change detected from last snapshot. Mark as used.
-
-#### `fishing-real` — UK Carp Fishing News
-Sources: BigCarp, Carpology, TotalCarp, CarpForum, FishingMagic, Angling Direct.
-
-- **Only use if:** extracted text contains a carp catch **≥40 lb** keyword match.
-- Weave into **~5% of lore** (maximum): overheard on the bank, read on phone,
-  seen on a forum post while packing up.
-- Example integration: "Saw on Carpology that someone banked a 52-pounder at
-  Redmire last night. Makes me think this swim might give up something similar."
-- Mark as used. Do not repeat.
-
-#### `rave-real` — UK Drum & Bass Events
-Sources: Resident Advisor, Ticketmaster, Skiddle.
-
-- Flag any new event or DJ booking in the next 30 days.
-- Weave naturally into any `(rave)` calendar block.
-- Use real venue name and real DJ names if available.
-- Activate `(live)` rule if GraffPUNKS Network Radio is live that night.
-
-#### `lady-ink-hint` — Lady-INK Trigger
-Monitored via `gkdata-real` sources using keyword matching
-(Lady-INK, female graffiti artist, street art muse).
-
-- If keyword match found: activate `(lady-ink)` rule for this cycle.
-- Lady-INK appears only in graffiti or dream blocks (see `(lady-ink)` rule above).
-
-### Integration Ratio Rules
-
-| Situation | Lore Composition |
-|-----------|-----------------|
-| Update detected (any category) | 5-10% update content + 90-95% calendar/character lore |
-| No updates detected | 100% calendar-driven lore |
-| Major `gkdata-real` update | Radio alert format (may exceed 10% if formatted as announcement) |
-
-### One-Time Use Rule
-- Each detected update is marked `"used": true` after it appears in **one** Telegram post.
-- The same update is **never** used again in future cycles.
-- `wiki-update-queue.json` is the single source of truth for used/unused updates.
-
-### Character Epoch Rule
-- Before generating lore, check all featured characters.
-- Characters from 1980s London **cannot** mix with Year 3009 Blocktopia characters
-  in the same lore post.
-- Exception: Dream sequences (all epochs can mix in surreal dream logic).
+### `(rule-godlike)` — Activate All 55 Systems
+- Engages all 55 integrated systems in the correct tier order.
+- Tier 1 (Data): validate → causal inference → knowledge graph → multi-source fusion → world state → anomaly detection → temporal alignment → source attribution → priority queue → deduplication.
+- Tier 2 (Planning): hierarchical plan → adaptive weights → theory of mind → constraints → symbolic reasoning → RL optimizer → transfer learning → uncertainty quantification.
+- Tier 3 (Character): memory bank → emotional state → skill levels → relationships → arc tracking → interpolation → personality → world bible → arc planner → memory references.
+- Tier 4 (Generation): emergent hooks → lore fusion → NPC dialogue → sentiment → style → tension curve → meta-narrative → gap filler → causal weaving → universe hints.
+- Tier 5 (QA): quality gate → contradiction check → ethical filter → source verify → coherence validate → plagiarism detect → consistency proof.
+- Tier 6 (Analytics): engagement track → performance metrics → learning feedback → recursive discovery → trend prediction → comparative analysis → debug report.
+- Tier 7 (Integration): multi-platform orchestrate → system health monitor.

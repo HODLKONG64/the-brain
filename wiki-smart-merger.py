@@ -1,63 +1,95 @@
 """
-wiki-smart-merger.py — Intelligent Wiki Merge System for GK BRAIN
+wiki-smart-merger.py — Smart Wiki Merge System for GK BRAIN
 
-Extends wiki-updater.py with smart section detection and targeted merging.
+Combines simple append logging (always reliable) with smart section merging
+(intelligent data detection and page updates).
 
-Behaviour per cycle:
-  1. SMART MERGE  — Read current wiki page, detect existing sections,
-                    insert/update the matching category section.
-  2. SIMPLE APPEND — Always append a timestamped log entry regardless of
-                     whether the smart merge succeeded (audit trail).
+Layer 1 — Simple (Always Works):
+    - Appends every agent run as a timestamped log entry.
+    - Never alters existing wiki structure.
+    - Used as fallback if smart merge fails.
 
-Called by gk-brain.py after Telegram posts are sent, as a drop-in
-replacement for (or alongside) wiki-updater.run_wiki_updates().
+Layer 2 — Smart (Enhanced):
+    - Reads current wiki page content.
+    - Detects existing sections via heading patterns.
+    - Compares new detected data against existing content.
+    - Identifies "missing" data by category (characters, locations, fishing
+      catches, NFT drops, art movements, raid/dream events).
+    - Inserts new items into the matching section; appends a new section when
+      none exists.
 
-Usage (from gk-brain.py):
+Hybrid approach:
+    - Primary : attempt smart merge for each detected update.
+    - Fallback : always append an agent-run log entry.
+    - Result  : wiki grows intelligently while staying safe.
+
+Usage (from gk-brain.py or standalone):
     from wiki_smart_merger import run_smart_wiki_updates
     run_smart_wiki_updates()
 """
 
+import datetime
 import json
 import os
 import re
-import datetime
 import time
 
 import requests
 
 # ---------------------------------------------------------------------------
-# Configuration  (mirrors wiki-updater.py)
+# Configuration
 # ---------------------------------------------------------------------------
 
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 
-WIKI_API = "https://gkniftyheads.fandom.com/api.php"
-FANDOM_USERNAME = os.environ.get("FANDOM_USERNAME", "")
-FANDOM_PASSWORD = os.environ.get("FANDOM_PASSWORD", "")
+WIKI_API = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/") + "/api.php"
+FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
+FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
 
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
-SMART_MERGE_LOG_PAGE = "GK_BRAIN_Smart_Merge_Log"
 
-# ---------------------------------------------------------------------------
-# Category → wiki section mapping
-# Every category detected in update-detector.py maps to a named wiki section.
-# ---------------------------------------------------------------------------
-
-CATEGORY_SECTION_MAP = {
-    "gkdata-real": "GK & GraffPUNKS Official Updates",
-    "fishing-real": "Fishing Catches & Lake Adventures",
-    "graffiti-news-real": "Street Art & Graffiti News",
-    "news-real": "Crypto & Market News",
-    "rave-real": "Raves & DJ Events",
+# Mapping: update type → wiki section heading (title-case, no '==' markers)
+SECTION_MAP: dict[str, str] = {
+    "fishing-real": "Fishing Records",
+    "fishing": "Fishing Records",
+    "graffiti-news-real": "Graffiti & Street Art",
+    "graffiti": "Graffiti & Street Art",
+    "gkdata-real": "NFT Drops & Collections",
+    "nft": "NFT Drops & Collections",
+    "rave-real": "Rave & Music Events",
+    "rave": "Rave & Music Events",
+    "news-real": "Latest News",
+    "character": "Characters",
+    "location": "Locations",
+    "art-movement": "Art Movements & Styles",
+    "dream": "Dream & Raid Events",
+    "raid": "Dream & Raid Events",
+    "lady-ink-hint": "Characters",
 }
 
-# Fallback section if category is unknown
-DEFAULT_SECTION = "Agent Updates"
+# Keywords used to scan existing section content for duplicate detection
+DUPLICATE_KEYWORDS: dict[str, list[str]] = {
+    "fishing-real": ["carp", "lb", "lake", "catch"],
+    "fishing": ["carp", "lake", "fishing"],
+    "graffiti-news-real": ["graffiti", "street art", "mural"],
+    "graffiti": ["graffiti", "tag", "spray"],
+    "gkdata-real": ["nft", "drop", "collection", "mint"],
+    "nft": ["nft", "drop", "collection"],
+    "rave-real": ["rave", "drum", "bass", "dj"],
+    "rave": ["rave", "drum", "bass"],
+    "news-real": ["news", "breaking"],
+    "character": [],
+    "location": [],
+    "art-movement": [],
+    "dream": ["dream", "raid"],
+    "raid": ["raid", "dream"],
+    "lady-ink-hint": ["lady-ink", "lady ink"],
+}
 
 
 # ---------------------------------------------------------------------------
-# MediaWiki API helpers  (same as wiki-updater.py)
+# MediaWiki API helpers (mirrors wiki-updater.py; kept self-contained)
 # ---------------------------------------------------------------------------
 
 def _get_login_token(session: requests.Session) -> str:
@@ -74,7 +106,7 @@ def _get_login_token(session: requests.Session) -> str:
 def _login(session: requests.Session) -> bool:
     """Log in to Fandom with bot credentials. Returns True on success."""
     if not FANDOM_USERNAME or not FANDOM_PASSWORD:
-        print("[wiki-smart-merger] FANDOM credentials not set — skipping wiki updates.")
+        print("[wiki-smart-merger] FANDOM credentials not set — skipping.")
         return False
 
     token = _get_login_token(session)
@@ -105,7 +137,7 @@ def _get_csrf_token(session: requests.Session) -> str:
 
 
 def _get_page_content(session: requests.Session, title: str) -> str:
-    """Fetch current wikitext content of a page (empty string if new page)."""
+    """Return current wikitext of a page, or empty string if the page is new."""
     resp = session.get(WIKI_API, params={
         "action": "query",
         "prop": "revisions",
@@ -129,7 +161,7 @@ def _edit_page(
     summary: str,
     csrf_token: str,
 ) -> bool:
-    """Edit (or create) a wiki page. Returns True on success."""
+    """Replace the full content of a wiki page. Returns True on success."""
     resp = session.post(WIKI_API, data={
         "action": "edit",
         "title": title,
@@ -154,111 +186,158 @@ def _append_to_page(
     summary: str,
     csrf_token: str,
 ) -> bool:
-    """Append a section to an existing page (or create if not exists)."""
+    """Append wikitext to the bottom of a page (simple layer). Returns True on success."""
     existing = _get_page_content(session, title)
     new_content = existing.strip() + "\n\n" + section_wikitext.strip() + "\n"
     return _edit_page(session, title, new_content, summary, csrf_token)
 
 
 # ---------------------------------------------------------------------------
-# Smart section detection + merge helpers
+# Section analysis helpers
 # ---------------------------------------------------------------------------
 
-def _parse_sections(wikitext: str) -> dict:
+def _parse_sections(wikitext: str) -> dict[str, str]:
     """
     Parse wikitext into a dict of {section_heading: section_body}.
-    Headings matched at == level 2 and === level 3.
-    Returns an ordered dict mapping heading text → body text.
+
+    Handles == Level 2 == headings only (top-level wiki sections).
+    Returns an ordered dict where key '' holds any pre-heading preamble.
     """
-    sections = {}
-    current_heading = "__PREAMBLE__"
-    current_lines = []
+    sections: dict[str, str] = {}
+    current_heading = ""
+    buffer: list[str] = []
 
     for line in wikitext.splitlines():
-        m = re.match(r"^(={2,3})\s*(.+?)\s*\1\s*$", line)
-        if m:
-            sections[current_heading] = "\n".join(current_lines)
-            current_heading = m.group(2).strip()
-            current_lines = []
+        match = re.match(r"^==\s*(.+?)\s*==\s*$", line)
+        if match:
+            sections[current_heading] = "\n".join(buffer)
+            current_heading = match.group(1)
+            buffer = []
         else:
-            current_lines.append(line)
+            buffer.append(line)
 
-    sections[current_heading] = "\n".join(current_lines)
+    sections[current_heading] = "\n".join(buffer)
     return sections
 
 
-def _rebuild_wikitext(sections: dict) -> str:
-    """Rebuild full wikitext from a parsed sections dict."""
-    parts = []
+def _rebuild_page(sections: dict[str, str]) -> str:
+    """Re-serialise a sections dict back to wikitext."""
+    parts: list[str] = []
     for heading, body in sections.items():
-        if heading == "__PREAMBLE__":
-            if body.strip():
-                parts.append(body.strip())
+        if heading == "":
+            parts.append(body)
         else:
             parts.append(f"== {heading} ==")
-            if body.strip():
-                parts.append(body.strip())
-    return "\n\n".join(parts) + "\n"
+            parts.append(body)
+    return "\n".join(parts).strip() + "\n"
 
 
-def _format_update_entry(update: dict, display_time: str) -> str:
-    """Format a single update as a wiki list entry."""
-    source = update.get("source", "")
-    title = update.get("title", "Update")
-    content = update.get("content", "")
-    update_type = update.get("type", "update").replace("-", " ").title()
-
-    source_line = f"* '''Source:''' [{source}]" if source else ""
-
-    lines = [
-        f"=== {title} ===",
-        f"''Detected: {display_time}''",
-        f"* '''Type:''' {update_type}",
-    ]
-    if source_line:
-        lines.append(source_line)
-    lines += [
-        "",
-        content[:500] if content else "",
-        "",
-        "----",
-    ]
-    return "\n".join(lines)
+def _section_contains(body: str, keywords: list[str]) -> bool:
+    """Return True if any keyword appears in body (case-insensitive)."""
+    lower = body.lower()
+    return any(kw.lower() in lower for kw in keywords)
 
 
-def _smart_merge_into_page(
-    session: requests.Session,
-    page_title: str,
-    section_heading: str,
-    new_entry_wikitext: str,
-    summary: str,
-    csrf_token: str,
-) -> bool:
+def _entry_already_present(body: str, update: dict) -> bool:
     """
-    Read the page, locate the target section (or create it), prepend the new
-    entry at the top of that section, and write the page back.
-
-    Returns True on success.
+    Heuristic: check whether this specific update already appears in a section.
+    Uses the update title and a subset of duplicate keywords.
     """
-    existing_wikitext = _get_page_content(session, page_title)
-    sections = _parse_sections(existing_wikitext)
-
-    if section_heading in sections:
-        # Section exists — prepend new entry after the heading
-        old_body = sections[section_heading].strip()
-        sections[section_heading] = new_entry_wikitext.strip() + (
-            ("\n\n" + old_body) if old_body else ""
-        )
-    else:
-        # Section missing — append it at the end
-        sections[section_heading] = new_entry_wikitext.strip()
-
-    new_wikitext = _rebuild_wikitext(sections)
-    return _edit_page(session, page_title, new_wikitext, summary, csrf_token)
+    title = update.get("title", "").lower()
+    if title and title in body.lower():
+        return True
+    content = update.get("content", "").lower()[:120]
+    if content and content in body.lower():
+        return True
+    return False
 
 
 # ---------------------------------------------------------------------------
-# Queue management  (mirrors wiki-updater.py)
+# Smart merge logic
+# ---------------------------------------------------------------------------
+
+def _format_update_bullet(update: dict, display_time: str) -> str:
+    """Format a single update as a wiki bullet point for insertion."""
+    update_type = update.get("type", "update").replace("-", " ").title()
+    source = update.get("source", "")
+    title = update.get("title", "Update")
+    content = update.get("content", "").strip()
+    source_link = f" ([{source} source])" if source else ""
+
+    lines = [
+        f"* '''{title}''' — {update_type} — {display_time}{source_link}",
+    ]
+    if content:
+        lines.append(f"  {content}")
+    return "\n".join(lines)
+
+
+def _smart_merge_update(
+    page_content: str,
+    update: dict,
+    display_time: str,
+) -> tuple[str, bool]:
+    """
+    Attempt to smart-merge one update into page_content.
+
+    Returns (new_page_content, merged_ok).
+    merged_ok is False when the update was already present or the type is unknown.
+    """
+    update_type = update.get("type", "")
+    target_section = SECTION_MAP.get(update_type)
+
+    if not target_section:
+        return page_content, False
+
+    sections = _parse_sections(page_content)
+
+    # Check whether update already exists anywhere on the page
+    if _entry_already_present(page_content, update):
+        print(
+            f"[wiki-smart-merger] '{update.get('title')}' already present — skipping smart merge."
+        )
+        return page_content, False
+
+    bullet = _format_update_bullet(update, display_time)
+
+    if target_section in sections:
+        # Insert bullet at the top of the existing section body
+        existing_body = sections[target_section]
+        sections[target_section] = bullet + "\n" + existing_body
+    else:
+        # Create new section at the end of the page
+        sections[target_section] = bullet + "\n"
+
+    return _rebuild_page(sections), True
+
+
+def _build_agent_log_entry(update: dict, display_time: str, merged: bool) -> str:
+    """Build the simple append log entry for the agent log page."""
+    sub_page = _sub_page_title(update)
+    merge_note = " ✅ smart-merged" if merged else " 📋 appended"
+    return (
+        f"* '''[[{sub_page}|{update.get('title', 'Update')}]]''' "
+        f"— {update.get('type', 'update')} — {display_time}{merge_note}"
+    )
+
+
+def _sub_page_title(update: dict) -> str:
+    """Generate a wiki sub-page title for a single update."""
+    ts = update.get("timestamp", "")
+    try:
+        dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        date_str = dt.strftime("%Y-%m-%d")
+    except Exception:
+        date_str = "undated"
+
+    raw_title = update.get("title", "Update")
+    safe_title = re.sub(r"[^A-Za-z0-9 _-]", "", raw_title)[:50].strip()
+    update_type = update.get("type", "update")
+    return f"GK_BRAIN_Agent_Log/{date_str}/{update_type}/{safe_title}"
+
+
+# ---------------------------------------------------------------------------
+# Queue management
 # ---------------------------------------------------------------------------
 
 def _load_queue() -> list:
@@ -284,13 +363,6 @@ def run_smart_wiki_updates() -> dict:
     """
     Process all pending wiki updates using the hybrid smart-merge + append strategy.
 
-    For every pending update:
-      1. SMART MERGE  — Insert the update into the correct category section
-                        on the main wiki page (creates section if missing).
-      2. SIMPLE APPEND — Always append a timestamped entry to the agent log
-                         (audit trail — never skipped).
-      3. SUB-PAGE     — Create a dedicated sub-page with the full update detail.
-
     Returns:
         {"smart_merged": int, "appended": int, "failed": int, "skipped": int}
     """
@@ -310,13 +382,15 @@ def run_smart_wiki_updates() -> dict:
         return {"smart_merged": 0, "appended": 0, "failed": len(pending), "skipped": 0}
 
     csrf_token = _get_csrf_token(session)
-    smart_merged = 0
-    appended = 0
-    failed = 0
+    smart_count = 0
+    append_count = 0
+    failed_count = 0
+
+    # Fetch the main wiki page once; update in-memory for each entry
+    main_page_content = _get_page_content(session, MAIN_WIKI_PAGE)
 
     for update in pending:
         try:
-            # --- Shared helpers ---
             ts = update.get("timestamp", "")
             try:
                 dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
@@ -324,145 +398,98 @@ def run_smart_wiki_updates() -> dict:
             except Exception:
                 display_time = ts
 
-            update_type = update.get("type", "update")
-            title = update.get("title", "Update")
-            source = update.get("source", "")
+            # --- Layer 2: Smart merge ---
+            merged = False
+            try:
+                new_main_content, merged = _smart_merge_update(
+                    main_page_content, update, display_time
+                )
+                if merged:
+                    ok_smart = _edit_page(
+                        session,
+                        MAIN_WIKI_PAGE,
+                        new_main_content,
+                        f"GK BRAIN smart-merge: {update.get('title', 'update')}",
+                        csrf_token,
+                    )
+                    if ok_smart:
+                        main_page_content = new_main_content
+                        smart_count += 1
+                        print(
+                            f"[wiki-smart-merger] Smart-merged '{update.get('title')}' "
+                            f"into section '{SECTION_MAP.get(update.get('type', ''))}'"
+                        )
+                    else:
+                        merged = False
+            except Exception as merge_exc:
+                print(
+                    f"[wiki-smart-merger] Smart merge failed for "
+                    f"'{update.get('title')}': {merge_exc} — falling back to append."
+                )
+                merged = False
 
-            # Derive the target wiki section from the update category
-            section_heading = CATEGORY_SECTION_MAP.get(update_type, DEFAULT_SECTION)
-
-            # --- 1. SMART MERGE into main wiki page ---
-            entry_wikitext = _format_update_entry(update, display_time)
-            merge_ok = _smart_merge_into_page(
-                session,
-                MAIN_WIKI_PAGE,
-                section_heading,
-                entry_wikitext,
-                f"GK BRAIN smart-merge: [{update_type}] {title}",
-                csrf_token,
-            )
-            if merge_ok:
-                smart_merged += 1
-                print(f"[wiki-smart-merger] Smart-merged into section '{section_heading}': {title}")
-            else:
-                print(f"[wiki-smart-merger] Smart merge failed for '{title}' — falling back to append.")
-
-            time.sleep(1)
-
-            # --- 2. SIMPLE APPEND to agent log (always runs) ---
-            log_entry = (
-                f"* '''[{update_type}]''' {title} "
-                f"— {display_time}"
-                + (f" — [{source} source]" if source else "")
-            )
-            append_ok = _append_to_page(
+            # --- Layer 1: Simple append (always runs as audit log) ---
+            log_entry = _build_agent_log_entry(update, display_time, merged)
+            ok_log = _append_to_page(
                 session,
                 AGENT_LOG_PAGE,
                 log_entry,
-                f"GK BRAIN log entry: {title}",
-                csrf_token,
-            )
-            if append_ok:
-                appended += 1
-
-            time.sleep(1)
-
-            # --- 3. SUB-PAGE — full detail page for this update ---
-            sub_page = _sub_page_title(update)
-            sub_wikitext = _full_update_wikitext(update, display_time)
-            _edit_page(
-                session,
-                sub_page,
-                sub_wikitext,
-                f"GK BRAIN auto-update: {title}",
+                "GK BRAIN auto-log entry",
                 csrf_token,
             )
 
-            time.sleep(1)
+            # If smart merge did not fire, also append a brief entry to the main page
+            if not merged:
+                fallback_entry = (
+                    f"\n== Latest Agent Update ==\n"
+                    f"'''[[{_sub_page_title(update)}|{update.get('title', 'Update')}]]''' "
+                    f"detected on {display_time}. "
+                    f"Type: {update.get('type', 'update')}.\n"
+                )
+                ok_fallback = _append_to_page(
+                    session,
+                    MAIN_WIKI_PAGE,
+                    fallback_entry,
+                    "GK BRAIN: latest update (fallback append)",
+                    csrf_token,
+                )
+                # Re-read main page so next iteration has fresh content
+                main_page_content = _get_page_content(session, MAIN_WIKI_PAGE)
 
-            # --- 4. Smart merge log entry ---
-            merge_status = "✅ smart-merged" if merge_ok else "⚠️ append-only"
-            merge_log = (
-                f"* {display_time} — [{update_type}] {title} — {merge_status}"
-            )
-            _append_to_page(
-                session,
-                SMART_MERGE_LOG_PAGE,
-                merge_log,
-                "GK BRAIN smart-merge log",
-                csrf_token,
-            )
-
-            if merge_ok or append_ok:
-                update["wiki_done"] = True
+                if ok_fallback and ok_log:
+                    append_count += 1
+                    update["wiki_done"] = True
+                else:
+                    failed_count += 1
             else:
-                failed += 1
+                if ok_log:
+                    update["wiki_done"] = True
+                else:
+                    failed_count += 1
 
         except Exception as exc:
-            print(f"[wiki-smart-merger] Error processing '{update.get('title')}': {exc}")
-            failed += 1
+            print(
+                f"[wiki-smart-merger] Error processing "
+                f"'{update.get('title')}': {exc}"
+            )
+            failed_count += 1
 
+        # Polite rate limit
         time.sleep(2)
 
     _save_queue(queue)
 
     print(
-        f"[wiki-smart-merger] Done — smart_merged={smart_merged}, "
-        f"appended={appended}, failed={failed}, skipped={len(queue) - len(pending)}"
+        f"[wiki-smart-merger] Done — "
+        f"smart_merged={smart_count}, appended={append_count}, "
+        f"failed={failed_count}, skipped={len(queue) - len(pending)}"
     )
     return {
-        "smart_merged": smart_merged,
-        "appended": appended,
-        "failed": failed,
+        "smart_merged": smart_count,
+        "appended": append_count,
+        "failed": failed_count,
         "skipped": len(queue) - len(pending),
     }
-
-
-# ---------------------------------------------------------------------------
-# Wikitext formatting helpers
-# ---------------------------------------------------------------------------
-
-def _sub_page_title(update: dict) -> str:
-    """Generate a wiki sub-page title for a single update."""
-    ts = update.get("timestamp", "")
-    try:
-        dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        date_str = dt.strftime("%Y-%m-%d")
-    except Exception:
-        date_str = "undated"
-
-    raw_title = update.get("title", "Update")
-    safe_title = re.sub(r"[^A-Za-z0-9 _-]", "", raw_title)[:50].strip()
-    update_type = update.get("type", "update")
-    return f"GK_BRAIN_Agent_Log/{date_str}/{update_type}/{safe_title}"
-
-
-def _full_update_wikitext(update: dict, display_time: str) -> str:
-    """Build a complete wiki sub-page for a single update."""
-    source = update.get("source", "")
-    title = update.get("title", "Update")
-    content = update.get("content", "")
-    update_type = update.get("type", "update").replace("-", " ").title()
-    section_heading = CATEGORY_SECTION_MAP.get(update.get("type", ""), DEFAULT_SECTION)
-
-    lines = [
-        f"= {title} =",
-        f"''Detected by GK BRAIN on {display_time}''",
-        "",
-        "== Details ==",
-        f"* '''Type:''' {update_type}",
-        f"* '''Category section:''' {section_heading}",
-        f"* '''Lore weight:''' {update.get('lore_weight', 0.05) * 100:.0f}% of lore",
-        "",
-        "== Content ==",
-        content if content else "''(No content extracted)''",
-        "",
-        "[[Category:GK BRAIN Agent Log]]",
-        f"[[Category:{update_type}]]",
-    ]
-    if source:
-        lines.insert(6, f"* '''Source:''' [{source}]")
-    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
