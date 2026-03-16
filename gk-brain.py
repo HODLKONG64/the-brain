@@ -28,12 +28,27 @@ import traceback
 import requests
 from bs4 import BeautifulSoup
 
-# ── Optional Telegram import ───────────────────────────────────────────────
-try:
-    import telegram  # python-telegram-bot
-    TELEGRAM_AVAILABLE = True
-except ImportError:
-    TELEGRAM_AVAILABLE = False
+def _telegram_api(method: str, files: dict | None = None, **kwargs) -> dict:
+    """
+    Call a Telegram Bot API method via direct HTTP POST. Returns parsed JSON.
+
+    Pass ``files`` for multipart uploads (e.g. raw photo bytes); otherwise all
+    kwargs are sent as a JSON body.
+    """
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/{method}"
+    try:
+        if files:
+            resp = requests.post(url, data=kwargs, files=files, timeout=60)
+        else:
+            resp = requests.post(url, json=kwargs, timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.HTTPError as exc:
+        print(f"[telegram] {method} HTTP error {exc.response.status_code}: {exc.response.text[:200]}...")
+        return {}
+    except Exception as exc:
+        print(f"[telegram] {method} error: {exc}")
+        return {}
 
 # ── Local modules (loaded via importlib because filenames contain dashes) ──
 import importlib.util as _ilu
@@ -91,13 +106,12 @@ def _handle_timeout(signum, frame):
 
 def _send_telegram_alert(message: str) -> None:
     """Send a plain text Telegram message to all channels (best effort)."""
-    if not TELEGRAM_AVAILABLE or not TELEGRAM_BOT_TOKEN:
+    if not TELEGRAM_BOT_TOKEN:
         print(f"[ALERT] {message}")
         return
-    bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
     for chat_id in CHANNEL_CHAT_IDS:
         try:
-            bot.send_message(chat_id=chat_id, text=message)
+            _telegram_api("sendMessage", chat_id=chat_id, text=message)
         except Exception as exc:
             print(f"[telegram] Failed to send alert to {chat_id}: {exc}")
 
@@ -151,7 +165,7 @@ def get_current_block() -> dict:
             "rules": list[str],     # e.g. ["(morning)", "(fishing)", "(outside)"]
         }
     """
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     # ISO weekday: 1=Monday … 7=Sunday
     iso_day = now.isoweekday()
     day_names = {1: "MONDAY", 2: "TUESDAY", 3: "WEDNESDAY",
@@ -427,7 +441,7 @@ def generate_lore_pair(
 
     Returns: (lore_text_1, image_prompt_1, lore_text_2, image_prompt_2)
     """
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
 
@@ -598,7 +612,7 @@ def generate_lore_pair(
 
 def save_lore_history(post1: str, post2: str) -> None:
     """Append today's lore posts to lore-history.md (keeps last 7 days)."""
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     separator = f"\n\n---\n## {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
 
     existing = _read_file(LORE_HISTORY_FILE, "")
@@ -619,35 +633,45 @@ def save_lore_history(post1: str, post2: str) -> None:
 # Telegram posting
 # ---------------------------------------------------------------------------
 
+def _send_photo(chat_id: str, image: bytes | str) -> dict:
+    """
+    Send a photo to a Telegram chat.
+
+    If ``image`` is bytes (raw image data), upload via multipart/form-data.
+    If ``image`` is a string (URL or file_id), pass it as a JSON field.
+    """
+    if isinstance(image, bytes):
+        return _telegram_api(
+            "sendPhoto",
+            files={"photo": ("photo", image, "application/octet-stream")},
+            chat_id=chat_id,
+        )
+    return _telegram_api("sendPhoto", chat_id=chat_id, photo=image)
+
+
 def post_to_telegram(lore1, image1, lore2, image2) -> None:
     """Post both lore entries to all configured Telegram channels."""
-    if not TELEGRAM_AVAILABLE:
-        print("[telegram] python-telegram-bot not available -- printing to stdout.")
+    if not TELEGRAM_BOT_TOKEN or not CHANNEL_CHAT_IDS:
+        print("[telegram] Token or chat IDs not configured -- printing to stdout.")
         print("=== POST 1 ===")
         print(lore1)
         print("=== POST 2 ===")
         print(lore2)
         return
 
-    if not TELEGRAM_BOT_TOKEN or not CHANNEL_CHAT_IDS:
-        print("[telegram] Token or chat IDs not configured.")
-        return
-
-    bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
-
     for chat_id in CHANNEL_CHAT_IDS:
         try:
             # Post 1
-            bot.send_message(chat_id=chat_id, text=lore1)
+            _telegram_api("sendMessage", chat_id=chat_id, text=lore1)
             if image1:
-                bot.send_photo(chat_id=chat_id, photo=image1)
+                _send_photo(chat_id, image1)
 
             time.sleep(2)
 
             # Post 2
-            bot.send_message(chat_id=chat_id, text=lore2)
+            _telegram_api("sendMessage", chat_id=chat_id, text=lore2)
             if image2:
-                bot.send_photo(chat_id=chat_id, photo=image2)
+                _send_photo(chat_id, image2)
 
             print(f"[telegram] Posted to {chat_id}")
         except Exception as exc:
@@ -669,6 +693,55 @@ def cleanup_snapshot() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Bot profile update
+# ---------------------------------------------------------------------------
+
+# GK BRAIN Telegram bot profile content
+_BOT_NAME = "GK BRAIN"
+_BOT_DESCRIPTION = (
+    "GK BRAIN is the autonomous mind-log of a UK graffiti artist, DJ, parkour "
+    "athlete, carp fisherman, and Web3 entrepreneur building the Crypto Moonboys "
+    "NFT project. Every 2 hours I post a fresh chapter of the GraffPunks saga — "
+    "real-time lore, dream sequences, rave dispatches, and street art chronicles "
+    "woven into a continuous 24/7 narrative."
+)
+_BOT_SHORT_DESCRIPTION = (
+    "Autonomous 24/7 lore engine for the Crypto Moonboys / GraffPunks universe. "
+    "New posts every 2 hours."
+)
+
+
+def update_bot_profile() -> None:
+    """
+    Update the bot's Telegram profile: name, description, and short description.
+
+    Uses the Bot API setMyName / setMyDescription / setMyShortDescription methods.
+    Telegram silently no-ops these calls when the value is already current, so
+    calling them every cycle is safe and ensures the profile is always correct
+    after any manual BotFather edits or secret rotations.
+    """
+    if not TELEGRAM_BOT_TOKEN:
+        print("[profile] No bot token — skipping profile update.")
+        return
+
+    endpoints = [
+        ("setMyName",             {"name": _BOT_NAME}),
+        ("setMyDescription",      {"description": _BOT_DESCRIPTION}),
+        ("setMyShortDescription", {"short_description": _BOT_SHORT_DESCRIPTION}),
+    ]
+
+    for method, payload in endpoints:
+        try:
+            result = _telegram_api(method, **payload)
+            if result.get("ok"):
+                print(f"[profile] {method} ✓")
+            else:
+                print(f"[profile] {method} failed: {result.get('description', result)}")
+        except Exception as exc:
+            print(f"[profile] {method} error: {exc}")
+
+
+# ---------------------------------------------------------------------------
 # Main orchestration
 # ---------------------------------------------------------------------------
 
@@ -678,7 +751,10 @@ def main() -> None:
         signal.signal(signal.SIGALRM, _handle_timeout)
         signal.alarm(MAX_RUN_SECONDS)
 
-    print(f"[gk-brain] Starting at {datetime.datetime.utcnow().isoformat()} UTC")
+    print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
+
+    # -- Step 0: Update bot profile --
+    update_bot_profile()
 
     # -- Step 1: Load all knowledge files --
     lore_history = load_lore_history()
@@ -776,7 +852,7 @@ def main() -> None:
     if hasattr(signal, "SIGALRM"):
         signal.alarm(0)
 
-    print(f"[gk-brain] Cycle complete at {datetime.datetime.utcnow().isoformat()} UTC")
+    print(f"[gk-brain] Cycle complete at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
 
 if __name__ == "__main__":
