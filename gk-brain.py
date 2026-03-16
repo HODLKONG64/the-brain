@@ -48,6 +48,15 @@ def _load_module(name: str, filepath: str):
 _update_detector = _load_module("update_detector", "update-detector.py")
 _wiki_updater = _load_module("wiki_updater", "wiki-updater.py")
 
+# Smart merger — preferred wiki update strategy (falls back to simple updater)
+try:
+    _wiki_smart_merger = _load_module("wiki_smart_merger", "wiki-smart-merger.py")
+    _run_smart_wiki_updates = _wiki_smart_merger.run_smart_wiki_updates
+    print("[gk-brain] wiki-smart-merger loaded.")
+except Exception as _e:
+    print(f"[gk-brain] wiki-smart-merger unavailable ({_e}), will use wiki-updater fallback.")
+    _run_smart_wiki_updates = None
+
 detect_updates = _update_detector.detect_updates
 add_to_queue = _wiki_updater.add_to_queue
 run_wiki_updates = _wiki_updater.run_wiki_updates
@@ -757,15 +766,24 @@ def main() -> None:
     if unused_updates:
         persist_queue_updates(unused_updates)
 
-    # -- Step 12: Wiki update --
+    # -- Step 12: Wiki update (smart merge preferred, simple append fallback) --
     wiki_pending = [u for u in updates if u.get("wiki_update") and not u.get("wiki_done")]
     if wiki_pending:
         print(f"[gk-brain] Updating wiki ({len(wiki_pending)} entries)...")
-        try:
-            wiki_result = run_wiki_updates()
-            print(f"[gk-brain] Wiki update result: {wiki_result}")
-        except Exception as exc:
-            print(f"[gk-brain] Wiki update failed: {exc}")
+        smart_merge_succeeded = False
+        if _run_smart_wiki_updates is not None:
+            try:
+                wiki_result = _run_smart_wiki_updates()
+                print(f"[gk-brain] Smart wiki merge result: {wiki_result}")
+                smart_merge_succeeded = True
+            except Exception as exc:
+                print(f"[gk-brain] Smart wiki merge failed ({exc}) — falling back to simple updater.")
+        if not smart_merge_succeeded:
+            try:
+                wiki_result = run_wiki_updates()
+                print(f"[gk-brain] Wiki update result: {wiki_result}")
+            except Exception as exc:
+                print(f"[gk-brain] Wiki update failed: {exc}")
     else:
         print("[gk-brain] No wiki updates needed this cycle.")
 
