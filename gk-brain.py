@@ -604,7 +604,7 @@ def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | No
         payload["image"] = base64.b64encode(reference_image).decode("utf-8")
     try:
         resp = requests.post(
-            f"{GROK_API_BASE}/images/generations",
+            f"{GROK_API_BASE}/image/generations",
             headers=headers,
             json=payload,
             timeout=120,
