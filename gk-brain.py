@@ -585,7 +585,7 @@ def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | No
     """
     Generate an image via Grok Imagine image generation API.
 
-    Uses the model_xai-grok-imagine-image model for text-to-image generation.
+    Uses the grok-imagine-image model for text-to-image generation.
     When reference_image is provided, it is base64-encoded and passed as part of the request.
 
     Returns raw image bytes or None on failure.
@@ -595,16 +595,16 @@ def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | No
         "Content-Type": "application/json",
     }
     payload: dict = {
-        "model": "model_xai-grok-imagine-image",
+        "model": "grok-imagine-image",
         "prompt": prompt,
-        "numOutputs": 1,
-        "aspectRatio": "16:9",
+        "n": 1,
+        "response_format": "url",
     }
     if reference_image:
         payload["image"] = base64.b64encode(reference_image).decode("utf-8")
     try:
         resp = requests.post(
-            f"{GROK_API_BASE}/image/generations",
+            f"{GROK_API_BASE}/images/generations",
             headers=headers,
             json=payload,
             timeout=120,
