@@ -6,7 +6,7 @@
 
 ### Character Image Sets (New 4-File System)
 
-The brand uses four dedicated image files as the authoritative visual references. These replace the old single Layer 1 / Layer 2 system (`template_kid_4.png` / `graffpunks_bonnet_layer_2.png` are no longer used):
+The brand uses four dedicated image files as the authoritative visual references:
 
 | File | Path | Purpose |
 |------|------|---------|
