@@ -7,6 +7,8 @@ on:
 jobs:
   gk-brain:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -14,10 +16,12 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install openai python-telegram-bot requests beautifulsoup4
+        run: pip install requests beautifulsoup4
       - name: Run GK BRAIN
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
           CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
+          FANDOM_USERNAME: ${{ secrets.FANDOM_USERNAME }}
+          FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
         run: python gk-brain.py
