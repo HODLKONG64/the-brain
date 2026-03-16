@@ -1,4 +1,39 @@
+# Crawl snapshots and temp data (never commit these)
+crawl-snapshot.json
+crawl-data/
+wiki-update-queue.json
+
+# Python
 __pycache__/
-bot-state.json
-lore-history.md
-reply-tracker.json
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

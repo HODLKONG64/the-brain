@@ -1,466 +1,175 @@
-# GK BRAIN — 30-DAY LORE PLANNER
-## March 14 – April 12, 2026
-**Locked from all chats. The agent spins off from these 2-hour slots into the actual posts, continuing from the last 7 days of awake life in lore-history.md. Lady-INK meets are ONLY on painting nights. All UTC times.**
+# LORE PLANNER — 7-Day Repeating Calendar
+# 12 × 2-hour blocks per day (00:00–24:00 UTC)
+# Each block tells the agent what the artist persona is doing.
+# Rules in parentheses are activity/modifier tokens.
+# This calendar repeats infinitely every 7 days.
 
 ---
 
-## MARCH 2026
+## MONDAY
 
-### Day 1 — March 14 (Saturday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave recovery + random moment (smells fresh graffiti somewhere) |
-| 02:00–04:00 | Early-sleep chance + Lady-INK hint #1 (brings hot tea) |
-| 06:00–08:00 | Burnt toast morning + parkour at Southbank (rain makes jumps slippery) |
-| 08:00–10:00 | Fishing at Thames (river mud smell) |
-| 10:00–12:00 | Live GraffPunks alert (new Substack drop) + random £2 coin find |
-| 12:00–14:00 | Van tour prep + news reaction (crypto market dip) |
-| 14:00–16:00 | Painting night start + Lady-INK meet (ice lollies in spring) |
-| 16:00–18:00 | Graffiti tag session (sudden rain ruins a tag) |
-| 18:00–20:00 | Raving prep + DJ playlist testing |
-| 20:00–22:00 | Weekend raving + Lady-INK steals cap |
-| 22:00–00:00 | **DREAM** — Moonboys-only (rotate 2 characters) |
-
-### Day 2 — March 15 (Sunday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave recovery + random moment (pollen sneeze mid-climb) |
-| 02:00–04:00 | Early-sleep chance |
-| 06:00–08:00 | Burnt toast + fishing bite |
-| 08:00–10:00 | Parkour at Leake Street Tunnel |
-| 10:00–12:00 | Live GraffPunks alert + Greggs run |
-| 12:00–14:00 | Van tour planning + news (graffiti street news) |
-| 14:00–16:00 | Painting night + Lady-INK hint #2 (waterproof paint in rain) |
-| 16:00–18:00 | Tag session (childhood memory while staring at river) |
-| 18:00–20:00 | Weekend raving mix |
-| 20:00–22:00 | Fishing evening |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 3 — March 16 (Monday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00 UTC | **DREAM** — Repeating unfinished mural chase + "what the hell? why?" wake-up |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Creative block + heavy writing |
-| 10:00–12:00 | Live GraffPunks alert + market crash reaction |
-| 12:00–14:00 | Shoelace issue + random moment |
-| 14:00–16:00 | Normal day habits (London transport delay) |
-| 16:00–18:00 | News reaction (political/graffiti news) |
-| 18:00–20:00 | Fishing evening |
-| 20:00–22:00 | Rave playlist testing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 4 — March 17 (Tuesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing morning |
-| 10:00–12:00 | Van tour prep + live alert |
-| 12:00–14:00 | News + random moment |
-| 14:00–16:00 | Normal day habits |
-| 16:00–18:00 | Lady-INK meet (3 hours before painting) |
-| 18:00–20:00 | Painting on tour |
-| 20:00–22:00 | Tour continuation |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 5 — March 18 (Wednesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Tour day 2 |
-| 02:00–04:00 | Tour continuation |
-| 06:00–08:00 | Return home + burnt toast |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Parkour |
-| 16:00–18:00 | Fishing |
-| 18:00–20:00 | News reaction |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 6 — March 19 (Thursday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + writing |
-| 08:00–10:00 | Lady-INK meet |
-| 10:00–12:00 | Heavy Moonboys writing |
-| 12:00–14:00 | Live alert |
-| 14:00–16:00 | Random moment |
-| 16:00–18:00 | Painting night |
-| 18:00–20:00 | News + weather |
-| 20:00–22:00 | Rave playlist |
-| 22:00–00:00 | **DREAM** — Thursday Lady-INK world train adventure (Orient Express — Dream #1) |
-
-### Day 7 — March 20 (Friday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave night start |
-| 02:00–04:00 | DJ set at midnight |
-| 06:00–08:00 | Rave recovery + burnt toast |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Fishing |
-| 14:00–16:00 | Lady-INK hint (steals cap) |
-| 16:00–18:00 | Random moment |
-| 18:00–20:00 | News reaction |
-| 20:00–22:00 | Rave recovery |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 8 — March 21 (Saturday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Weekend raving |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + fishing |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Van tour prep |
-| 14:00–16:00 | Painting night + Lady-INK hint #5 (ice lollies) |
-| 16:00–18:00 | Graffiti tag |
-| 18:00–20:00 | Weekend raving mix |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 9 — March 22 (Sunday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave recovery |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Painting night + Lady-INK hint #6 |
-| 16:00–18:00 | Tag session |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 10 — March 23 (Monday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00 UTC | **DREAM** — Repeating mural chase wake-up |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Normal day |
-| 16:00–18:00 | News |
-| 18:00–20:00 | Fishing |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 11 — March 24 (Tuesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Van tour prep + live alert |
-| 12:00–14:00 | Lady-INK meet |
-| 14:00–16:00 | Painting on tour |
-| 16:00–18:00 | Tour continuation |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Random moment |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 12 — March 25 (Wednesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Tour day 2 |
-| 02:00–04:00 | Tour |
-| 06:00–08:00 | Return home + burnt toast |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Parkour |
-| 16:00–18:00 | Fishing |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 13 — March 26 (Thursday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + writing |
-| 08:00–10:00 | Lady-INK meet |
-| 10:00–12:00 | Heavy writing |
-| 12:00–14:00 | Live alert |
-| 14:00–16:00 | Random moment |
-| 16:00–18:00 | Painting night |
-| 18:00–20:00 | News + weather |
-| 20:00–22:00 | Rave playlist |
-| 22:00–00:00 | **DREAM** — Thursday Lady-INK world train adventure (Trans-Siberian — Dream #2) |
-
-### Day 14 — March 27 (Friday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave start |
-| 02:00–04:00 | DJ set |
-| 06:00–08:00 | Rave recovery |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Fishing |
-| 14:00–16:00 | Lady-INK hint |
-| 16:00–18:00 | Random moment |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Rave recovery |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 15 — March 28 (Saturday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Weekend raving |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + fishing |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Van tour prep |
-| 14:00–16:00 | Painting + Lady-INK hint |
-| 16:00–18:00 | Tag session |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 16 — March 29 (Sunday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave recovery |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Painting + Lady-INK hint |
-| 16:00–18:00 | Tag |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 17 — March 30 (Monday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00 UTC | **DREAM** — Repeating dream wake-up |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Normal day |
-| 16:00–18:00 | News |
-| 18:00–20:00 | Fishing |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 18 — March 31 (Tuesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Van tour prep + live alert |
-| 12:00–14:00 | Lady-INK meet |
-| 14:00–16:00 | Painting on tour |
-| 16:00–18:00 | Tour |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Random moment |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | Deep sleep, Moonboys dream — 2 main characters as headliners | `(night)` `(dream)` `(moonboys)` |
+| 02:00–04:00 | Dream continues — new faction clash, Blocktopia rising | `(night)` `(dream)` `(moonboys)` |
+| 04:00–06:00 | Pre-dawn dream — unfinished mural begins in subconscious | `(night)` `(dream)` `(moonboys)` |
+| 06:00–08:00 | **REPEATING MONDAY MURAL DREAM** — artist chases unfinished mural, wakes confused: "what the hell? why?" | `(early-morning)` `(dream)` `(mural-chase)` `(monday-wake)` |
+| 08:00–10:00 | Morning — burnt toast, news check, sketching in notebook | `(morning)` `(outside)` `(news-real)` `(random)` |
+| 10:00–12:00 | Parkour session — rooftop run, thinking about art | `(morning)` `(outside)` `(random)` |
+| 12:00–14:00 | Character fame switch (new 24h headliner announced in lore) — lunch break, spray paint shopping | `(noon)` `(random)` `(gkdata-real)` |
+| 14:00–16:00 | Afternoon — working on Moonboys writing or canvas prep | `(afternoon)` `(random)` `(graffiti)` |
+| 16:00–18:00 | UK carp lake trip planning or actual fishing session | `(afternoon)` `(fishing)` `(outside)` `(fishing-real)` |
+| 18:00–20:00 | Evening — back home, cooking, Telegram scrolling | `(evening)` `(random)` `(news-real)` |
+| 20:00–22:00 | Working on NFT lore, character writing, GraffPUNKS Network Radio check | `(evening)` `(random)` `(gkdata-real)` `(live)` |
+| 22:00–24:00 | Late night — finishing sketches, winding down | `(night)` `(random)` `(moonboys)` |
 
 ---
 
-## APRIL 2026
+## TUESDAY
 
-### Day 19 — April 1 (Wednesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Tour day 2 |
-| 02:00–04:00 | Tour |
-| 06:00–08:00 | Return + burnt toast |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Parkour |
-| 16:00–18:00 | Fishing |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 20 — April 2 (Thursday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + writing |
-| 08:00–10:00 | Lady-INK meet |
-| 10:00–12:00 | Heavy writing |
-| 12:00–14:00 | Live alert |
-| 14:00–16:00 | Random moment |
-| 16:00–18:00 | Painting night |
-| 18:00–20:00 | News + weather |
-| 20:00–22:00 | Rave playlist |
-| 22:00–00:00 | **DREAM** — Thursday Lady-INK world train adventure (Japanese Shinkansen — Dream #3) |
-
-### Day 21 — April 3 (Friday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave start |
-| 02:00–04:00 | DJ set |
-| 06:00–08:00 | Rave recovery |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Fishing |
-| 14:00–16:00 | Lady-INK hint |
-| 16:00–18:00 | Random moment |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Rave recovery |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 22 — April 4 (Saturday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Weekend raving |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + fishing |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Van tour prep |
-| 14:00–16:00 | Painting + Lady-INK hint |
-| 16:00–18:00 | Tag session |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 23 — April 5 (Sunday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave recovery |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Painting + Lady-INK hint |
-| 16:00–18:00 | Tag |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 24 — April 6 (Monday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00 UTC | **DREAM** — Repeating dream wake-up |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Normal day |
-| 16:00–18:00 | News |
-| 18:00–20:00 | Fishing |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 25 — April 7 (Tuesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Van tour prep + live alert |
-| 12:00–14:00 | Lady-INK meet |
-| 14:00–16:00 | Painting on tour |
-| 16:00–18:00 | Tour |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Random moment |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 26 — April 8 (Wednesday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Tour day 2 |
-| 02:00–04:00 | Tour |
-| 06:00–08:00 | Return + burnt toast |
-| 08:00–10:00 | Heavy writing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Parkour |
-| 16:00–18:00 | Fishing |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Rave prep |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 27 — April 9 (Thursday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + writing |
-| 08:00–10:00 | Lady-INK meet |
-| 10:00–12:00 | Heavy writing |
-| 12:00–14:00 | Live alert |
-| 14:00–16:00 | Random moment |
-| 16:00–18:00 | Painting night |
-| 18:00–20:00 | News + weather |
-| 20:00–22:00 | Rave playlist |
-| 22:00–00:00 | **DREAM** — Thursday Lady-INK world train adventure (Moroccan Desert Train — Dream #4) |
-
-### Day 28 — April 10 (Friday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave start |
-| 02:00–04:00 | DJ set |
-| 06:00–08:00 | Rave recovery |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Fishing |
-| 14:00–16:00 | Lady-INK hint |
-| 16:00–18:00 | Random moment |
-| 18:00–20:00 | News |
-| 20:00–22:00 | Rave recovery |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 29 — April 11 (Saturday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Weekend raving |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + fishing |
-| 08:00–10:00 | Parkour |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Van tour prep |
-| 14:00–16:00 | Painting + Lady-INK hint |
-| 16:00–18:00 | Tag session |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
-
-### Day 30 — April 12 (Sunday)
-| UTC Slot | Activity |
-|---|---|
-| 00:00–02:00 | Rave recovery |
-| 02:00–04:00 | Early-sleep |
-| 06:00–08:00 | Burnt toast + parkour |
-| 08:00–10:00 | Fishing |
-| 10:00–12:00 | Live alert |
-| 12:00–14:00 | Random moment |
-| 14:00–16:00 | Painting + Lady-INK hint |
-| 16:00–18:00 | Tag |
-| 18:00–20:00 | Weekend raving |
-| 20:00–22:00 | Fishing |
-| 22:00–00:00 | **DREAM** — Moonboys-only |
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | Deep sleep, Moonboys dream | `(night)` `(dream)` `(moonboys)` |
+| 02:00–04:00 | Dream — Blocktopia faction war | `(night)` `(dream)` `(moonboys)` |
+| 04:00–06:00 | Pre-dawn dream — graffiti tunnel chase | `(night)` `(dream)` `(moonboys)` |
+| 06:00–08:00 | Morning wake-up — packing gear for VX T4 tour | `(early-morning)` `(random)` |
+| 08:00–10:00 | Tour prep — loading van, last-minute spray paint run | `(morning)` `(outside)` `(graffiti)` |
+| 10:00–12:00 | VX T4 tour departure — motorway, music blasting | `(morning)` `(outside)` `(graffiti)` `(random)` |
+| 12:00–14:00 | Character fame switch — arrived at first spot | `(noon)` `(graffiti)` `(random)` |
+| 14:00–16:00 | Wall scouting + first throws | `(afternoon)` `(graffiti)` `(outside)` `(graffiti-news-real)` |
+| 16:00–18:00 | Deep into the session — big piece progress | `(afternoon)` `(graffiti)` `(outside)` |
+| 18:00–20:00 | Food break, photos, documenting the wall | `(evening)` `(graffiti)` `(random)` |
+| 20:00–22:00 | **22:00 DEPARTURE** — packing up, heading out to 2-day VX T4 graffiti tour | `(evening)` `(graffiti)` `(outside)` `(random)` |
+| 22:00–24:00 | On the road — driving to tour location, late night motorway | `(night)` `(outside)` `(random)` |
 
 ---
 
-## HOW THE AGENT USES THIS PLANNER
-1. At each 2-hour run, check the current UTC date and time against this planner.
-2. Find the matching 2-hour slot for the current day.
-3. Use that slot as the lore context seed (activity type, mood, location, sensory details).
-4. Combine with: current real weather, live news, active fame cycle character(s), and last 7 days from lore-history.md.
-5. Generate 2 back-to-back posts that feel like this is actually happening right now.
-6. If the slot says "DREAM" — switch to the correct dream mode (Thursday Lady-INK, Moonboys-only, or Monday wake-up).
-7. Log the activity type used in lore-history.md for continuity.
+## WEDNESDAY
 
-**Note**: After Day 30, the agent continues from a fresh 30-day cycle. The 30-day planner repeats with new random daily moments, different Lady-INK dream numbers from the library, and rotated fame cycle characters. The next 30 days (April 13 – May 12) follow the same weekly structure.
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | Still driving / arrived — checking into spot | `(night)` `(graffiti)` `(outside)` |
+| 02:00–04:00 | Late night painting session — illegal throw-ups under bridges | `(night)` `(graffiti)` `(outside)` `(random)` |
+| 04:00–06:00 | Post-session comedown — adrenaline crash, cold coffee | `(night)` `(graffiti)` `(outside)` |
+| 06:00–08:00 | Wake up on tour — morning mist, walls looking fresh | `(early-morning)` `(graffiti)` `(outside)` `(graffiti-news-real)` |
+| 08:00–10:00 | Tour day 2 — second location wall scouting | `(morning)` `(graffiti)` `(outside)` `(random)` |
+| 10:00–12:00 | Full mural session — main piece of the tour | `(morning)` `(graffiti)` `(outside)` |
+| 12:00–14:00 | Character fame switch — finishing touches | `(noon)` `(graffiti)` `(outside)` `(random)` |
+| 14:00–16:00 | Wrapping up — documenting with photos/video | `(afternoon)` `(graffiti)` `(outside)` |
+| 16:00–18:00 | Heading home — motorway vibes, tour debrief in head | `(afternoon)` `(outside)` `(random)` |
+| 18:00–20:00 | Back home — unpacking, sorting cans | `(evening)` `(random)` |
+| 20:00–22:00 | Chilling — writing up tour lore, checking Moonboys feed | `(evening)` `(random)` `(gkdata-real)` |
+| 22:00–24:00 | Winding down — late snack, Moonboys dream incoming | `(night)` `(random)` |
+
+---
+
+## THURSDAY
+
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | Deep sleep | `(night)` `(dream)` `(moonboys)` |
+| 02:00–04:00 | Deep dream — writing characters in sleep | `(night)` `(dream)` `(moonboys)` |
+| 04:00–06:00 | Dream — Lady-INK appears at train yard | `(night)` `(dream)` `(lady-ink)` |
+| 06:00–08:00 | Morning — journaling the dream, strong coffee | `(early-morning)` `(random)` |
+| 08:00–10:00 | Heavy Moonboys writing session — Eternal Codex edits | `(morning)` `(random)` `(gkdata-real)` |
+| 10:00–12:00 | Parkour — rooftop run, creative headspace | `(morning)` `(outside)` `(random)` |
+| 12:00–14:00 | Character fame switch — deep character lore published | `(noon)` `(random)` `(gkdata-real)` |
+| 14:00–16:00 | Fishing afternoon — UK carp lake | `(afternoon)` `(fishing)` `(outside)` `(fishing-real)` |
+| 16:00–18:00 | Still fishing — reading water, patient | `(afternoon)` `(fishing)` `(outside)` |
+| 18:00–20:00 | Home — editing photos, writing lore | `(evening)` `(random)` `(news-real)` |
+| 20:00–22:00 | **THURSDAY NIGHT** — Lady-INK prep: she texts saying she's ready for a train painting trip | `(evening)` `(lady-ink)` `(graffiti)` |
+| 22:00–24:00 | **THURSDAY TRAIN DREAM** — artist and Lady-INK travel the world painting trains (unique new story every Thursday) | `(night)` `(dream)` `(lady-ink)` `(train-dream)` |
+
+---
+
+## FRIDAY
+
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | Post-dream — still in the train world | `(night)` `(dream)` `(lady-ink)` |
+| 02:00–04:00 | Deep sleep | `(night)` `(dream)` `(moonboys)` |
+| 04:00–06:00 | Pre-dawn — vivid Blocktopia scenes | `(night)` `(dream)` `(moonboys)` |
+| 06:00–08:00 | Morning — Friday energy, excited about rave tonight | `(early-morning)` `(rave)` `(random)` |
+| 08:00–10:00 | Sorting out rave gear, crate digging for tracks | `(morning)` `(rave)` `(random)` |
+| 10:00–12:00 | Parkour session — extra energy, jumps feel bigger | `(morning)` `(outside)` `(random)` |
+| 12:00–14:00 | Character fame switch — pre-rave chilling | `(noon)` `(random)` `(gkdata-real)` |
+| 14:00–16:00 | Fishing or canvas session — killing time before rave | `(afternoon)` `(fishing)` `(outside)` `(random)` |
+| 16:00–18:00 | Getting ready — outfit sorted, pre-drinks | `(afternoon)` `(rave)` `(random)` |
+| 18:00–20:00 | Heading out — Tube/train into London | `(evening)` `(rave)` `(outside)` `(random)` |
+| 20:00–22:00 | **22:00 DEPARTURE** — arriving at rave venue, door queue, sound check | `(evening)` `(rave)` `(outside)` `(rave-real)` |
+| 22:00–24:00 | Rave — 10pm-midnight: warming up, crowd building | `(night)` `(rave)` `(rave-real)` `(random)` |
+
+---
+
+## SATURDAY
+
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | **MIDNIGHT DJ SET** — GraffPUNKS Network Radio live feed | `(night)` `(rave)` `(live)` `(rave-real)` |
+| 02:00–04:00 | Post-set rave — dancing, chaos, drum & bass | `(night)` `(rave)` `(random)` |
+| 04:00–06:00 | Rave wind-down — heading home at dawn | `(night)` `(rave)` `(outside)` |
+| 06:00–08:00 | Crashed out — deep sleep after rave | `(early-morning)` `(dream)` `(moonboys)` |
+| 08:00–10:00 | Still sleeping in — slow morning | `(morning)` `(dream)` `(moonboys)` |
+| 10:00–12:00 | Late wake-up — coffee, recovery | `(morning)` `(random)` |
+| 12:00–14:00 | Character fame switch — sorting head after rave | `(noon)` `(random)` |
+| 14:00–16:00 | Graffiti session — painting walls, cans rattling | `(afternoon)` `(graffiti)` `(outside)` `(graffiti-news-real)` |
+| 16:00–18:00 | Wall piece progress — deep focus | `(afternoon)` `(graffiti)` `(outside)` |
+| 18:00–20:00 | Evening — food, resting legs | `(evening)` `(random)` `(news-real)` |
+| 20:00–22:00 | Chilling — writing, sketching, listening to radio | `(evening)` `(random)` `(live)` |
+| 22:00–24:00 | **LADY-INK SATURDAY TRAIN DREAM** — Saturday night: Lady-INK steals his cap on a train, dream sequence | `(night)` `(dream)` `(lady-ink)` `(train-dream)` `(saturday-ink-dream)` |
+
+---
+
+## SUNDAY
+
+| UTC Window  | Activity | Rules |
+|-------------|----------|-------|
+| 00:00–02:00 | Deep sleep — Moonboys dream | `(night)` `(dream)` `(moonboys)` |
+| 02:00–04:00 | Dream — cosmic Blocktopia vision | `(night)` `(dream)` `(moonboys)` |
+| 04:00–06:00 | Pre-dawn dream — Bitcoin X Kids storyline | `(night)` `(dream)` `(moonboys)` |
+| 06:00–08:00 | Sunday morning — slow start, long coffee | `(early-morning)` `(random)` |
+| 08:00–10:00 | Fishing trip — UK carp lake, early rods in | `(morning)` `(fishing)` `(outside)` `(fishing-real)` |
+| 10:00–12:00 | On the bank — watching floats, peaceful | `(morning)` `(fishing)` `(outside)` |
+| 12:00–14:00 | Character fame switch — mid-session catch attempt | `(noon)` `(fishing)` `(outside)` `(random)` |
+| 14:00–16:00 | Pack up fishing — heading to painting spot | `(afternoon)` `(graffiti)` `(outside)` `(random)` |
+| 16:00–18:00 | Painting session — Sunday afternoon walls | `(afternoon)` `(graffiti)` `(outside)` |
+| 18:00–20:00 | **Weekend raving + Lady-INK steals cap** — heading to Sunday rave | `(evening)` `(rave)` `(lady-ink)` `(rave-real)` |
+| 20:00–22:00 | Sunday rave — drum & bass, Lady-INK chaos | `(night)` `(rave)` `(lady-ink)` `(rave-real)` `(random)` |
+| 22:00–24:00 | Post-rave — home, quiet, Moonboys wrap-up | `(night)` `(random)` `(moonboys)` |
+
+---
+
+## RULE TOKEN GLOSSARY
+
+| Token | Meaning |
+|-------|---------|
+| `(night)` | Lore and images must have dark night theme |
+| `(early-morning)` | Misty sunrise, dew, cold air theme |
+| `(morning)` | Bright morning theme |
+| `(noon)` | Midday energy, full light |
+| `(afternoon)` | Warm afternoon light |
+| `(evening)` | Golden hour, dusk |
+| `(dream)` | Lore is a dream sequence |
+| `(moonboys)` | Dream features Crypto Moonboys characters (rotate pairings) |
+| `(lady-ink)` | Lady-INK appears in lore or dream |
+| `(train-dream)` | Artist and Lady-INK travel the world painting trains |
+| `(mural-chase)` | Monday repeating unfinished mural dream |
+| `(monday-wake)` | Classic "what the hell? why?" Monday wake-up |
+| `(saturday-ink-dream)` | Lady-INK steals his cap on a train |
+| `(graffiti)` | Artist is painting/tagging; use random wall/location context |
+| `(fishing)` | Artist at carp lake; web search UK carp lakes, pick random, check weather |
+| `(rave)` | Artist raving; web search current UK drum & bass nightclubs + 4 random DJs |
+| `(outside)` | Web search UK weather, visualise in image, report in log |
+| `(news-real)` | Web search breaking news (crypto/political/street art), use in ~5-10% of lore |
+| `(gkdata-real)` | Check official GK/Substack/Medium for updates, use if found |
+| `(fishing-real)` | Web search real UK carp catch news (>40lb in 70 hours), use in ~5% of lore |
+| `(graffiti-news-real)` | Web search real street art news, graffiti contests; use in lore |
+| `(rave-real)` | Web search current UK drum & bass nightclub events + DJ bookings |
+| `(live)` | GraffPUNKS Network Radio live alert inline in lore |
+| `(random)` | Agent makes up content staying in character |
+| `(random-news)` | Agent picks a random angle from real news, stays in character |
+
+---
+
+*This calendar repeats every 7 days (Monday = ISO weekday 1, Sunday = ISO weekday 7).*
+*Each block is identified by: `WEEKDAY:HH` where HH is the start hour (0-padded, UTC).*
