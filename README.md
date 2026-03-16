@@ -44,7 +44,7 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - `brain-rules.md` → All core rules, routines, dreams, continuity, 3 meanings, etc.
 - `character-bible.md` → Character consistency, art layers, image prompt template.
 - `gk-brain.py` → The actual agent code (loads files, generates posts, posts to Telegram).
-- `gk-brain.yml` → GitHub Actions workflow (runs every 2 hours + manual trigger).
+- `.github/workflows/gk-brain.yml` → GitHub Actions workflow (runs every 2 hours + manual trigger).
 - `lore-history.md` → Stores every post ever made for 7-day continuity.
 - `reply-tracker.json` → Tracks Telegram reply limits.
 
@@ -63,4 +63,4 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 
 **The GK BRAIN is now fully operational and self-updating.**
 
-Last updated: March 14, 2026
+Last updated: March 16, 2026
