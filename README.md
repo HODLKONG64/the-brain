@@ -16,7 +16,7 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 ## EVERY ACTION THE AGENT TAKES EVERY 2 HOURS (exact sequence)
 1. Crawls https://substack.com/@graffpunks/posts FIRST for new content/images.
 2. Checks all locked links for updates.
-3. Loads brain-rules.md + character-bible.md + MASTER-CHARACTER-CANON.md + lore-history.md.
+3. Loads gk-brain-complete.md + character-bible.md + MASTER-CHARACTER-CANON.md + lore-history.md.
 4. Generates 2 back-to-back lore posts (maximum length + image prompts).
 5. Appends new posts to lore-history.md for 7-day continuity.
 6. Posts both to the Telegram channel.
@@ -51,8 +51,8 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - **Image Generation**: Every post includes detailed Grok Imagine prompt using Substack style + uploaded layers + exact bonnet/head shape.
 
 ## FILE STRUCTURE & PURPOSE
-- `brain-rules.md` → All core rules, routines, dreams, continuity, 3 meanings, Triple Fork Event lore, antagonist rules, faction conflict matrix.
-- `character-bible.md` → Character consistency, art layers, image prompt template, **all canonical character profiles** (NULL The Prophet, Queen Sarah P-fly, Forkborn Collective, AETHER CHAIN, DeFi Dragons, Art Insurgency, Dream Weavers, The Mempool, Council of Chains).
+- `gk-brain-complete.md` → All core rules, routines, dreams, continuity, 3 meanings, etc. (merged complete brain rules file loaded by the agent).
+- `character-bible.md` → Character consistency, art layers, image prompt template.
 - `MASTER-CHARACTER-CANON.md` → Complete Crypto Moonboys universe character index (all tiers, factions, timeline). Loaded every run — agent auto-uses any updated canon data going forward.
 - `DEEP-DIVE-AUDIT-REPORT.md` → **Comprehensive 10-section audit** of all GitHub files + all linked platforms (GKniftyHEADS Wiki, GraffPunks Substack, Medium, GraffPunks.live, collaborator sites). Last updated: March 17, 2026.
 - `genesis-lore.md` → 3,700+ word Block Topia genesis seed narrative (all 55 AI systems initialise from this foundation).
@@ -98,4 +98,30 @@ Slash commands bypass the keyword trigger gate and do NOT count against the 20/d
 
 **The GK BRAIN is now fully operational and self-updating.**
 
-**Last updated: March 17, 2026**
+## OFFICIAL LINKS — EXTERNAL CANON SOURCES
+
+The agent checks these sources every 2 hours. They are the **official sources of truth** for all lore updates.
+
+### GraffPunks & Crypto Moonboys
+- **Substack (primary canon):** https://substack.com/@graffpunks/posts
+- **GraffPunks Live:** https://graffpunks.live/
+- **GKniftyHEADS Website:** https://gkniftyheads.com/
+- **GKniftyHEADS Wiki (character canon):** https://gkniftyheads.fandom.com/
+- **Graffiti Kings:** https://graffitikings.co.uk/
+- **YouTube:** https://www.youtube.com/@GKniftyHEADS
+- **Medium (@GKniftyHEADS):** https://medium.com/@GKniftyHEADS
+- **X/Twitter:** https://x.com/GraffPunks
+
+### MASTER CHARACTER CANON
+> 📋 **Complete universe character index:** See **[MASTER-CHARACTER-CANON.md](./MASTER-CHARACTER-CANON.md)** — all tiers, all 40 factions, full timeline (1980s–Year 3030), real-world collaborators, publication roadmap, and cross-reference matrix. **Loaded every run — agent auto-uses any updated canon data going forward.**
+
+### Character Groups Wiki Pages (GKniftyHEADS Fandom)
+- GraffPUNKS: https://gkniftyheads.fandom.com/wiki/GraffPUNKS
+- HODL Warriors: https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS
+- Crypto Moonboys: https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS
+- Gasless Ghosts & NULL The Prophet: https://gkniftyheads.fandom.com/wiki/Gasless_Ghosts_%26_NULL_The_Prophet
+- Block Topia: https://gkniftyheads.fandom.com/wiki/Block_Topia
+- Sacred Chain: https://gkniftyheads.fandom.com/wiki/Sacred_Chain
+- Aether Chain: https://gkniftyheads.fandom.com/wiki/Aether_Chain
+
+Last updated: March 17, 2026

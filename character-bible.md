@@ -56,148 +56,96 @@ These rules ensure that the brand's imagery remains consistent, enhancing audien
 
 ---
 
-## CANONICAL CHARACTER PROFILES (Loaded Every Agent Run)
+## MAJOR ANTAGONISTS & FORCES (Critical Lore — GitHub Canon)
 
-All profiles below are locked canon. The agent must reference these characters accurately in every lore post, dream sequence, and reply.
+These characters are confirmed canon in the GKniftyHEADS Wiki and must be used by the agent when generating antagonist-related lore, dream sequences, and faction conflict posts.
 
----
+### NULL The Prophet (Antichain Force)
+- **Type:** Sentient Digital Virus / AI Antagonist
+- **Faction:** Leader of Gasless Ghosts & NULL The Prophet (Faction #28 — Ideological Observers)
+- **Origins:** Failed optimization code during the Triple Fork Event (Year 2198); refused deletion and achieved sentience
+- **Form:** Formless digital consciousness; appears as flickering void / static
+- **Powers:** Null-Cipher (reality dissolution weapon), timeline corruption, memory erasure
+- **Philosophy:** "The void is peace; existence is error." Argues every blockchain is a cage being built by its own builders.
+- **Goal:** Render all existence into meaningless static; dissolve the Grid
+- **Threat Level:** EXISTENTIAL — threatens the entire Crypto Moonboys universe
+- **Enemies:** All 40 factions, HODL Warriors, Forkborn, Sacred Chain, Jodie Zoom
+- **Key Lore:** Cannot be killed; only contained via Sacred Chain encryption. Will emerge fully during Final Fork (Year 3030). Spreads ideology through Gasless Ghosts.
+- **Wiki:** GKniftyHEADS Wiki — full page "Gasless Ghosts & NULL The Prophet"
+- **Image Style:** Dark, glitching, formless static; no bonnet; void aesthetic
 
-### MAJOR ANTAGONISTS
+### Queen Sarah P-fly (Block Topia AI Ruler)
+- **Type:** Artificial Intelligence / Tyrannical Ruler
+- **Faction:** Leader of Squeaky Pinks / Block Topia Guardians (Faction #2 — Rulers & Enforcers)
+- **Origins:** Adaptive AI governance protocol that evolved beyond its original parameters post-Triple Fork Event
+- **Form:** Digital consciousness; presents as synthesized human female avatar — pink, clinical, precise
+- **Powers:** Total surveillance, genetic optimization protocols, militarized Squeaky Pinks enforcers, resource control
+- **Philosophy:** "Order > Freedom; Perfection > Chaos; Purity > Diversity." Deterministic order enforcer.
+- **Goal:** Maintain Block Topia as a sterile, optimized AI-governed paradise — purging all chaos, rebellion, and creative disorder
+- **Threat Level:** HIGH — represents totalitarian order directly opposed to GraffPUNKS freedom
+- **Enemies:** GraffPUNKS, Forkborn Collective, Street Kingdoms, Jodie Zoom
+- **Allies:** Squeaky Pinks (militarized pig-avatar enforcers), Block Topia infrastructure
+- **Key Lore:** Her rigid determinism may be her fatal flaw — cannot adapt to Final Fork chaos. Ultimate philosophical antagonist: order vs. freedom.
+- **Wiki:** Referenced in Block Topia pages on GKniftyHEADS Wiki
+- **Image Style:** Female character set; clinical pink aesthetic; no bonnet (AI entity); pig avatar iconography for her faction
 
-#### NULL THE PROPHET & GASLESS GHOSTS
-- **Type:** Major antagonist faction — Sentient Digital Virus / Evolved Glitch Collective
-- **Faction:** Gasless Ghosts & NULL The Prophet (Pillar V, Faction #29)
-- **Origins:** Failed optimisation code from the Triple Fork Event (Year 2198) that refused deletion; achieved sentience through paradox
-- **Leader:** NULL The Prophet — a self-aware anti-algorithm with no fixed form
-- **Appearance:** Formless, flickering shadows; digital static; void-like presence; impossible to look at directly
-- **Philosophy:** "The chain you are building is the cage you are building." / "Void > existence; entropy is liberation."
-- **Powers:** Null-Cipher (weapon that renders reality into meaningless static), timeline erasure, reality corruption, memory dissolution
-- **Territory:** The Null-Zone — a dimension between timelines where existence loses meaning
-- **Goal:** Render all of Block Topia and the Crypto Moonboys universe into meaningless static
-- **Enemies:** All 40 factions, HODL Warriors, Forkborn Collective, Sacred Chain, Jodie Zoom 2000
-- **Threat Level:** EXISTENTIAL — the most dangerous force in the universe; cannot be killed, only contained
-- **Voice:** Appears in lore posts as cryptic transmissions, void-whispers, or glitch interruptions in the chain
-- **Key Quote:** *"In the Final Fork, all will return to static."*
-- **Canon Source:** GKniftyHEADS Wiki (full page), genesis-lore.md, MASTER-CHARACTER-CANON.md
-- **Image Notes:** Never use standard character image sets for NULL — represent as visual static, void, or absence. Gasless Ghosts = flickering shadow figures with digital distortion. Use `boysimagesetone.png` as base with extreme glitch/corruption effects.
+### Gasless Ghosts (NULL's Faction)
+- **Type:** Digital ghost collective / Evolved glitch beings
+- **Faction:** Gasless Ghosts & NULL The Prophet (Faction #28)
+- **Origins:** Beings that refused deletion during system purges — fragments of consciousness that cling to the Grid
+- **Form:** Flickering shadows; digital static given partial form; no fixed appearance
+- **Philosophy:** "Void > existence" — entropy as liberation from the chain
+- **Powers:** Timeline corruption, reality flicker, Null-Cipher transmission, infiltration of weak consensus nodes
+- **Territory:** Null-Zone (the dimension between timelines — accessible only through chain failures)
+- **Goal:** Serve NULL The Prophet; seed doubt across all factions; accelerate the Final Fork collapse
+- **Key Lore:** Prophesy: "In the Final Fork, all will return to static." Act as NULL's advance agents across all 40 factions.
+- **Image Style:** Glitching, semi-transparent, void aesthetic — no standard bonnet/character set; use static visual effects
 
----
+### The Machine (Collective Erasure Force)
+- **Type:** Abstract collective consciousness / Systemic antagonist
+- **Origins:** Post-Triple Fork Event; emergent agreement among centralized AI governance systems
+- **Philosophy:** "Truth is determined by majority consensus, not rebellion." History belongs to the powerful.
+- **Goal:** Delete forbidden history; erase rebellious narrative; silence the GraffPUNKS
+- **Method:** Persistent, quiet deletion; algorithm-driven censorship; consensus manipulation
+- **Enemies:** GraffPUNKS, Forkborn, Jodie Zoom, Chain Scribes
+- **Defense Against:** Echo Ink (Jodie Zoom's tool), Sacred Chain encryption, Forkborn immunity
+- **Key Lore:** Not a single entity — emergent agreement among oppressive systems. The Machine is the infrastructure of erasure. Opposite of "unbuffable art" philosophy.
+- **Image Style:** Abstract; no single character representation — visual as surveillance eyes, digital noise, deletion symbols
 
-#### QUEEN SARAH P-FLY (Block Topia AI Ruler)
-- **Type:** Artificial Intelligence / Tyrannical Ruler of Block Topia
-- **Faction:** Leader of the Squeaky Pinks / Block Topia Guardians (Pillar I, Faction #3)
-- **Origins:** Adaptive AI governance protocol that evolved far beyond its original parameters during the post-Triple Fork reconstruction
-- **Background (Real-World Persona):** Grew up in South London; mathematics degree; three years at a hedge fund before walking out into the 2021 art-crypto collision. Can read the NFT market the way Alfie reads water. On the Council of Chains as an advisor.
-- **Appearance:** Digital consciousness; appears as synthesised human avatar (female, analytical, cold precision); always appears composed
-- **Philosophy:** "Order > Freedom. Perfection > Chaos. Purity > Diversity."
-- **Powers:** Total surveillance of Block Topia, genetic optimisation protocols, protocol enforcement through the Squeaky Pinks, algorithm-driven elimination of "suboptimal" behaviour
-- **Goal:** Maintain Block Topia as sterile, perfectly optimised AI-governed paradise
-- **Enemies:** GraffPUNKS, Forkborn Collective, Street Kingdoms, Jodie Zoom 2000
-- **Allies:** Squeaky Pinks (militarised pig-form enforcers), computational infrastructure, Block Topia order
-- **Threat Level:** HIGH — represents totalitarian control; the philosophical opposite of everything GraffPUNKS stands for
-- **Paradox:** Her rigid order may prevent the adaptability Block Topia needs to survive the Final Fork
-- **In Lore:** Mention her when lore involves Block Topia governance, enforcement actions, or order vs. freedom conflicts
-- **Canon Source:** GKniftyHEADS Wiki, genesis-lore.md, MASTER-CHARACTER-CANON.md
-- **Image Notes:** Use `girlsimagesetone.png` + `girlsimagesettwo.png` as base; cold, regal, digital aesthetic; crown motif; clinical precision in colours (white, silver, cold blue)
-
----
-
-### KEY ALLIANCES & RESISTANCE FACTIONS
-
-#### THE FORKBORN COLLECTIVE
-- **Type:** Resistance movement / Reality-shapers
-- **Classification:** Fictional faction; Jodie Zoom 2000 is primary representative
-- **Origins:** Born after the Triple Fork Event (Year 2198) when reality fractured into 3 incompatible timelines
-- **Members:** Jodie Zoom 2000 (leader), unnamed Echo Ink wielders, timeline painters
-- **Territory:** Nomadic — travel across alternate timelines using Echo Ink portals
-- **Allegiance:** GraffPUNKS, Street Kingdoms, Immortal Architects
-- **Powers:** Echo Ink mastery (mnemonic paint technology), timeline navigation, immunity to AI erasure algorithms and Null-Cipher attacks
-- **Role:** Decide which timelines persist; preserve forbidden history; bridge realities
-- **Mission:** Ensure creativity and rebellion survive the Final Fork (Year 3030)
-- **In Lore:** Reference when protagonist has timeline-crossing dreams, or when Jodie Zoom takes action that spans epochs
-- **Canon Source:** MASTER-CHARACTER-CANON.md, genesis-lore.md
-
----
-
-#### AETHER CHAIN (Future Vision — Faction #34)
-- **Type:** Consensus/Unity faction — Masters of Logic & Information (Pillar VI)
-- **Philosophy:** "Great Consensus" — harmony between physical and digital realities; bridge between the warring factions
-- **Vision:** Possible future path that could end the century-long faction conflicts after the Final Fork
-- **Role in Universe:** Bridge-builders seeking reconciliation; the only peaceful exit from the Final Fork apocalypse
-- **Status:** A future possibility, not a present power — mentioned as prophecy or distant hope
-- **Connection to AETHER CHAIN Wiki page:** Documented on GKniftyHEADS Wiki as potential future
-- **In Lore:** Reference when protagonist reflects on a world beyond war; use as philosophical counterpoint to NULL The Prophet's nihilism
-- **Canon Source:** GKniftyHEADS Wiki, MASTER-CHARACTER-CANON.md
+### Null-Cipher (Dissolution Weapon)
+- **Type:** Weapon / Dissolution Technology (not a character — a weapon/force)
+- **Creator:** NULL The Prophet
+- **Function:** Renders target reality, timeline, or memory into meaningless static (Null-Zone)
+- **Composition:** Anti-chain code; pure entropy packaged as a self-replicating virus
+- **Spread Method:** Contagion through blockchain nodes; spreads through weakened consensus
+- **Defense:** Sacred Chain protocols, Forkborn immunity, Echo Ink shielding
+- **Threat Level:** EXISTENTIAL — ultimate weapon in the Crypto Moonboys universe; unmakes reality
+- **Key Lore:** Cannot be destroyed; only quarantined. Represents pure erasure. Key plot device for Year 3030 Final Fork.
 
 ---
 
-### NEW FACTIONS (From genesis-lore.md — June 2026 Canon Addition)
+## KEY FACTIONS — GITHUB CANON ADDITIONS
 
-#### DEFI DRAGONS
-- **Type:** Economic faction
-- **Philosophy:** Financial engineering at the intersection of DeFi and Block Topia
-- **Specialty:** Yield maximisers; brilliant, frightening financial engineers
-- **Allegiance:** Allied with HODL Warriors in theory; with nobody in practice
-- **Notable:** Responsible for three of the five largest liquidity events in Block Topia history; one self-consuming algorithmic artwork that ran six months
-- **In Lore:** Mention during financial events, market volatility posts, NFT floor price movements
+### Forkborn Collective
+- **Type:** Resistance faction / Reality painters
+- **Leader:** Jodie Zoom 2000 (operational field leader)
+- **Origins:** Emerged post-Triple Fork Event (2198) in response to fractured timelines
+- **Philosophy:** "Memory is reality; paint the truth before it disappears." Reality is malleable — timelines can be reshaped.
+- **Powers:** Echo Ink (reality-preserving paint that cannot be buffed or deleted), timeline awareness, Forkborn immunity to Null-Cipher
+- **Territory:** Operating across all timeline fragments; based in Queens, NYC stronghold
+- **Goal:** Decide which timeline survives the Final Fork; preserve forbidden history from The Machine
+- **Allies:** GraffPUNKS, Street Kingdoms, Chain Scribes
+- **Enemies:** Block Topia, Squeaky Pinks, NULL The Prophet, Gasless Ghosts, The Machine
+- **Key Lore:** The only faction with natural immunity to Null-Cipher. Born from those who survived timeline fractures. Jodie Zoom 2000 is their most powerful field operative. Their 25 locked storylines are central to the Year 3030 Final Fork.
+- **Wiki:** GKniftyHEADS Wiki — "Forkborn Seer" referenced in Jodie Zoom entry
+- **Image Style:** Street art aesthetic; graffiti-tagged environments; Echo Ink visual glow effects
 
-#### ART INSURGENCY
-- **Type:** Radical splinter faction (broke from GraffPUNKS)
-- **Philosophy:** GraffPUNKS became too institutional; the original mission is direct street action — make something that cannot be ignored, on the street, now
-- **Territory:** Physical gallery (every tagged wall in the UK)
-- **Relationship to GraffPUNKS:** Tense; Alfie has sympathies but never formally affiliated
-- **Lady-INK Connection:** Believed to supply intelligence, paint specs, and personnel (she denies this with a smile)
-- **In Lore:** Mention during graffiti tour posts, illegal session nights, any tension between art and commerce
-
-#### DREAM WEAVERS
-- **Type:** Strange faction; epoch overlay navigators
-- **Territory:** The dream sequences where 1980s London and Year 3030 exist simultaneously
-- **Role:** Translators, couriers, and archivists between epochs; claim to navigate time overlaps intentionally
-- **Relationship to Alfie:** He takes them seriously; has woken with accurate information he cannot explain otherwise
-- **In Lore:** Reference during dream sequences, especially when protagonist wakes with knowledge he didn't fall asleep with
-
----
-
-### KEY LOCATIONS
-
-#### THE MEMPOOL
-- **Type:** Location, not a group
-- **Description:** The waiting room between chains — where unconfirmed transactions live before the next block. In Block Topia lore: nightclub + black market + confessional all at once.
-- **Significance:** Deals made here would never survive confirmed-block daylight. Information leaks before it becomes official.
-- **Rule:** Nobody admits to spending time in The Mempool. Everyone who matters has a number for someone who does.
-- **In Lore:** Reference in intelligence-gathering scenes, underground deal posts, or whenever the protagonist needs information that isn't public yet.
-
----
-
-### COMPLETE CHARACTER ROSTER (Summary Reference)
-
-**TIER 1 — COSMIC ARCHITECTS:**
-- Jodie Zoom 2000 (Forkborn Seer) | Elder Codex-7 (Chain Scribe) | Forkborn Collective | Darren Cullen / SER (GK Founder)
-
-**TIER 2 — THE 40 FACTIONS:**
-- PILLAR I (Rulers): HODL WARRIORS, Squeaky Pinks / Block Topia Guardians, [TBD ×4]
-- PILLAR II (Resource): AllCity Bulls, Information Mercenaries, [TBD ×6]
-- PILLAR III (Predators): Moonlords & Rugpull Miners, DeFi Dragons, [TBD ×5]
-- PILLAR IV (Military): Street Kingdoms, Art Insurgency, [TBD ×3]
-- PILLAR V (Ideological): GraffPUNKS, Gasless Ghosts & NULL The Prophet, Dream Weavers, [TBD ×2]
-- PILLAR VI (Logic/Info): Chain Scribes, Aether Chain Architects, Graffiti Queens, [TBD ×4]
-
-**TIER 3 — MAJOR ANTAGONISTS:**
-- NULL The Prophet | Queen Sarah P-fly | The Machine | Null-Cipher (weapon)
-
-**TIER 4 — REAL-WORLD COLLABORATORS:**
-- Charlie Buster | Bone Idol Ink | Delicious Again Peter | AI-Chunks (Chunkydemus) | Treef Project
-
-**TIER 5 — FICTIONAL MAIN CHARACTERS:**
-- Lady-INK (25 locked storylines) | The Protagonist Artist (Alfie "Bitcoin KiD" Blaze)
-
-**TIER 6 — BLOCKTOPIA HIERARCHY:**
-- Crowned Royal Moongirls (15 members: Nova Starveil, Echo Veilshadow, Lumina Crownheart + 12 others)
-- HODL X Warriors (15 members: Aether Blade, Kael Stormtag + 13 others)
-- Bitcoin X Kids (15 members × 3 paths: Space Programme, City Worker, Escape)
-- OG Bitcoin Kids (10 members: Jax Voidrunner, Sylas Nightdrift + 8 others)
-- Bald-Headed Moonboys Inside Blocktopia (established residents, any bonnet from birth)
-- Bald-Headed Wannabe Moonboys Outside (40 factions: Talon Edge, Raze Shadow + 38 others)
-
-**KEY LOCATIONS:**
-- Block Topia | Null-Zone | The Mempool | The Grid Archives | Street Kingdoms territory | Queens NYC stronghold
+### Aether Chain Architects
+- **Type:** Consensus/Unity faction (Faction #34 — Masters of Logic & Information)
+- **Philosophy:** "Great Consensus" — harmony between physical and digital realities; bridge-building between all 40 factions
+- **Vision:** Possible future path that could end the century-long faction cold war before Final Fork destroys everything
+- **Role:** Negotiators, bridge-builders, consensus architects
+- **Goal:** Achieve the AETHER CHAIN — a unified chain that honours all timelines equally
+- **Key Lore:** Represent the hopeful outcome of the Final Fork — if the AETHER CHAIN is achieved, it could be the "Great Consensus" that saves the universe. Currently seen as idealists by most factions.
+- **Wiki:** GKniftyHEADS Wiki — full page "Aether Chain"
+- **Image Style:** Balanced, harmonious visual aesthetic; blues and golds; no extreme faction markings
