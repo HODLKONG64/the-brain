@@ -544,9 +544,13 @@ def crawl_substack_for_art_and_content() -> str:
 # Grok API calls
 # ---------------------------------------------------------------------------
 
-def _grok_chat(messages: list, model: str = "grok-3-latest") -> str:
+def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
     """
     Send a chat completion request to the Grok API and return the response text.
+
+    Retries up to 3 times with exponential backoff on transient errors (5xx,
+    connection errors, or timeouts) before raising.  Client errors (4xx) are
+    raised immediately without retrying.
     """
     headers = {
         "Authorization": f"Bearer {GROK_API_KEY}",
@@ -555,17 +559,33 @@ def _grok_chat(messages: list, model: str = "grok-3-latest") -> str:
     payload = {
         "model": model,
         "messages": messages,
-        "max_tokens": 1200,
+        "max_tokens": 4000,
         "temperature": 0.9,
     }
-    resp = requests.post(
-        f"{GROK_API_BASE}/chat/completions",
-        headers=headers,
-        json=payload,
-        timeout=60,
-    )
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    max_attempts = 3
+    last_exc: Exception = RuntimeError("No attempts made")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            resp = requests.post(
+                f"{GROK_API_BASE}/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=60,
+            )
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"].strip()
+        except requests.exceptions.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            if status is not None and status < 500:
+                raise  # 4xx errors are not retryable
+            last_exc = exc
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            last_exc = exc
+        if attempt < max_attempts:
+            wait = 2 ** attempt
+            print(f"[grok-chat] Attempt {attempt}/{max_attempts} failed ({last_exc}); retrying in {wait}s…")
+            time.sleep(wait)
+    raise last_exc
 
 
 def _detect_character_gender(lore_text: str) -> str:

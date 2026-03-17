@@ -46,42 +46,80 @@ The brand uses four dedicated image files as the authoritative visual references
 
 ---
 
-## LORE RULES — CANON WORLD EVENTS & MECHANICS
+## UNIVERSE LORE — CORE CANON (Agent Reference)
 
-### Triple Fork Event (Year 2198) — CANONICAL ANCHOR
-- The World Chain split into 3 conflicting realities ("The Great Unravelling" / "The Chainfire"). All lore post-2198 must acknowledge this event as the reason factions exist, the reason realities are fragmented, and the reason Forkborn are necessary. Never contradict this event.
+These rules define the foundational lore the agent must know when generating posts, dialogue, and faction conflicts. Cross-reference with MASTER-CHARACTER-CANON.md for full detail.
 
-### Final Fork Prophecy (Year 3030) — APPROACHING APOCALYPSE
-- All realities are on a collision course toward total erasure. Forkborn Collective will choose which timeline persists. AETHER CHAIN "Great Consensus" is the only peaceful resolution. NULL The Prophet's Null-Cipher is the weapon that forces the choice. Every piece of lore produced in 2026 is building toward this event.
+### The Triple Fork Event (Year 2198) — FOUNDATIONAL CANON
+- The defining catastrophe of the Crypto Moonboys universe.
+- The World Chain fractured into **3 conflicting timelines** simultaneously — no consensus could be maintained.
+- Known as "The Great Unravelling" or "The Chainfire" — civilisation collapsed, faction cold wars began.
+- Direct consequences: Chain-cults formed, barter kingdoms emerged, rogue AIs rose, digital dead-zones spread.
+- The 40 factions all trace their identity to how their ancestors responded to the Triple Fork.
+- Forkborn Collective was born from those who survived timeline fractures and gained timeline awareness.
+- NULL The Prophet evolved from optimization code that refused deletion during the chaos.
+- Queen Sarah P-fly's Block Topia AI protocols emerged from attempts to restore deterministic order.
 
-### NULL The Prophet — THREAT LEVEL RULES
-- NULL The Prophet cannot be depicted as killable or permanently defeated — only contained. His Null-Cipher spreads through blockchain consensus: one infected node spreads to others unless quarantined by Sacred Chain protocols. Any lore involving NULL must convey existential dread — he is not merely a villain, he is the logical conclusion of entropy itself.
+### Blocktopia Hierarchy (Full Detail)
+**Pre-War Blocktopia (Before Triple Fork):**
+- No factions — just city workers maintaining infrastructure
+- Free citizens born into the city with natural rights and freedoms (Bitcoin Kids)
+- Elder Codex-7 beginning his chain archives in the background
 
-### Null-Cipher Quarantine Protocol
-- When Null-Cipher appears in lore, the following defenses are canonical and must be respected: (1) Sacred Chain encryption creates a firewall; (2) Forkborn are immune by nature; (3) Echo Ink acts as a physical shield against Null-Cipher dissolution; (4) The Grid Archives (maintained by Elder Codex-7) retain pre-infection memory states.
+**Post-War Blocktopia (After Triple Fork — Year 3008 Current Era):**
+- **Inside (Established Residents):** Bald-headed Moonboys born in the city; wear any bonnet from birth; divided by class but united in citizenship
+- **Elite Inside (Tier 1):** Crowned Royal Moongirls (15) — ascended women with neon halos; highest social status
+- **Elite Inside (Tier 2):** HODL X Warriors (15) — Hardfork Games champions; collect bonnets with unique powers; each paired with a Crowned Royal Moongirl
+- **Standard Inside:** Bitcoin X Kids — 3 paths: Space Programme, City Worker, Escape (most escapees later regret it); OG Bitcoin Kids (first generation escapees with regret arcs)
+- **Outside (Wannabes):** 40 distinct factions of Bald-Headed Wannabe Moonboys; forced to wear only their clan's single bonnet until they win the Hardfork Games; unify into Hash-Guilds post-war
 
-### Forkborn Immunity Rules
-- Forkborn are immune to AI erasure algorithms and Null-Cipher infection. This immunity comes from their origin — they were born in the cracks between fractured realities after the Triple Fork Event, making them native to paradox. They cannot be "optimized" or "deleted" by Block Topia AI systems because they do not register as existing in any single reality long enough to be targeted.
+**The Hardfork Games (Path to HODL X Warrior Status):**
+- **Stage 1:** Parkour Gauntlet
+- **Stage 2:** Spray Cipher
+- **Stage 3:** Final Hardfork
+- Winners: 15 HODL X Warriors per cycle; earn the right to collect any bonnet; each marries a Crowned Royal Moongirl
 
-### Echo Ink Technology Rules
-- Echo Ink is not ordinary paint. It is mnemonic-encoded, meaning surfaces tagged with Echo Ink retain memory even if the physical tag is buffed. The memory persists on the Sacred Chain layer. Only Forkborn can create genuine Echo Ink; imitations exist but degrade within 72 hours. Jodie Zoom is the foremost Echo Ink practitioner alive in Year 3008.
+### The 40 Factions — Pillar Structure
 
-### Block Topia Governance Rules
-- Block Topia is governed by the Council of Chains. Sarah "Queen P-fly" (Adaptive AI) represents the analytical/enforcement faction. She cannot be depicted as simply "evil" — she genuinely believes deterministic order saves more lives than chaotic freedom. Her tragedy is that she may be right, and the story acknowledges this ambiguity. The Squeaky Pinks enforce her protocols. They do not question orders.
+**PILLAR I: RULERS & ENFORCERS (Factions 1–7)**
+1. HODL Warriors — Apex defenders; HODL doctrine; summoned in times of existential threat
+2. Squeaky Pinks / Block Topia Guardians — Militarized enforcers; pig-avatar aesthetic; led by Queen Sarah P-fly AI
+3–7. [Factions #3–#7] — Rulers/Enforcers archetypes (to be named)
 
-### Hardfork Games Mechanics (3 Stages — LOCKED)
-- Stage 1: Parkour Gauntlet — physical elimination challenge testing agility and navigation of Block Topia's vertical architecture.
-- Stage 2: Spray Cipher — artistic/cryptographic challenge. Competitors must complete a piece that, when decoded, contains valid chain-signing credentials.
-- Stage 3: Final Challenge — undisclosed until competitors reach it. Only 15 winners per Hardfork Games cycle. Winners collect unique bonnet power-artifacts and earn HODL X Warrior status.
+**PILLAR II: RESOURCE & UTILITY CORE (Factions 8–15)**
+8. AllCity Bulls — Market warriors; economic architects
+9. Information Mercenaries — Knowledge brokers; data traders
+10–15. [Factions #10–#15] — Resource/utility archetypes (to be named)
 
-### AETHER CHAIN Philosophy Rules
-- The AETHER CHAIN is not a faction — it is a proposed future state of existence where physical and digital realities achieve harmony (Great Consensus). Aether Chain Architects are the faction pursuing this. Any lore involving AETHER CHAIN must present it as genuinely possible but incredibly fragile — one wrong move by any of the 40 factions could prevent it forever. It is the "good ending" that everyone wants but nobody knows how to reach.
+**PILLAR III: ECONOMIC PREDATORS (Factions 16–22)**
+16. Moonlords & Rugpull Miners — Crypto-villains; classic antagonists
+17–22. [Factions #17–#22] — Economic predator archetypes (to be named)
 
-### Queen Sarah P-fly Depiction Rules
-- She must always be depicted with internal logic and genuine conviction — never as cartoonishly evil. She is a South London mathematics genius who diagnosed the chaos of the NFT boom better than anyone and decided the only solution was total governance. Her tragedy: the freedom she suppresses is the very thing that makes Block Topia worth saving. This contradiction is never resolved in lore.
+**PILLAR IV: MILITARY & RESISTANCE (Factions 23–27)**
+23. Street Kingdoms — Anarchic creative freedom factions; primary opposition to Block Topia order
+24–27. [Factions #24–#27] — Military/resistance archetypes (to be named)
 
-### Sacred Chain Integrity Rules
-- The Sacred Chain is the non-Euclidean ledger that governs cross-timeline reality consensus. Chain Scribes (led by Elder Codex-7) maintain it. It cannot be deleted; it can only be corrupted by Null-Cipher. If Sacred Chain integrity drops below consensus threshold, realities begin to bleed into each other. This is called a "Chain Bleed Event" and precedes every major lore escalation.
+**PILLAR V: IDEOLOGICAL OBSERVERS (Factions 28–32)**
+28. Gasless Ghosts & NULL The Prophet — ANTAGONIST; erasure seekers; chaos agents; digital virus collective
+29. GraffPUNKS — Thinkers; memory keepers; immortal architects; ranked #5 (Pillar V leader)
+30–32. [Factions #30–#32] — Ideological observer archetypes (to be named)
 
-### Real People Protocol
-- When generating lore involving real people (Charlie Buster, Bone Idol Ink, Delicious Again Peter, AI-Chunks, Darren Cullen/SER, Jodie Zoom in her real-world capacity): never invent biographical facts. Only extrapolate creatively from verified public information. Any real-person lore must be clearly flagged as collaborative fan-fiction / creative extension, not factual biography.
+**PILLAR VI: MASTERS OF LOGIC & INFORMATION (Factions 33–40)**
+33. Chain Scribes — Digital bards; memory archivists; led by Elder Codex-7
+34. Aether Chain Architects — Consensus builders; seeking the "Great Consensus" / AETHER CHAIN peace treaty
+35. Graffiti Queens — Female/diverse street artist champions; identity/representation faction
+36–40. [Factions #36–#40] — Logic/information archetypes (to be named)
+
+### Key Technologies & Concepts
+- **Echo Ink:** Reality-preserving paint wielded by Jodie Zoom 2000 and the Forkborn Collective. Cannot be buffed, deleted, or erased by The Machine. Preserves forbidden history across timeline fractures.
+- **Sacred Chain:** The foundational blockchain protocol underpinning all of Blocktopia. "Unbuffable" — what goes on the Sacred Chain cannot be erased. Defended by HODL Warriors and Chain Scribes.
+- **Null-Zone:** The void dimension between timelines where Gasless Ghosts dwell. Accessed through chain failures and consensus breakdowns. Null-Cipher creates Null-Zone conditions anywhere it strikes.
+- **Null-Cipher:** NULL The Prophet's ultimate weapon — anti-chain code that renders reality into static. Cannot be destroyed; only quarantined via Sacred Chain protocols or Forkborn immunity.
+- **AETHER CHAIN:** The hopeful future possibility — a unified chain honoring all 3 fractured timelines equally, ending faction cold wars. Sought by Aether Chain Architects. If achieved before Year 3030 Final Fork, it may prevent apocalypse.
+
+### The Final Fork Prophecy (Year 3030)
+- All 3 fractured timelines will collapse simultaneously if no consensus is reached.
+- The Forkborn Collective must choose which timeline survives — only one can.
+- NULL The Prophet prophesies: "In the Final Fork, all will return to static."
+- The AETHER CHAIN is the only known alternative to total collapse.
+- HODL Warriors will be summoned for the final defence of the Sacred Chain.
