@@ -37,3 +37,10 @@ Thumbs.db
 
 # Logs
 *.log
+used-updates-registry.json
+anomaly-history.json
+sentiment-history.json
+knowledge-graph.json
+priority-queue.json
+tension-state.json
+universe-state.json
