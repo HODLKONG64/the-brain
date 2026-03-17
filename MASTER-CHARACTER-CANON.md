@@ -1114,4 +1114,218 @@ The Crypto Moonboys universe is organized around **40 primary factions** divided
 | **Elder Codex-7** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | - | - | ✅ AGENT | **NEEDS PUBLICATION** |
 | **Chain Scribe** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | - | - | - | **NEEDS PUBLICATION** |
 | **NULL The Prophet** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ FULL | ❌ MISSING | - | - | - | **CRITICAL GAP** |
-| **Queen Sarah P-fly** |
+| **Queen Sarah P-fly** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ REF | ❌ MISSING | - | - | - | **CRITICAL GAP** |
+| **The Machine** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ❌ MISSING | - | - | - | **MISSING** |
+| **Null-Cipher** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ REFERENCED | ❌ MISSING | - | - | - | **MISSING** |
+| **Forkborn Collective** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ❌ MISSING | - | - | - | **CRITICAL GAP** |
+| **Darren Cullen (SER)** | ✅ FEATURED | ✅ PROFILE | ✅ LISTED | ✅ REF | ✅ ART | ✅ YES | ✅ AGENT | **DOCUMENTED** |
+| **Alfie Bitcoin KiD Blaze** | ✅ DAILY | ✅ PROFILE | ✅ LISTED | ✅ FULL | ✅ ART | ✅ YES | ✅ AGENT | **PROTAGONIST** |
+| **Lady-INK** | ⚠️ 25 POSTS | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | ⚠️ ART | - | ✅ AGENT | **IN PROGRESS** |
+| **Charlie Buster** | ✅ FEATURED | ✅ ARTICLES | ✅ LISTED | ✅ LISTED | ✅ ACTIVE | ✅ YES | ✅ AGENT | **WELL-DOCUMENTED** |
+| **Bone Idol Ink** | ✅ FEATURED | ✅ ARTICLES | ⚠️ PARTIAL | ✅ LISTED | ✅ ACTIVE | - | ✅ AGENT | **DOCUMENTED** |
+| **Delicious Again Peter** | ✅ FEATURED | ✅ ARTICLES | ⚠️ PARTIAL | ✅ LISTED | ✅ ACTIVE | - | ✅ AGENT | **DOCUMENTED** |
+| **AI-Chunks (Chunkydemus)** | ✅ FEATURED | ✅ ARTICLES | ⚠️ PARTIAL | ✅ LISTED | ✅ ACTIVE | ✅ A.IChunks | ✅ AGENT | **DOCUMENTED** |
+| **Treef Project** | ✅ FEATURED | ✅ ARTICLES | ✅ LISTED | ✅ LISTED | ✅ ACTIVE | - | ✅ AGENT | **DOCUMENTED** |
+| **HODL WARRIORS** | ✅ FULL PAGE | ✅ PROFILES | ✅ FULL | ✅ LISTED | ⚠️ ART | - | ✅ AGENT | **WELL-DOCUMENTED** |
+| **GraffPUNKS** | ✅ SERIES | ✅ DEEPDIVE | ✅ FULL | ✅ LISTED | ✅ ACTIVE | ✅ YES | ✅ AGENT | **WELL-DOCUMENTED** |
+| **Gasless Ghosts** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ FULL | ❌ MISSING | - | - | - | **CRITICAL GAP** |
+| **AllCity Bulls** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ LISTED | ❌ MISSING | - | - | - | **MISSING** |
+| **Information Mercenaries** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ LISTED | ❌ MISSING | - | - | - | **MISSING** |
+| **Moonlords & Rugpull Miners** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ LISTED | ❌ MISSING | - | - | - | **MISSING** |
+| **Street Kingdoms** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ LISTED | ⚠️ PARTIAL | - | - | - | **NEEDS EXPANSION** |
+| **Chain Scribes (faction)** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | - | - | - | **NEEDS PUBLICATION** |
+| **Aether Chain Architects** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ FULL | ❌ MISSING | - | - | - | **CRITICAL GAP** |
+| **Graffiti Queens** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ LISTED | ❌ MISSING | - | - | - | **MISSING** |
+| **Squeaky Pinks** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ LISTED | ❌ MISSING | - | - | - | **MISSING** |
+| **Nova Starveil** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Echo Veilshadow** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Lumina Crownheart** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Aether Blade** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Kael Stormtag** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Zara Starpath** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Lukas Wallkeeper** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Riven Wildrun** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Jax Voidrunner** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Sylas Nightdrift** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Talon Edge** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Raze Shadow** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ LISTED | - | - | - | **NEEDS CREATION** |
+| **Sacred Chain** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ FULL | ✅ LISTED | - | - | - | **NEEDS EXPANSION** |
+| **AETHER CHAIN** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ FULL | ❌ MISSING | - | - | - | **CRITICAL GAP** |
+| **Echo Ink** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ⚠️ PARTIAL | - | - | - | **NEEDS DOCS** |
+| **Triple Fork Event** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ REFERENCED | ✅ LISTED | - | - | - | **NEEDS EXPANSION** |
+| **Hardfork Games** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ REFERENCED | ✅ LISTED | - | - | - | **NEEDS EXPANSION** |
+| **Grid Archives** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | - | - | - | **NEEDS DOCS** |
+
+**Legend:** ✅ = Published/Active | ⚠️ = Planned/Partial | ❌ = Missing/Gap | - = Not applicable
+
+---
+
+## 🔄 SYNC POINTS & ACTION ITEMS
+
+### **CRITICAL GAPS (Fix Immediately)**
+
+The following elements are confirmed in the GKniftyHEADS Wiki and lore sources but are **completely absent from the GitHub repository files**. These represent the most urgent sync gaps.
+
+| Element | Wiki Status | GitHub Status | Action |
+|---------|-------------|---------------|--------|
+| **NULL The Prophet** | ✅ Full page | ❌ ABSENT | Add to character-bible.md + brain-rules.md |
+| **Queen Sarah P-fly** | ✅ Referenced | ❌ ABSENT | Add to character-bible.md + brain-rules.md |
+| **Gasless Ghosts** | ✅ Full page | ❌ ABSENT | Add to character-bible.md |
+| **Aether Chain** | ✅ Full page | ❌ ABSENT | Add to brain-rules.md (lore rules) |
+| **Forkborn Collective** | ✅ Referenced | ❌ ABSENT | Add to character-bible.md |
+| **Squeaky Pinks** | ✅ Listed | ❌ ABSENT | Add to character-bible.md |
+| **Null-Cipher** | ✅ Referenced | ❌ ABSENT | Add to brain-rules.md |
+| **The Machine** | ✅ Referenced | ❌ ABSENT | Add to brain-rules.md |
+| **AETHER CHAIN (concept)** | ✅ Full page | ❌ ABSENT | Add to brain-rules.md |
+
+---
+
+### **PUBLICATION GAPS (Substack/Medium Priority)**
+
+The following characters and factions have been defined in GitHub and/or Wiki but **have no published Substack or Medium posts** acting as their public-facing lore introduction:
+
+| Priority | Character/Topic | Post Type | Est. Word Count |
+|----------|----------------|-----------|-----------------|
+| 🔴 CRITICAL | Jodie Zoom 2000 | Hero introduction | 1,500–2,000 |
+| 🔴 CRITICAL | NULL The Prophet | Villain origin | 1,500–2,000 |
+| 🔴 CRITICAL | 40 Factions Directory | Master index | 2,000–3,000 |
+| 🔴 CRITICAL | Elder Codex-7 | Character deep-dive | 1,200–1,800 |
+| 🔴 CRITICAL | Queen Sarah P-fly | Antagonist profile | 1,200–1,800 |
+| 🟡 HIGH | Triple Fork Event | Historical lore | 1,500–2,000 |
+| 🟡 HIGH | Forkborn Rising | Faction series | 1,200–1,500 |
+| 🟡 HIGH | Echo Ink Technology | Lore mechanics | 1,000–1,500 |
+| 🟡 HIGH | Sacred Chain Physics | Worldbuilding | 1,200–1,800 |
+| 🟡 HIGH | Lady-INK (Part 1 of 25) | Serial fiction | 1,000–1,500 each |
+| 🟢 MEDIUM | Crowned Royal Moongirls | Faction series | 1,500–2,000 |
+| 🟢 MEDIUM | HODL X Warriors | Character series | 1,500–2,000 |
+| 🟢 MEDIUM | Bitcoin X Kids (3 Paths) | Path breakdown | 1,500–2,000 |
+| 🟢 MEDIUM | OG Bitcoin Kids Regret Arc | Emotional storytelling | 1,200–1,500 |
+| 🟢 MEDIUM | Bald-Headed Wannabe Moonboys | Faction directory | 2,000+ |
+| 🔵 LOW | GraffPUNKS History | Origin post | 1,000–1,500 |
+| 🔵 LOW | Aether Chain Vision | Future lore | 1,000–1,500 |
+| 🔵 LOW | AllCity Bulls Profile | Faction deep-dive | 1,000 |
+| 🔵 LOW | Moonlords & Rugpull Miners | Villain faction | 1,000 |
+| 🔵 LOW | Information Mercenaries | Faction profile | 1,000 |
+
+---
+
+### **WIKI EXPANSION NEEDED**
+
+The GKniftyHEADS Wiki has good foundational pages but the following need creation or significant expansion:
+
+| Page | Current State | Action Needed |
+|------|---------------|---------------|
+| Jodie Zoom | Partial / 1 paragraph | Expand to full character page |
+| Elder Codex-7 | Referenced | Create dedicated page |
+| Chain Scribe (archetype) | Referenced | Create dedicated page |
+| Forkborn Collective | Brief mention | Create faction page |
+| All 40 Factions (directory) | Scattered | Create master directory page |
+| Crowned Royal Moongirls | Not present | Create faction page |
+| Bitcoin X Kids | Referenced | Create path breakdown page |
+| OG Bitcoin Kids | Not present | Create group page |
+| Bald-Headed Wannabe Moonboys | Brief | Expand to full faction page |
+| Alfie "Bitcoin KiD" Blaze | Not present | Create protagonist page |
+| Hardfork Games | Referenced | Expand mechanics page |
+| Echo Ink | Not present | Create technology page |
+| The Machine | Brief | Expand antagonist page |
+| Squeaky Pinks | Listed | Expand faction page |
+| Graffiti Queens | Listed | Expand faction page |
+
+---
+
+### **GITHUB FILE SYNC CHECKLIST**
+
+These specific file updates are required to bring the GitHub repo into full sync with the wider canon:
+
+**character-bible.md (add to OFFICIAL CHARACTERS section):**
+- [ ] Alfie "Bitcoin KiD" Blaze (protagonist, missing from official list)
+- [ ] NULL The Prophet (major antagonist, CRITICAL)
+- [ ] Queen Sarah P-fly / Sarah "Queen P-fly" (antagonist, CRITICAL)
+- [ ] Gasless Ghosts (faction, CRITICAL)
+- [ ] Forkborn Collective (faction, important)
+- [ ] Squeaky Pinks (faction, important)
+- [ ] Aether Chain Architects (faction, important)
+- [ ] Graffiti Queens (faction, important)
+- [ ] AllCity Bulls (faction)
+- [ ] Information Mercenaries (faction)
+- [ ] Moonlords & Rugpull Miners (faction)
+- [ ] Street Kingdoms (faction — currently missing explicit entry)
+- [ ] The Machine (antagonist force)
+- [ ] Null-Cipher (weapon)
+- [ ] Council of Chains (governing body — from genesis-lore.md)
+- [ ] The Mempool (faction — from genesis-lore.md)
+- [ ] DeFi Dragons (faction — from genesis-lore.md)
+- [ ] Art Insurgency (faction — from genesis-lore.md)
+- [ ] Dream Weavers (faction — from genesis-lore.md)
+
+**brain-rules.md (add lore rules):**
+- [ ] Triple Fork Event (Year 2198) — canonical lore anchor
+- [ ] AETHER CHAIN "Great Consensus" philosophy
+- [ ] NULL The Prophet threat level and containment rules
+- [ ] Null-Cipher quarantine protocols
+- [ ] Forkborn immunity rules
+- [ ] Echo Ink technology rules
+- [ ] Block Topia governance structure
+- [ ] Hardfork Games mechanics (3 stages)
+- [ ] Queen Sarah P-fly AI governance protocols
+
+---
+
+## 📊 FINAL STATUS SUMMARY
+
+### **Universe Completeness by Platform**
+
+| Platform | Characters Covered | Factions Covered | Lore Depth | Overall Status |
+|----------|--------------------|------------------|------------|----------------|
+| **GitHub (the-brain)** | ~40% | ~30% | Moderate | 🟡 NEEDS SYNC |
+| **GKniftyHEADS Wiki** | ~60% | ~50% | Good | 🟢 NEEDS EXPANSION |
+| **Substack (@graffpunks)** | ~15% | ~10% | Low | 🔴 NEEDS HERO POSTS |
+| **Medium (@GKniftyHEADS)** | ~10% | ~5% | Minimal | 🔴 NEEDS ENCYCLOPEDIA |
+| **GraffPunks.live** | ~25% | ~20% | Moderate | 🟡 NEEDS EXPANSION |
+| **Instagram / TikTok** | ~20% | ~15% | Visual only | 🟡 NEEDS ART DROPS |
+| **YouTube** | ~10% | ~5% | Minimal | 🔴 NEEDS VIDEO CONTENT |
+| **Telegram (GK Brain)** | ~80% | ~60% | Rich (live) | 🟢 ACTIVE |
+
+### **Character Publication Status**
+
+| Tier | Characters | Fully Published | Partially Published | Not Published |
+|------|-----------|-----------------|---------------------|---------------|
+| Cosmic Architects | 5 | 1 | 3 | 1 |
+| 40 Factions | 40 | 3 | 8 | 29 |
+| Major Antagonists | 4 | 1 | 2 | 1 |
+| Real-World Collaborators | 5 | 5 | 0 | 0 |
+| Fictional Mains | 3 | 0 | 2 | 1 |
+| Blocktopia Hierarchy | 6 groups | 1 | 2 | 3 |
+| **TOTAL** | **~63+** | **11** | **17** | **35** |
+
+### **Key Metrics**
+- **Total universe characters identified:** 100+
+- **Fully published online:** ~17%
+- **Partially published:** ~27%
+- **Not yet published:** ~56%
+- **Critical GitHub gaps:** 19 characters/factions absent
+- **Critical Substack gaps:** 5 hero posts required immediately
+- **Wiki pages needing creation:** 15+
+
+### **Immediate Next Steps (Priority Order)**
+
+1. **TODAY:** Update `character-bible.md` and `brain-rules.md` in this repo to add NULL The Prophet, Queen Sarah P-fly, Gasless Ghosts, Aether Chain, and Forkborn Collective (the 5 critical GitHub gaps)
+
+2. **THIS WEEK:** Publish "Jodie Zoom 2000: Forkborn Seer" hero post on Substack + expand her Wiki page
+
+3. **THIS WEEK:** Publish "NULL The Prophet: The Antichain Threat" villain epic on Substack
+
+4. **NEXT WEEK:** Publish "The 40 Factions of Crypto Moonboys" master directory on Substack
+
+5. **NEXT WEEK:** Expand GKniftyHEADS Wiki — create 5 missing critical pages
+
+6. **ONGOING:** Run Lady-INK 25-story serialized series on Substack (1 per week)
+
+7. **ONGOING:** Build Medium encyclopedia (one article per faction per week)
+
+---
+
+*Document Status: COMPLETE*
+*Last Updated: March 17, 2026*
+*Sources: GitHub (HODLKONG64/the-brain), GKniftyHEADS Wiki, GraffPunks Substack, Medium (@GKniftyHEADS), GraffPunks.live, genesis-lore.md*
+*Next Review: Update when new Substack posts are published or Wiki pages are created*

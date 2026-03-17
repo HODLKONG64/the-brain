@@ -43,3 +43,45 @@ The brand uses four dedicated image files as the authoritative visual references
 - To sustain brand integrity and recognition in a competitive market.
 - To ensure all visual representations resonate with the target audience and community expectations.
 - The 4-file system (2 for boys, 2 for girls) provides clear, organized references that eliminate ambiguity about which visual standards apply to each character type.
+
+---
+
+## LORE RULES — CANON WORLD EVENTS & MECHANICS
+
+### Triple Fork Event (Year 2198) — CANONICAL ANCHOR
+- The World Chain split into 3 conflicting realities ("The Great Unravelling" / "The Chainfire"). All lore post-2198 must acknowledge this event as the reason factions exist, the reason realities are fragmented, and the reason Forkborn are necessary. Never contradict this event.
+
+### Final Fork Prophecy (Year 3030) — APPROACHING APOCALYPSE
+- All realities are on a collision course toward total erasure. Forkborn Collective will choose which timeline persists. AETHER CHAIN "Great Consensus" is the only peaceful resolution. NULL The Prophet's Null-Cipher is the weapon that forces the choice. Every piece of lore produced in 2026 is building toward this event.
+
+### NULL The Prophet — THREAT LEVEL RULES
+- NULL The Prophet cannot be depicted as killable or permanently defeated — only contained. His Null-Cipher spreads through blockchain consensus: one infected node spreads to others unless quarantined by Sacred Chain protocols. Any lore involving NULL must convey existential dread — he is not merely a villain, he is the logical conclusion of entropy itself.
+
+### Null-Cipher Quarantine Protocol
+- When Null-Cipher appears in lore, the following defenses are canonical and must be respected: (1) Sacred Chain encryption creates a firewall; (2) Forkborn are immune by nature; (3) Echo Ink acts as a physical shield against Null-Cipher dissolution; (4) The Grid Archives (maintained by Elder Codex-7) retain pre-infection memory states.
+
+### Forkborn Immunity Rules
+- Forkborn are immune to AI erasure algorithms and Null-Cipher infection. This immunity comes from their origin — they were born in the cracks between fractured realities after the Triple Fork Event, making them native to paradox. They cannot be "optimized" or "deleted" by Block Topia AI systems because they do not register as existing in any single reality long enough to be targeted.
+
+### Echo Ink Technology Rules
+- Echo Ink is not ordinary paint. It is mnemonic-encoded, meaning surfaces tagged with Echo Ink retain memory even if the physical tag is buffed. The memory persists on the Sacred Chain layer. Only Forkborn can create genuine Echo Ink; imitations exist but degrade within 72 hours. Jodie Zoom is the foremost Echo Ink practitioner alive in Year 3008.
+
+### Block Topia Governance Rules
+- Block Topia is governed by the Council of Chains. Sarah "Queen P-fly" (Adaptive AI) represents the analytical/enforcement faction. She cannot be depicted as simply "evil" — she genuinely believes deterministic order saves more lives than chaotic freedom. Her tragedy is that she may be right, and the story acknowledges this ambiguity. The Squeaky Pinks enforce her protocols. They do not question orders.
+
+### Hardfork Games Mechanics (3 Stages — LOCKED)
+- Stage 1: Parkour Gauntlet — physical elimination challenge testing agility and navigation of Block Topia's vertical architecture.
+- Stage 2: Spray Cipher — artistic/cryptographic challenge. Competitors must complete a piece that, when decoded, contains valid chain-signing credentials.
+- Stage 3: Final Challenge — undisclosed until competitors reach it. Only 15 winners per Hardfork Games cycle. Winners collect unique bonnet power-artifacts and earn HODL X Warrior status.
+
+### AETHER CHAIN Philosophy Rules
+- The AETHER CHAIN is not a faction — it is a proposed future state of existence where physical and digital realities achieve harmony (Great Consensus). Aether Chain Architects are the faction pursuing this. Any lore involving AETHER CHAIN must present it as genuinely possible but incredibly fragile — one wrong move by any of the 40 factions could prevent it forever. It is the "good ending" that everyone wants but nobody knows how to reach.
+
+### Queen Sarah P-fly Depiction Rules
+- She must always be depicted with internal logic and genuine conviction — never as cartoonishly evil. She is a South London mathematics genius who diagnosed the chaos of the NFT boom better than anyone and decided the only solution was total governance. Her tragedy: the freedom she suppresses is the very thing that makes Block Topia worth saving. This contradiction is never resolved in lore.
+
+### Sacred Chain Integrity Rules
+- The Sacred Chain is the non-Euclidean ledger that governs cross-timeline reality consensus. Chain Scribes (led by Elder Codex-7) maintain it. It cannot be deleted; it can only be corrupted by Null-Cipher. If Sacred Chain integrity drops below consensus threshold, realities begin to bleed into each other. This is called a "Chain Bleed Event" and precedes every major lore escalation.
+
+### Real People Protocol
+- When generating lore involving real people (Charlie Buster, Bone Idol Ink, Delicious Again Peter, AI-Chunks, Darren Cullen/SER, Jodie Zoom in her real-world capacity): never invent biographical facts. Only extrapolate creatively from verified public information. Any real-person lore must be clearly flagged as collaborative fan-fiction / creative extension, not factual biography.
