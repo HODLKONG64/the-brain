@@ -29,6 +29,6 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: pip install -r requirements.txt
       - name: Run GK BRAIN
         run: python gk-brain.py
