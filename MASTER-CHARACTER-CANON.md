@@ -189,11 +189,108 @@ The Crypto Moonboys universe is a **decentralized, lore-driven metaverse** spann
 - ⚠️ **Substack (@graffpunks):** MISSING faction series "Forkborn Rising: Timeline Painters"
 - ⚠️ **GKniftyHEADS Wiki:** MISSING dedicated faction page
 - ✅ **Medium (@GKniftyHEADS):** Needs deep-dive
-- ⚠️ **GitHub (the-brain):** MISSING from files (should be added)
+- ✅ **GitHub (the-brain):** ✅ ADDED to character-bible.md (March 17, 2026)
 
 ---
 
-### **1.4 Darren Cullen (SER) - Real-World Founder**
+### **1.5 The Council of Chains (Governing Body)**
+
+| Attribute | Detail |
+|-----------|--------|
+| **Type** | Governing institution / Block Topia stewardship body |
+| **Classification** | FICTIONAL |
+| **Members** | 7 seats; no fixed term; Sarah P-fly holds one seat; other six rotate |
+| **Selection** | On-chain governance votes + Elder Codex-7 designed ritual |
+| **Territory** | Block Topia; meet in rotating locations (sometimes physical, sometimes digital) |
+| **Role** | Stewards Block Topia; arbitrates disputes, manages treasury, makes major build decisions |
+| **Notable Meeting** | Reportedly held on a narrowboat on the Grand Union Canal (Diamond made tea) |
+
+**Extended Lore:**
+- Does NOT rule Block Topia; stewards it
+- Selection ritual by Elder Codex-7 consistently selects competent people (unlike most governance systems)
+- Sarah P-fly is an advisor, not a full member — she says she "doesn't like meetings"
+- Diamond (HODL Warriors) consults with Alfie more meaningfully by a fishing lake than in any Council room
+
+**Should Appear On:**
+- ⚠️ **Substack (@graffpunks):** Reference in governance posts, Block Topia lore
+- ⚠️ **GitHub (the-brain):** ✅ ADDED to character-bible.md (March 17, 2026)
+
+---
+
+### **1.6 New Factions from Genesis Lore (March 16, 2026)**
+
+#### **DeFi Dragons**
+
+| Attribute | Detail |
+|-----------|--------|
+| **Type** | Economic faction |
+| **Pillar** | III (Economic Predators) — unassigned faction number |
+| **Philosophy** | Financial engineering at the intersection of DeFi and Block Topia |
+| **Specialty** | Yield maximisers; brilliant, frightening financial engineers |
+| **Allegiance** | Nominally HODL Warriors; practically independent |
+| **Threat/Power** | Responsible for 3 of 5 largest liquidity events; 2 acts of economic warfare; 1 self-consuming algorithmic artwork |
+| **Status** | "Useful and they know it" |
+
+**Should Appear On:**
+- ⚠️ **All platforms:** NEW — needs documentation across Wiki, Substack, Medium
+- ✅ **GitHub (the-brain):** ✅ ADDED to character-bible.md (March 17, 2026)
+
+---
+
+#### **Art Insurgency**
+
+| Attribute | Detail |
+|-----------|--------|
+| **Type** | Radical art faction |
+| **Pillar** | IV (Military & Resistance) — unassigned faction number |
+| **Origins** | Splinter group from GraffPUNKS who believe the collective became too institutional |
+| **Philosophy** | Make something that cannot be ignored, on the street, now — original GraffPUNKS mission |
+| **Territory** | Physical gallery = every tagged wall in the UK |
+| **Lady-INK Connection** | Believed to supply intelligence, paint specifications, and personnel (she denies this with a smile) |
+| **Alfie's Stance** | Sympathies but never formally affiliated |
+
+**Should Appear On:**
+- ⚠️ **All platforms:** NEW — needs documentation across Wiki, Substack, Medium
+- ✅ **GitHub (the-brain):** ✅ ADDED to character-bible.md (March 17, 2026)
+
+---
+
+#### **Dream Weavers**
+
+| Attribute | Detail |
+|-----------|--------|
+| **Type** | Epoch overlay navigators |
+| **Pillar** | VI (Masters of Logic & Information) — unassigned faction number |
+| **Territory** | The epoch overlays — where 1980s London and Year 3030 exist simultaneously |
+| **Role** | Translators, couriers, archivists between epochs |
+| **Powers** | Navigate time overlaps intentionally; act as cross-epoch information brokers |
+| **Relationship to Alfie** | He takes them seriously; woke with accurate information he can't explain otherwise |
+| **Reputation** | Block Topia regards them with combination of affection and concern |
+
+**Should Appear On:**
+- ⚠️ **All platforms:** NEW — needs documentation across Wiki, Substack, Medium
+- ✅ **GitHub (the-brain):** ✅ ADDED to character-bible.md (March 17, 2026)
+
+---
+
+### **1.7 The Mempool (Key Location)**
+
+| Attribute | Detail |
+|-----------|--------|
+| **Type** | Location / Between-chain space |
+| **Classification** | FICTIONAL (world-building element) |
+| **Description** | The waiting room between chains; where unconfirmed transactions live before the next block |
+| **Function** | Acts simultaneously as nightclub, black market, and confessional |
+| **Rule** | Deals made here never survive in confirmed-block daylight |
+| **Access** | Nobody admits using it; everyone who matters has a number for someone who does |
+| **Information value** | Intelligence leaks from The Mempool before it becomes official |
+
+**Should Appear On:**
+- ⚠️ **GKniftyHEADS Wiki:** Needs dedicated location article
+- ⚠️ **Substack:** Reference in underground intelligence posts
+- ✅ **GitHub (the-brain):** ✅ ADDED to character-bible.md (March 17, 2026)
+
+---
 
 | Attribute | Detail |
 |-----------|--------|
@@ -1113,5 +1210,12 @@ The Crypto Moonboys universe is organized around **40 primary factions** divided
 | **Jodie Zoom** | ⚠️ HERO | ⚠️ NEEDED | ✅ PARTIAL | ✅ LISTED | ⚠️ ART | - | ✅ AGENT | **IN PROGRESS** |
 | **Elder Codex-7** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | - | - | ✅ AGENT | **NEEDS PUBLICATION** |
 | **Chain Scribe** | ⚠️ NEEDED | ⚠️ NEEDED | ⚠️ PARTIAL | ✅ LISTED | - | - | - | **NEEDS PUBLICATION** |
-| **NULL The Prophet** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ FULL | ❌ MISSING | - | - | - | **CRITICAL GAP** |
-| **Queen Sarah P-fly** |
+| **NULL The Prophet** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ FULL | ✅ ADDED | - | - | - | **GITHUB FIXED — PUBLISH NEEDED** |
+| **Queen Sarah P-fly** | ⚠️ NEEDED | ⚠️ NEEDED | ✅ REFERENCED | ✅ ADDED | - | - | ✅ AGENT | **GITHUB FIXED — PUBLISH NEEDED** |
+| **Forkborn Collective** | ⚠️ NEEDED | ⚠️ NEEDED | ❌ MISSING | ✅ ADDED | - | - | ✅ AGENT | **GITHUB FIXED — WIKI PAGE NEEDED** |
+| **AETHER CHAIN** | ⚠️ EXPAND | ⚠️ NEEDED | ✅ EXISTS | ✅ ADDED | - | - | ✅ AGENT | **GITHUB FIXED — PUBLISH NEEDED** |
+| **DeFi Dragons** | ❌ MISSING | ❌ MISSING | ❌ MISSING | ✅ NEW | - | - | - | **NEW — PUBLISH ALL PLATFORMS** |
+| **Art Insurgency** | ❌ MISSING | ❌ MISSING | ❌ MISSING | ✅ NEW | - | - | - | **NEW — PUBLISH ALL PLATFORMS** |
+| **Dream Weavers** | ❌ MISSING | ❌ MISSING | ❌ MISSING | ✅ NEW | - | - | - | **NEW — PUBLISH ALL PLATFORMS** |
+| **The Mempool** | ❌ MISSING | ❌ MISSING | ❌ MISSING | ✅ NEW | - | - | - | **NEW LOCATION — ADD WIKI** |
+| **Council of Chains** | ❌ MISSING | ❌ MISSING | ❌ MISSING | ✅ NEW | - | - | - | **NEW — DOCUMENT FULLY** |
