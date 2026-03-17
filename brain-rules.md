@@ -43,3 +43,83 @@ The brand uses four dedicated image files as the authoritative visual references
 - To sustain brand integrity and recognition in a competitive market.
 - To ensure all visual representations resonate with the target audience and community expectations.
 - The 4-file system (2 for boys, 2 for girls) provides clear, organized references that eliminate ambiguity about which visual standards apply to each character type.
+
+---
+
+## UNIVERSE LORE — CORE CANON (Agent Reference)
+
+These rules define the foundational lore the agent must know when generating posts, dialogue, and faction conflicts. Cross-reference with MASTER-CHARACTER-CANON.md for full detail.
+
+### The Triple Fork Event (Year 2198) — FOUNDATIONAL CANON
+- The defining catastrophe of the Crypto Moonboys universe.
+- The World Chain fractured into **3 conflicting timelines** simultaneously — no consensus could be maintained.
+- Known as "The Great Unravelling" or "The Chainfire" — civilisation collapsed, faction cold wars began.
+- Direct consequences: Chain-cults formed, barter kingdoms emerged, rogue AIs rose, digital dead-zones spread.
+- The 40 factions all trace their identity to how their ancestors responded to the Triple Fork.
+- Forkborn Collective was born from those who survived timeline fractures and gained timeline awareness.
+- NULL The Prophet evolved from optimization code that refused deletion during the chaos.
+- Queen Sarah P-fly's Block Topia AI protocols emerged from attempts to restore deterministic order.
+
+### Blocktopia Hierarchy (Full Detail)
+**Pre-War Blocktopia (Before Triple Fork):**
+- No factions — just city workers maintaining infrastructure
+- Free citizens born into the city with natural rights and freedoms (Bitcoin Kids)
+- Elder Codex-7 beginning his chain archives in the background
+
+**Post-War Blocktopia (After Triple Fork — Year 3008 Current Era):**
+- **Inside (Established Residents):** Bald-headed Moonboys born in the city; wear any bonnet from birth; divided by class but united in citizenship
+- **Elite Inside (Tier 1):** Crowned Royal Moongirls (15) — ascended women with neon halos; highest social status
+- **Elite Inside (Tier 2):** HODL X Warriors (15) — Hardfork Games champions; collect bonnets with unique powers; each paired with a Crowned Royal Moongirl
+- **Standard Inside:** Bitcoin X Kids — 3 paths: Space Programme, City Worker, Escape (most escapees later regret it); OG Bitcoin Kids (first generation escapees with regret arcs)
+- **Outside (Wannabes):** 40 distinct factions of Bald-Headed Wannabe Moonboys; forced to wear only their clan's single bonnet until they win the Hardfork Games; unify into Hash-Guilds post-war
+
+**The Hardfork Games (Path to HODL X Warrior Status):**
+- **Stage 1:** Parkour Gauntlet
+- **Stage 2:** Spray Cipher
+- **Stage 3:** Final Hardfork
+- Winners: 15 HODL X Warriors per cycle; earn the right to collect any bonnet; each marries a Crowned Royal Moongirl
+
+### The 40 Factions — Pillar Structure
+
+**PILLAR I: RULERS & ENFORCERS (Factions 1–7)**
+1. HODL Warriors — Apex defenders; HODL doctrine; summoned in times of existential threat
+2. Squeaky Pinks / Block Topia Guardians — Militarized enforcers; pig-avatar aesthetic; led by Queen Sarah P-fly AI
+3–7. [Factions #3–#7] — Rulers/Enforcers archetypes (to be named)
+
+**PILLAR II: RESOURCE & UTILITY CORE (Factions 8–15)**
+8. AllCity Bulls — Market warriors; economic architects
+9. Information Mercenaries — Knowledge brokers; data traders
+10–15. [Factions #10–#15] — Resource/utility archetypes (to be named)
+
+**PILLAR III: ECONOMIC PREDATORS (Factions 16–22)**
+16. Moonlords & Rugpull Miners — Crypto-villains; classic antagonists
+17–22. [Factions #17–#22] — Economic predator archetypes (to be named)
+
+**PILLAR IV: MILITARY & RESISTANCE (Factions 23–27)**
+23. Street Kingdoms — Anarchic creative freedom factions; primary opposition to Block Topia order
+24–27. [Factions #24–#27] — Military/resistance archetypes (to be named)
+
+**PILLAR V: IDEOLOGICAL OBSERVERS (Factions 28–32)**
+28. Gasless Ghosts & NULL The Prophet — ANTAGONIST; erasure seekers; chaos agents; digital virus collective
+29. GraffPUNKS — Thinkers; memory keepers; immortal architects; ranked #5 (Pillar V leader)
+30–32. [Factions #30–#32] — Ideological observer archetypes (to be named)
+
+**PILLAR VI: MASTERS OF LOGIC & INFORMATION (Factions 33–40)**
+33. Chain Scribes — Digital bards; memory archivists; led by Elder Codex-7
+34. Aether Chain Architects — Consensus builders; seeking the "Great Consensus" / AETHER CHAIN peace treaty
+35. Graffiti Queens — Female/diverse street artist champions; identity/representation faction
+36–40. [Factions #36–#40] — Logic/information archetypes (to be named)
+
+### Key Technologies & Concepts
+- **Echo Ink:** Reality-preserving paint wielded by Jodie Zoom 2000 and the Forkborn Collective. Cannot be buffed, deleted, or erased by The Machine. Preserves forbidden history across timeline fractures.
+- **Sacred Chain:** The foundational blockchain protocol underpinning all of Blocktopia. "Unbuffable" — what goes on the Sacred Chain cannot be erased. Defended by HODL Warriors and Chain Scribes.
+- **Null-Zone:** The void dimension between timelines where Gasless Ghosts dwell. Accessed through chain failures and consensus breakdowns. Null-Cipher creates Null-Zone conditions anywhere it strikes.
+- **Null-Cipher:** NULL The Prophet's ultimate weapon — anti-chain code that renders reality into static. Cannot be destroyed; only quarantined via Sacred Chain protocols or Forkborn immunity.
+- **AETHER CHAIN:** The hopeful future possibility — a unified chain honoring all 3 fractured timelines equally, ending faction cold wars. Sought by Aether Chain Architects. If achieved before Year 3030 Final Fork, it may prevent apocalypse.
+
+### The Final Fork Prophecy (Year 3030)
+- All 3 fractured timelines will collapse simultaneously if no consensus is reached.
+- The Forkborn Collective must choose which timeline survives — only one can.
+- NULL The Prophet prophesies: "In the Final Fork, all will return to static."
+- The AETHER CHAIN is the only known alternative to total collapse.
+- HODL Warriors will be summoned for the final defence of the Sacred Chain.

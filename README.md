@@ -96,4 +96,30 @@ Slash commands bypass the keyword trigger gate and do NOT count against the 20/d
 
 **The GK BRAIN is now fully operational and self-updating.**
 
-Last updated: March 16, 2026
+## OFFICIAL LINKS — EXTERNAL CANON SOURCES
+
+The agent checks these sources every 2 hours. They are the **official sources of truth** for all lore updates.
+
+### GraffPunks & Crypto Moonboys
+- **Substack (primary canon):** https://substack.com/@graffpunks/posts
+- **GraffPunks Live:** https://graffpunks.live/
+- **GKniftyHEADS Website:** https://gkniftyheads.com/
+- **GKniftyHEADS Wiki (character canon):** https://gkniftyheads.fandom.com/
+- **Graffiti Kings:** https://graffitikings.co.uk/
+- **YouTube:** https://www.youtube.com/@GKniftyHEADS
+- **Medium (@GKniftyHEADS):** https://medium.com/@GKniftyHEADS
+- **X/Twitter:** https://x.com/GraffPunks
+
+### MASTER CHARACTER CANON
+> 📋 **Complete universe character index:** See **[MASTER-CHARACTER-CANON.md](./MASTER-CHARACTER-CANON.md)** — all tiers, all 40 factions, full timeline (1980s–Year 3030), real-world collaborators, publication roadmap, and cross-reference matrix. **Loaded every run — agent auto-uses any updated canon data going forward.**
+
+### Character Groups Wiki Pages (GKniftyHEADS Fandom)
+- GraffPUNKS: https://gkniftyheads.fandom.com/wiki/GraffPUNKS
+- HODL Warriors: https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS
+- Crypto Moonboys: https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS
+- Gasless Ghosts & NULL The Prophet: https://gkniftyheads.fandom.com/wiki/Gasless_Ghosts_%26_NULL_The_Prophet
+- Block Topia: https://gkniftyheads.fandom.com/wiki/Block_Topia
+- Sacred Chain: https://gkniftyheads.fandom.com/wiki/Sacred_Chain
+- Aether Chain: https://gkniftyheads.fandom.com/wiki/Aether_Chain
+
+Last updated: March 17, 2026
