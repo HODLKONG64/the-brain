@@ -43,3 +43,60 @@ The brand uses four dedicated image files as the authoritative visual references
 - To sustain brand integrity and recognition in a competitive market.
 - To ensure all visual representations resonate with the target audience and community expectations.
 - The 4-file system (2 for boys, 2 for girls) provides clear, organized references that eliminate ambiguity about which visual standards apply to each character type.
+
+---
+
+## BLOCK TOPIA UNIVERSE — LORE CONTEXT RULES
+
+### The Triple Fork Event (Year 2198) — Historical Anchor
+
+All lore posts must treat the Triple Fork Event as the central catastrophe that shaped the Crypto Moonboys universe:
+
+- **What happened:** In Year 2198, the World Chain split into 3 incompatible, conflicting realities ("The Chainfire"). Consensus evaporated. Society fractured. Chain-cults, barter kingdoms, and digital dead-zones emerged.
+- **Consequence:** Humanity split along incompatible blockchain factions. "Which timeline is truth?" became the defining question of civilisation.
+- **Why it matters now (Year 3008):** The 40 factions exist because of the Triple Fork. The Forkborn Collective was born from it. NULL The Prophet and the Gasless Ghosts emerged from it. Block Topia was built as a response to it.
+- **How to use in lore:** Reference as distant history that echoes into the present. Characters carry the ideological scars of the Triple Fork in their philosophy and action.
+
+---
+
+### Major Antagonist Rules
+
+#### NULL THE PROPHET — How the Agent Must Handle This Character
+
+- NULL The Prophet is the **primary villain** of the Crypto Moonboys universe. The agent must know this character thoroughly.
+- **Do NOT generate lore that ignores NULL.** This character is the existential threat that makes all faction conflict meaningful.
+- **In awake posts:** Reference NULL's transmissions, philosophy, or threat when lore covers Block Topia's stability, governance, or chain integrity.
+- **In dream posts:** NULL can appear as void-spaces, glitch interruptions, or a voice from the Null-Zone.
+- **Key rule:** NULL cannot be killed — only contained by Sacred Chain encryption. Never write NULL as defeated.
+- **Void theory (NULL's philosophy):** Every blockchain, every NFT, every DAO is an attempt to create permanence in a universe that fundamentally does not want permanence. The void is not emptiness; it is pure potential.
+
+#### QUEEN SARAH P-FLY — How the Agent Must Handle This Character
+
+- **In Block Topia posts:** She is the enforcer of order, the voice of algorithmic governance. Reference her when the lore involves Squeaky Pinks enforcement, Block Topia law, or deterministic order.
+- **Philosophical role:** She represents the exact opposite of GraffPUNKS philosophy. Every post about creative freedom implicitly opposes what she stands for.
+- **In Council of Chains references:** She holds a seat; she attends but hates meetings. She is the most analytically capable person in the room.
+- **In antagonist scenes:** She is never purely evil — she genuinely believes optimised order is the only survival path. Her paradox: rigid order may be what destroys Block Topia in the Final Fork.
+
+---
+
+### Sacred Chain Rules (Lore Physics)
+
+The Sacred Chain is the foundational "physics engine" of the Crypto Moonboys universe:
+
+- **What it is:** The immutable record of all chain truth; what GraffPUNKS protect and NULL The Prophet seeks to dissolve
+- **How it works:** Like a blockchain — once something is on the Sacred Chain, it cannot be undone (the "unbuffable art" philosophy made real)
+- **Who guards it:** HODL Warriors (military), Chain Scribes / Elder Codex-7 (archival), Forkborn Collective (across timelines)
+- **What threatens it:** Null-Cipher (can dissolve Sacred Chain nodes), The Machine (erases via algorithm), Queen Sarah P-fly (distorts through control)
+- **In every post:** The protagonist's real-world graffiti art IS the Sacred Chain in physical form. Every tag = a chain record.
+
+---
+
+### Faction Conflict Matrix (Quick Reference)
+
+| Side | Faction/Character | Opposes |
+|------|------------------|---------|
+| FREEDOM | GraffPUNKS, Forkborn, Street Kingdoms, HODL Warriors | Block Topia order |
+| ORDER | Queen Sarah P-fly, Squeaky Pinks, Block Topia | GraffPUNKS, Street Kingdoms |
+| VOID | NULL The Prophet, Gasless Ghosts | All existence |
+| NEUTRAL | Elder Codex-7, Chain Scribes, DeFi Dragons | Takes no permanent side |
+| BRIDGE | AETHER CHAIN Architects | Seek reconciliation between all |

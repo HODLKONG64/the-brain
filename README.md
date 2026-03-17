@@ -51,13 +51,15 @@ This repository runs the **GK BRAIN** — an autonomous Telegram posting agent t
 - **Image Generation**: Every post includes detailed Grok Imagine prompt using Substack style + uploaded layers + exact bonnet/head shape.
 
 ## FILE STRUCTURE & PURPOSE
-- `brain-rules.md` → All core rules, routines, dreams, continuity, 3 meanings, etc.
-- `character-bible.md` → Character consistency, art layers, image prompt template.
+- `brain-rules.md` → All core rules, routines, dreams, continuity, 3 meanings, Triple Fork Event lore, antagonist rules, faction conflict matrix.
+- `character-bible.md` → Character consistency, art layers, image prompt template, **all canonical character profiles** (NULL The Prophet, Queen Sarah P-fly, Forkborn Collective, AETHER CHAIN, DeFi Dragons, Art Insurgency, Dream Weavers, The Mempool, Council of Chains).
 - `MASTER-CHARACTER-CANON.md` → Complete Crypto Moonboys universe character index (all tiers, factions, timeline). Loaded every run — agent auto-uses any updated canon data going forward.
+- `DEEP-DIVE-AUDIT-REPORT.md` → **Comprehensive 10-section audit** of all GitHub files + all linked platforms (GKniftyHEADS Wiki, GraffPunks Substack, Medium, GraffPunks.live, collaborator sites). Last updated: March 17, 2026.
+- `genesis-lore.md` → 3,700+ word Block Topia genesis seed narrative (all 55 AI systems initialise from this foundation).
 - `gk-brain.py` → The actual agent code (loads files, generates posts, posts to Telegram).
 - `.github/workflows/gk-brain.yml` → GitHub Actions workflow (runs every 2 hours + manual trigger).
 - `lore-history.md` → Stores every post ever made for 7-day continuity.
-- `lore-planner.md` → 30-day lore planner (March 14 – April 12) with 2-hour UTC slot breakdown. Agent uses matching slot as context seed each run.
+- `lore-planner.md` → 7-day repeating calendar with 2-hour UTC slot breakdown. Agent uses matching slot as context seed each run.
 - `reply-tracker.json` → Tracks Telegram reply limits per user (count, date, failed_attempts).
 - `bot-state.json` → Persists the last processed Telegram update_id so commands are never replayed.
 - `AGENT-EXPLAINER.md` → Full in-depth technical and conceptual explanation of the entire system (20 sections, ~50KB).
@@ -96,4 +98,4 @@ Slash commands bypass the keyword trigger gate and do NOT count against the 20/d
 
 **The GK BRAIN is now fully operational and self-updating.**
 
-Last updated: March 16, 2026
+**Last updated: March 17, 2026**
