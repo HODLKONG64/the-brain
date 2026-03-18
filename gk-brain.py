@@ -776,6 +776,21 @@ def generate_lore_pair(
         "You post to Telegram as if writing a live journal. "
         "Your lore is deeply immersive, grounded in UK urban culture, and gradually "
         "builds a continuous saga across days, weeks, and dreamscapes.\n\n"
+        "IMAGE PROMPT RULES — MANDATORY (AC-7, AC-9, AC-14):\n"
+        "Every IMAGE PROMPT you write MUST follow ALL of these rules without exception:\n"
+        "1. ART STYLE: Black charcoal pencil drawing on white paper. "
+        "NO colour. NO photorealism. NO painted textures. Pure black ink/charcoal lines on white.\n"
+        "2. CHARACTER PRESENCE: At least 1 Crypto Moonboys character MUST appear in every scene. "
+        "Never generate a scene with only a background or environment — a character is always required.\n"
+        "3. CHARACTER ANATOMY (96% fidelity to reference files): "
+        "Rounded cartoon head and torso (cream/yellow tone rendered in charcoal shading). "
+        "Simple cartoon face with small dark eyes and minimal features — NOT a realistic human face. "
+        "Unique bonnet/hat accessory on head matching the lore mood.\n"
+        "4. REFERENCE FILES: Base all character designs on these approved files — "
+        "boysimagesetone.png (male faces), boysimagesettwo.png (male bonnets), "
+        "girlsimagesetone.png (female faces), girlsimagesettwo.png (female bonnets).\n"
+        "5. SCENE: Match the lore text precisely — same time of day, weather, lighting, "
+        "season, and location. Only the scene/background is the creative free zone.\n\n"
         "BRAIN RULES:\n"
         + brain_rules[:3000]
         + "\n\nCHARACTER BIBLE:\n"
@@ -862,19 +877,26 @@ def generate_lore_pair(
         lore2 = raw[1500:] or lore1
     if not image1:
         image1 = (
-            "Generate a high-detail GraffPunks style scene: "
-            f"{rule_ctx['time_theme']} atmosphere, UK urban environment, "
-            "graffiti art style."
+            "A Crypto Moonboys character with rounded cartoon head and unique bonnet, "
+            f"black charcoal pencil on white paper, {rule_ctx['time_theme']} atmosphere, "
+            "UK urban environment, charcoal sketch style."
         )
     if not image2:
         image2 = image1
 
-    # Prepend character bible style instruction
+    # Prepend mandatory art style and character rules to every image prompt
     style_prefix = (
-        "Generate a high-detail GraffPunks style scene in the artist's universe. "
-        "Never change hair, face, clothing, colours, or style from established refs. "
-        "Match the scene to the lore text perfectly, including time of day, weather, "
-        "lighting, and season. "
+        "ART STYLE — MANDATORY: Black charcoal pencil drawing on white paper. "
+        "NO colour. NO photorealism. NO painted textures. Pure black ink/charcoal lines on white. "
+        "CHARACTERS — MANDATORY: At least 1 Crypto Moonboys character MUST appear in this scene. "
+        "Character anatomy (NON-NEGOTIABLE — 96% fidelity): "
+        "Rounded cartoon head and torso (cream/yellow tone rendered in charcoal shading). "
+        "Simple cartoon face with small dark eyes and minimal features — NOT a realistic human face. "
+        "Unique bonnet/hat accessory on head (style chosen to match lore mood). "
+        "Reference character designs: boysimagesetone.png (male faces), boysimagesettwo.png (male bonnets), "
+        "girlsimagesetone.png (female faces), girlsimagesettwo.png (female bonnets). "
+        "The character body shape is the non-negotiable foundation — only scene/background is creative free zone. "
+        "SCENE: Match the lore text precisely — same time of day, weather, lighting, season, location. "
     )
     image1 = style_prefix + image1
     image2 = style_prefix + image2
