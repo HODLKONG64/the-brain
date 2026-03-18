@@ -123,3 +123,46 @@ These rules define the foundational lore the agent must know when generating pos
 - NULL The Prophet prophesies: "In the Final Fork, all will return to static."
 - The AETHER CHAIN is the only known alternative to total collapse.
 - HODL Warriors will be summoned for the final defence of the Sacred Chain.
+
+---
+
+## DUAL BRAIN ARCHITECTURE RULES (DB-1 — DB-12)
+
+### DB-1 — Wiki Separation
+Brain 3 (gk-brain.py) MUST NOT queue its own Telegram lore posts to the wiki queue. Only real-world updates detected by crawl-brain or analytics-brain belong in the wiki. The wiki reflects external facts, not internal lore posts.
+
+### DB-2 — 20% Creative Signal Rule
+Brain1 canon signals (brain1-canon.json) may influence at most 20% of any lore post. The remaining 80% must come from calendar rules, character continuity, and the time block. A brain1 signal is a seed, not a script.
+
+### DB-3 — 7-Day Signal Vault
+Brain1 canon signals older than 7 days MUST be treated as stale and ignored by the lore generator. Stale signals must not be marked used — they remain in the vault for potential archival review.
+
+### DB-4 — Signal Lifecycle
+A brain1 signal progresses through three states:
+1. **Unread** — `b2_used: false`, available for injection
+2. **Used** — `b2_used: true`, set only after a confirmed successful Telegram post
+3. **Stale** — older than 7 days, silently skipped without marking as used
+
+### DB-5 — Post 2 Image Cue
+Post 2 is always sent WITH an image. The image prompt for Post 2 must visually reference at least one concrete scene element from the Post 2 lore text (not a generic GraffPunks fallback). If image generation fails, Post 2 falls back to plain text — but the image prompt must still be generated.
+
+### DB-6 — Brain Isolation
+Each of the 4 brains (crawl, analytics, gk, wiki) runs as an independent process. They communicate ONLY via the inter-brain JSON files listed in BRAIN-COORDINATOR.md. No brain may import functions from another brain's primary module.
+
+### DB-7 — Wiki Brain Gatekeeper
+wiki-brain.py MUST run a credential health check (`wiki_brain_health_check()`) before making any write calls. If credentials are missing or login fails, all wiki writes for that cycle are skipped — never retried in the same run.
+
+### DB-8 — Crawl Deduplication
+crawl-brain.py MUST use content fingerprinting (MD5 of title + snippet) to deduplicate new crawl results before writing to crawl-results.json. A result with an existing fingerprint MUST be silently discarded.
+
+### DB-9 — Lore History Retention
+The lore-history.md buffer retains the last 40,000 characters (~14 days of posts). Older content is trimmed automatically by save_lore_history(). This ensures the lore generator always has 2 weeks of continuity context.
+
+### DB-10 — Env Fast-Fail
+gk-brain.py MUST raise EnvironmentError immediately at the start of main() if GROK_API_KEY or TELEGRAM_BOT_TOKEN are not set. No partial execution is allowed without these two credentials.
+
+### DB-11 — Claude Routing
+When ANTHROPIC_API_KEY is set, all primary lore text generation routes through Claude 3.5 Sonnet via _llm_chat(). Grok is used as the fallback. Image generation always uses Grok regardless of ANTHROPIC_API_KEY.
+
+### DB-12 — Telegram Rate Guard
+A mandatory time.sleep(2) MUST be called between posting Message 1 and Message 2 in every Telegram posting loop. This guards against Telegram's per-bot rate limits for rapid sequential messages to the same chat.
