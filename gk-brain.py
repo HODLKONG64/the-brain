@@ -1796,18 +1796,32 @@ def main() -> None:
     # Always queue a lore-post wiki entry so the wiki gets updated every cycle
     _now_dt = datetime.datetime.now(datetime.UTC)
     _now_iso = _now_dt.isoformat().replace("+00:00", "Z")
-    lore_post_update = {
+    _date_str = _now_dt.strftime("%d %b %Y")
+    _time_str = _now_dt.strftime("%H:%M")
+
+    lore1_wiki_entry = {
         "type": "lore-post",
-        "source": "gk-brain-agent",
-        "title": f"GK BRAIN Lore Post — {_now_dt.strftime('%d %b %Y %H:%M')} UTC",
-        "content": (lore1[:400] + "\n\n---\n\n" + lore2[:400]).strip(),
+        "source": "https://github.com/HODLKONG64/the-brain",
+        "title": f"Lore Entry — {_date_str} {_time_str} UTC",
+        "content": lore1,
         "timestamp": _now_iso,
         "used": True,
         "wiki_update": True,
         "wiki_done": False,
-        "lore_weight": 0.0,
+        "lore_weight": 1.0,
     }
-    add_to_queue([lore_post_update])
+    lore2_wiki_entry = {
+        "type": "lore-post",
+        "source": "https://github.com/HODLKONG64/the-brain",
+        "title": f"Lore Entry 2 — {_date_str} {_time_str} UTC",
+        "content": lore2,
+        "timestamp": _now_iso,
+        "used": True,
+        "wiki_update": True,
+        "wiki_done": False,
+        "lore_weight": 1.0,
+    }
+    add_to_queue([lore1_wiki_entry, lore2_wiki_entry])
 
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:
