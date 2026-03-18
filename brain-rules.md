@@ -169,3 +169,6 @@ A mandatory time.sleep(2) MUST be called between posting Message 1 and Message 2
 
 ### DB-13 — Image Memory-Only Policy
 Generated images MUST NEVER be written to disk. Images are produced in memory as bytes, streamed directly to Telegram via multipart upload (_telegram_send_photo()), and then discarded. No image file (PNG, JPG, or any binary) may be persisted to the repository, local filesystem, or any storage layer. Execution reports may log image metadata (size in KB, prompt text, status) but MUST NOT store raw image bytes.
+
+### DB-14 — Auto-Pin After Post 2
+After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be printed to stdout but MUST NOT prevent the rest of the posting loop from continuing. The bot requires "Pin Messages" admin rights in each target chat for this to work; missing rights result in a warning printed to stdout only.
