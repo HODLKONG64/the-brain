@@ -66,7 +66,7 @@ that the GK BRAIN agent MUST follow. Updated: 2026-03-18.
 
 - `pinChatMessage` requires the bot to have **"Pin Messages"** admin right in the target chat.
 - Always use `disable_notification=True` for silent pins (no push notification to members).
-- Pinning failure MUST NOT block or interrupt the posting flow. (See DB-13.)
+- Pinning failure MUST NOT block or interrupt the posting flow. (See DB-14.)
 - Each chat can only have one pinned message (for basic groups); channels support multiple pins.
 
 ---
@@ -123,7 +123,7 @@ The GK BRAIN bot requires at minimum: **Post Messages + Pin Messages** in every 
 - [ ] Message 1 text ≤ 4,096 characters
 - [ ] Message 2 caption ≤ 1,024 characters
 - [ ] `time.sleep(2)` between Message 1 and Message 2 in same chat (DB-12)
-- [ ] `pinChatMessage` with `disable_notification=True` after Message 2 (DB-13)
+- [ ] `pinChatMessage` with `disable_notification=True` after Message 2 (DB-14)
 - [ ] On `429` error: sleep `retry_after`, then retry once only
 - [ ] On `403` error: log and skip chat; do not retry
 - [ ] Never run concurrent `getUpdates` polling instances
@@ -134,6 +134,7 @@ The GK BRAIN bot requires at minimum: **Post Messages + Pin Messages** in every 
 
 These rules are enforced by the following components:
 - `gk-brain.py` → `_telegram_post()`, `_telegram_send_photo()`, `_pin_message()`, `post_to_telegram()`
-- `brain-rules.md` → DB-10 (env fast-fail), DB-12 (rate guard), DB-13 (auto-pin)
-- This file → `TELEGRAM-BOT-API-RULES.md` (authoritative reference, loaded by master backup agent)
+- `brain-rules.md` → DB-10 (env fast-fail), DB-12 (rate guard), DB-13 (image memory-only), DB-14 (auto-pin), DB-15 (backup runs last), DB-16 (conflict quarantine), DB-17 (backup scope), DB-18 (no import from backup)
+- `gk-brain-complete.md` → MB-1 through MB-5 (backup agent protocol)
+- This file → `TELEGRAM-BOT-API-RULES.md` (authoritative Telegram compliance reference, loaded by master backup agent)
 - `master-backup-agent.py` → validates Telegram compliance on every sync cycle
