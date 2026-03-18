@@ -112,5 +112,5 @@ This master file now contains **100% of every brain-rules.md and character-bible
 
 The agent loads this file every run.
 
-## DB-13: AUTO-PIN MESSAGE 2 (locked)
+## DB-14: AUTO-PIN MESSAGE 2 (locked)
 After both lore posts are successfully sent to Telegram, the bot must call `pinChatMessage` on the Message 2 message ID. Pinning failure is non-fatal — log the error to stdout and continue.
