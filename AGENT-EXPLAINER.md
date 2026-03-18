@@ -202,7 +202,7 @@ This is the main creative work. The agent:
 9. Appends the new posts to `lore-history.md`
 
 ### Step 4 — Post to Telegram
-Both posts are sent to all registered channel chat IDs with a 3-second delay between them.
+Both posts are sent to all registered channel chat IDs with a 2-second delay between them. After Message 2 is sent to each chat, the bot silently pins that message to the top of the chat (requires "Pin Messages" admin right; best-effort — failure is logged but does not block).
 
 ### Step 5 — Save Persistent State
 - `reply-tracker.json` — updated with any new user reply counts from Step 2

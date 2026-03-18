@@ -307,6 +307,25 @@ def _telegram_send_photo(chat_id: str, photo: bytes, caption: str | None = None)
     return data
 
 
+def _pin_message(chat_id: str, message_id: int) -> None:
+    """Pin a message silently in a Telegram chat (best-effort).
+
+    Requires the bot to have 'Pin Messages' admin right in the target chat.
+    Uses disable_notification=True so members are not spammed with a pin alert.
+    Errors are printed to stdout but never raised — pin failure must never block posting.
+    """
+    try:
+        _telegram_post(
+            "pinChatMessage",
+            chat_id=chat_id,
+            message_id=message_id,
+            disable_notification=True,
+        )
+        print(f"[telegram] Pinned message {message_id} in {chat_id}")
+    except Exception as exc:
+        print(f"[telegram] Pin failed for {chat_id} (message {message_id}): {exc} — continuing.")
+
+
 def _send_telegram_alert(message: str) -> None:
     """Send a plain text Telegram message to all channels (best effort)."""
     if not TELEGRAM_BOT_TOKEN:
@@ -1363,16 +1382,23 @@ def post_to_telegram(lore1, image1, lore2, image2) -> dict:
             _telegram_post("sendMessage", chat_id=chat_id, text=msg1_text)
             posting_info["msg1_status"] = "success"
 
-            time.sleep(2)
+            time.sleep(2)  # DB-12 rate guard
 
             # Message 2: image with caption (caption max _TG_MSG2_MAX chars)
             print(f"[telegram] Message 2: {len(msg2_text)} chars caption (max {_TG_MSG2_MAX}) + image")
             if image2:
-                _telegram_send_photo(chat_id, image2, caption=msg2_text)
+                msg2_result = _telegram_send_photo(chat_id, image2, caption=msg2_text)
             else:
                 # No image available — send as plain text (full 4096-char limit applies)
-                _telegram_post("sendMessage", chat_id=chat_id, text=msg2_text)
+                msg2_result = _telegram_post("sendMessage", chat_id=chat_id, text=msg2_text)
             posting_info["msg2_status"] = "success"
+
+            # Pin Message 2 silently — best-effort (bot needs Pin Messages admin right)
+            msg2_id = (msg2_result or {}).get("result", {}).get("message_id")
+            if msg2_id:
+                _pin_message(chat_id, msg2_id)
+            else:
+                print(f"[telegram] Could not extract message_id for pinning in {chat_id}")
 
             print(f"[telegram] Posted to {chat_id} (smart split, no truncation)")
         except Exception as exc:
