@@ -7,9 +7,8 @@ Every agent run MUST execute the following cycle IN FULL, in this exact order, w
 1. Run the full webcrawl (all URLs in the LINKS section below).
 2. Detect all new updates since the last run.
 3. Post lore + images to Telegram.
-4. Run wiki-smart-merger to push detected updates to the Fandom wiki.
-5. Run wiki-page-builder for every newly discovered or updated Crypto Moonboys entity (character, lore event, NFT collection, weapon/key, location, toy, game). Each entity page must be fully structured (infobox, sections, See Also, External Links, References, categories).
-6. Run wiki-cross-checker to verify all saves are reflected on the wiki.
+4. Run wiki-brain.py — this single step internally orchestrates wiki-smart-merger, wiki-page-builder, and wiki-cross-checker for all newly discovered or updated entities.
+5. Run master-backup-agent.py LAST — fingerprints all tracked files, absorbs rules, checks for conflicts, and appends snapshot to master-backup-state.json.
 This cycle is mandatory every 2 hours, triggered by the GitHub Actions cron. Under no circumstances may any step be omitted or deferred.
 
 ## WIKI PAGE CREATION RULES (locked)
@@ -146,5 +145,32 @@ This master file now contains **100% of every brain-rules.md and character-bible
 
 The agent loads this file every run.
 
-## DB-14: AUTO-PIN MESSAGE 2 (locked)
-After both lore posts are successfully sent to Telegram, the bot must call `pinChatMessage` on the Message 2 message ID. Pinning failure is non-fatal — log the error to stdout and continue.
+## DB-14 — Auto-Pin After Post 2 (locked)
+After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be printed to stdout but MUST NOT prevent the rest of the posting loop from continuing. The bot requires "Pin Messages" admin rights in each target chat for this to work; missing rights result in a warning printed to stdout only.
+
+## DB-15 — Master Backup Agent Runs Last (locked)
+`master-backup-agent.py` MUST be the final step in every GitHub Actions workflow cycle. It runs after all other agents have completed. It MUST NOT be called from within any other agent. It always exits with code 0 regardless of internal errors.
+
+## DB-16 — Conflict Quarantine (locked)
+If `master-backup-agent.py` detects a rule in an incoming file that directly contradicts an existing locked rule (DB-1 through DB-18, MB-1 through MB-5), it MUST log the conflict to `master-backup-state.json` under a `conflicts` key and skip absorbing that rule. It MUST NOT overwrite the locked rule.
+
+## DB-17 — Backup Scope (locked)
+`master-backup-agent.py` MUST fingerprint (SHA-256) all 34 tracked repo files on every run. It extracts DB-N and MB-N rules from `.md` files and module-level constants from `.py` files. All extracted data is written append-only to `master-backup-state.json`. Atomic writes via `tmp + os.replace` are mandatory.
+
+## DB-18 — No Agent May Import From Backup Agent (locked)
+No other agent or Python module in this repo may import from `master-backup-agent.py`. The backup agent is a passive observer only. It reads from other files; nothing reads from it at runtime.
+
+## MB-1 — Master Backup Purpose (locked)
+`master-backup-agent.py` exists solely to create a versioned, append-only snapshot of all rules and logic in the repo. It is the single source of truth for disaster recovery. It never posts to Telegram, never edits the wiki, and never modifies any other file.
+
+## MB-2 — Absorption Protocol (locked)
+On each run, the backup agent reads every tracked file, computes SHA-256 fingerprints, extracts structured rules (DB-N, MB-N from `.md`; module-level constants from `.py`), and appends a new timestamped snapshot entry to `master-backup-state.json`. If a file has not changed since the last run (same fingerprint), its rules are still included in the snapshot but flagged `"changed": false`.
+
+## MB-3 — Conflict Resolution (locked)
+When a conflict is detected (an incoming rule contradicts a locked rule), the backup agent logs it under `"conflicts"` in the snapshot and skips the conflicting rule. It MUST NOT silently overwrite locked rules. Conflicts are surfaced in the next GitHub Actions run log for human review.
+
+## MB-4 — Disaster Recovery (locked)
+In a disaster recovery scenario, `master-backup-state.json` is the authoritative restore source. The most recent snapshot entry with `"status": "clean"` is used. All locked rules (DB-1 through DB-18, MB-1 through MB-5) must be restored exactly as recorded — no paraphrasing, no summarising.
+
+## MB-5 — New File Onboarding (locked)
+When a new `.md` or `.py` file is added to the repo, it MUST be added to the backup agent's tracked file list before or in the same PR that adds the file. The backup agent MUST fingerprint it on its next run. Files not in the tracked list are invisible to the backup system.

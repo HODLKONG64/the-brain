@@ -1,30 +1,3 @@
-## DUAL BRAIN RULES
-
-```
-DUAL BRAIN RULES (LOCKED — DO NOT VIOLATE)
-===========================================
-DB-1: BRAIN 1 is the Canon Brain. It learns from web crawls, website updates,
-      NFT platforms, social media, and LLM-discovered canonical facts only.
-DB-2: BRAIN 1 is the ONLY brain that may update the Fandom wiki.
-DB-3: BRAIN 2 is the Telegram Lore Brain. It holds only the last 7 days of
-      Telegram lore posts for continuity purposes.
-DB-4: BRAIN 2 lore NEVER goes to the wiki. Not a word.
-DB-5: BRAIN 2 resets every Sunday at midnight UTC. All posts are wiped.
-DB-6: Both brains save data compressed as small as possible (compact JSON only).
-DB-7: BRAIN 2 only saves the last 7 days. Anything older is deleted on every run.
-DB-8: BRAIN 1 keeps a rolling log of the last 200 web discoveries. Older entries
-      are dropped to keep file size small.
-DB-9: The agent learns about Crypto Moonboys from: (a) all websites in
-      gkandcryptomoonboywebsitestosave.md, (b) LLM responses that contain new
-      canonical facts, (c) any other source the agent encounters. All learning
-      goes to BRAIN 1 only.
-DB-10: Art creation uses LLM prompts to enhance 2D art. LLM art advice/results
-       that reveal canonical character appearance details are saved to BRAIN 1
-       under character_facts.
-```
-
----
-
 ## IMAGE GENERATION & ON-BRAND CONSISTENCY RULES
 
 ### Core Principle
@@ -152,7 +125,7 @@ These rules define the foundational lore the agent must know when generating pos
 
 ---
 
-## DUAL BRAIN ARCHITECTURE RULES (DB-1 — DB-12)
+## LOCKED BRAIN RULES (DB-1 — DB-18)
 
 ### DB-1 — Wiki Separation
 Brain 3 (gk-brain.py) MUST NOT queue its own Telegram lore posts to the wiki queue. Only real-world updates detected by crawl-brain or analytics-brain belong in the wiki. The wiki reflects external facts, not internal lore posts.
@@ -198,3 +171,15 @@ Generated images MUST NEVER be written to disk. Images are produced in memory as
 
 ### DB-14 — Auto-Pin After Post 2
 After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be printed to stdout but MUST NOT prevent the rest of the posting loop from continuing. The bot requires "Pin Messages" admin rights in each target chat for this to work; missing rights result in a warning printed to stdout only.
+
+### DB-15 — Master Backup Agent Runs Last
+`master-backup-agent.py` MUST be the final step in every GitHub Actions workflow cycle. It runs after all other agents have completed. It MUST NOT be called from within any other agent. It always exits with code 0 regardless of internal errors.
+
+### DB-16 — Conflict Quarantine
+If `master-backup-agent.py` detects a rule in an incoming file that directly contradicts an existing locked rule (DB-1 through DB-18, MB-1 through MB-5), it MUST log the conflict to `master-backup-state.json` under a `conflicts` key and skip absorbing that rule. It MUST NOT overwrite the locked rule.
+
+### DB-17 — Backup Scope
+`master-backup-agent.py` MUST fingerprint (SHA-256) all 34 tracked repo files on every run. It extracts DB-N and MB-N rules from `.md` files and module-level constants from `.py` files. All extracted data is written append-only to `master-backup-state.json`. Atomic writes via `tmp + os.replace` are mandatory.
+
+### DB-18 — No Agent May Import From Backup Agent
+No other agent or Python module in this repo may import from `master-backup-agent.py`. The backup agent is a passive observer only. It reads from other files; nothing reads from it at runtime.
