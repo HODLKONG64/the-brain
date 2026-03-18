@@ -7,6 +7,7 @@ human-readable summary to console.
 """
 
 import datetime
+import glob
 import json
 import os
 import time
@@ -319,6 +320,18 @@ class ExecutionReporter:
         except OSError as exc:
             print(f"[reporter] Could not save report to {filepath}: {exc}")
             filepath = ""
+
+        # Keep only the 5 most recent execution reports; silently delete older ones.
+        try:
+            pattern = os.path.join(output_dir, "execution-report-*.json")
+            reports = sorted(glob.glob(pattern), reverse=True)
+            for old_report in reports[5:]:
+                try:
+                    os.remove(old_report)
+                except OSError:
+                    pass
+        except Exception:
+            pass
 
         self._print_summary(report, filepath)
         return filepath

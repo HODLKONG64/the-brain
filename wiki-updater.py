@@ -82,7 +82,7 @@ def _log_error(context: str, error: str) -> None:
 
 def _update_to_wikitext(update: dict) -> str:
     """Convert a structured update dict to MediaWiki markup."""
-    ts = update.get("timestamp", datetime.datetime.now(timezone.utc).isoformat() + "Z")
+    ts = update.get("timestamp", datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
     try:
         dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
         display_time = dt.strftime("%d %B %Y, %H:%M UTC")
