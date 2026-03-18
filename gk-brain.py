@@ -841,27 +841,32 @@ def build_image_prompt_prefix(lore_text: str, time_theme: str = "day") -> str:
             )
 
         prefix = (
-            "STRICT BLACK AND WHITE ONLY. BLACK CHARCOAL PENCIL ON WHITE PAPER. ZERO COLOUR. NO EXCEPTIONS. "
-            "No colour anywhere in the image. No photorealism. No paint. No shading with colour. Pure black charcoal lines and marks on pure white paper only. "
+            "STRICT BLACK AND WHITE CHARCOAL DRAWING ONLY. ABSOLUTELY NO COLOUR. NO EXCEPTIONS WHATSOEVER. "
+            "This image must be rendered as black charcoal pencil marks on white paper — exactly like a pencil sketch. "
+            "Every single element — skin, clothing, background, hair, accessories, scene — must be black charcoal on white paper only. "
+            "No colour. No tint. No hue. No shading with colour. No colour wash. No coloured lines. Pure monochrome only. "
             f"Use 100% {ref_source}. "
             "Head + bonnet as one inseparable unit. "
             f"Face expression: {expression} (matching lore mood: {time_theme}). "
-            "96% shape fidelity to reference — 4% creative zone for minor surface details only. "
-            "Clothing: main faction uniform unless exception trigger active. "
+            "96% shape fidelity to reference — 4% creative zone for line weight and texture variation only. "
+            "Clothing: main faction uniform rendered in black charcoal lines only. "
             "Bonnet 3D elements (all locked at 96%): eagle beak dead centre, eagle birds each side, "
-            "white feathers above eyes, green hair pulled through, yellow leather material, ears visible out the sides. "
-            "NO COLOUR ANYWHERE. Black charcoal lines on white paper only. Zero colour in any element including background, clothing, skin, scene. 4% creative zone applies to line weight and texture variation only — never colour. "
+            "feathers above eyes, hair pulled through bonnet opening, leather-textured bonnet material, ears visible out the sides. "
+            "ZERO COLOUR IN ANY ELEMENT. Black charcoal marks on white paper only. "
             f"Reference character files: {ref_files}. "
             "At least 1 person MUST be featured. "
-            "Character must have rounded yellow head/torso with GraffPUNKS bonnet (non-negotiable). "
+            "Character must have rounded head and torso shape with GraffPUNKS bonnet (non-negotiable). "
+            "FINAL REMINDER: NO COLOUR. BLACK AND WHITE CHARCOAL SKETCH ONLY. "
             "Scene details: "
         )
         return prefix
     except Exception as exc:
         print(f"[image-prefix] Failed to build prefix: {exc}")
         return (
-            "STRICT BLACK AND WHITE ONLY. BLACK CHARCOAL PENCIL ON WHITE PAPER. ZERO COLOUR. NO EXCEPTIONS. "
-            "No colour anywhere. At least 1 Crypto Moonboys character MUST appear (rounded yellow head/torso shape, GraffPUNKS bonnet). "
+            "STRICT BLACK AND WHITE CHARCOAL DRAWING ONLY. ABSOLUTELY NO COLOUR. NO EXCEPTIONS WHATSOEVER. "
+            "Black charcoal pencil on white paper only. No colour anywhere in the image. "
+            "At least 1 Crypto Moonboys character MUST appear (rounded head and torso shape, GraffPUNKS bonnet, charcoal lines only). "
+            "FINAL REMINDER: NO COLOUR. BLACK AND WHITE CHARCOAL SKETCH ONLY. "
             "Scene details: "
         )
 
