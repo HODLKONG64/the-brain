@@ -172,6 +172,8 @@ LORE_PLANNER_FILE = os.path.join(BASE_DIR, "lore-planner.md")
 QUEUE_FILE = os.path.join(BASE_DIR, "wiki-update-queue.json")
 SNAPSHOT_FILE = os.path.join(BASE_DIR, "crawl-snapshot.json")
 GENESIS_LORE_FILE = os.path.join(BASE_DIR, "genesis-lore.md")
+BRAIN1_CANON_FILE = os.path.join(BASE_DIR, "brain1-canon.json")
+BRAIN2_LORE_FILE = os.path.join(BASE_DIR, "brain2-telegram-lore.json")
 
 # Reference art images (2 boys sets + 2 girls sets)
 _ASSETS_DIR = os.path.join(BASE_DIR, "assets", "layers")
@@ -302,6 +304,11 @@ def _read_file(path: str, fallback: str = "") -> str:
         return fallback
 
 
+def _write_file(path: str, content: str) -> None:
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(content)
+
+
 def load_lore_history() -> str:
     return _read_file(LORE_HISTORY_FILE, "(No previous lore recorded.)")
 
@@ -324,6 +331,104 @@ def load_lore_planner() -> str:
 
 def load_genesis_lore() -> str:
     return _read_file(GENESIS_LORE_FILE, "")
+
+
+# ---------------------------------------------------------------------------
+# Brain 1 → Brain 2 update feed
+# ---------------------------------------------------------------------------
+
+def load_brain1_signal() -> tuple:
+    """
+    Reads brain1-canon.json and extracts any updates where b2_used is False.
+    Returns (signal_string, list_of_update_ids_to_mark_used).
+    signal_string is a compact multi-line summary, max 60 chars per line.
+    If no new updates, returns ("", []).
+    """
+    try:
+        raw = _read_file(BRAIN1_CANON_FILE, "{}")
+        data = json.loads(raw)
+    except Exception:
+        return ("", [])
+
+    updates = data.get("updates", [])
+    new_updates = [u for u in updates if not u.get("b2_used", False)]
+
+    if not new_updates:
+        return ("", [])
+
+    # Crunch each update to max 60 chars
+    signal_lines = []
+    ids_to_mark = []
+    for idx, u in enumerate(new_updates[:5]):  # cap at 5 signals per cycle to avoid overloading prompt
+        summary = (u.get("summary") or u.get("type") or "update")[:60]
+        signal_lines.append(summary)
+        if "id" in u:
+            ids_to_mark.append(u["id"])
+        elif u.get("ts"):
+            ids_to_mark.append(u["ts"])
+        else:
+            # Fallback: use insertion index to uniquely identify this entry
+            ids_to_mark.append(f"__idx_{idx}")
+
+    signal_str = "\n".join(signal_lines)
+    return (signal_str, ids_to_mark)
+
+
+def mark_brain1_updates_used(ids_to_mark: list) -> None:
+    """
+    After successful Telegram post, mark the relevant brain1-canon.json
+    update entries as b2_used: True so they are never fed to Brain 2 again.
+    """
+    if not ids_to_mark:
+        return
+    try:
+        raw = _read_file(BRAIN1_CANON_FILE, "{}")
+        data = json.loads(raw)
+        updates = data.get("updates", [])
+        ids_set = set(ids_to_mark)
+        for idx, u in enumerate(updates):
+            uid = u.get("id") or u.get("ts") or f"__idx_{idx}"
+            if uid in ids_set:
+                u["b2_used"] = True
+        data["updates"] = updates
+        _write_file(BRAIN1_CANON_FILE, json.dumps(data, separators=(',', ':')))
+        print(f"[brain1] Marked {len(ids_to_mark)} updates as b2_used=True")
+    except Exception as exc:
+        print(f"[brain1] Failed to mark updates used: {exc}")
+
+
+def save_brain1_update(url: str, summary: str) -> None:
+    """
+    Save a new web-crawl update to brain1-canon.json.
+    Each entry includes b2_used=False so Brain 2 can pick it up next cycle.
+    Rolling log capped at 200 entries.
+    """
+    try:
+        raw = _read_file(BRAIN1_CANON_FILE, "{}")
+        data = json.loads(raw)
+    except Exception:
+        data = {}
+
+    now_iso = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    new_entry = {
+        "type": "web-update",
+        "source": url,
+        "summary": summary[:60],
+        "ts": now_iso,
+        "b2_used": False,
+    }
+
+    updates = data.get("updates", [])
+    updates.append(new_entry)
+    # Keep rolling log capped at 200 entries
+    updates = updates[-200:]
+    data["updates"] = updates
+    data["last_updated"] = now_iso
+
+    try:
+        _write_file(BRAIN1_CANON_FILE, json.dumps(data, separators=(',', ':')))
+    except Exception as exc:
+        print(f"[brain1] Failed to save update: {exc}")
 
 
 def seed_genesis_lore() -> None:
@@ -880,6 +985,7 @@ def generate_lore_pair(
     weather: str,
     substack_context: str,
     godlike_context: str = "",
+    brain1_signal: str = "",
 ) -> tuple:
     """
     Generate two lore posts (text + image prompt) using Grok.
@@ -993,6 +1099,18 @@ def generate_lore_pair(
         + (f"GODLIKE SYSTEM CONTEXT:\n{godlike_context[:2000]}\n\n" if godlike_context else "")
         + (f"UPDATE CONTEXT:\n{update_context}\n\n" if update_context else "")
         + (f"RADIO ALERT TO USE:\n{radio_alert}\n\n" if radio_alert else "")
+        + (
+            f"BRAIN_1_SIGNAL (20% influence only):\n"
+            f"You have received intelligence from the Online Canon Brain. "
+            f"Do NOT announce this as news. Do NOT summarise it. Do NOT quote it directly. "
+            f"Weave only KEY FRAGMENTS creatively into the lore — use metaphor, visual imagery, "
+            f"character reaction, an overheard whisper, or a subtle background event. "
+            f"The community should FEEL the update, not be told about it. "
+            f"Maximum 20% of the total lore may reflect this signal. "
+            f"80% must be pure calendar-driven storytelling.\n"
+            f"Signal: {brain1_signal}\n\n"
+            if brain1_signal else ""
+        )
         + "INSTRUCTIONS:\n"
         "Generate TWO lore posts (Post 1 and Post 2) as a continuous narrative "
         "that will be split across 2 Telegram messages.\n"
@@ -1060,7 +1178,12 @@ def generate_lore_pair(
     prefix1 = build_image_prompt_prefix(lore1, rule_ctx.get("time_theme", "day"))
     prefix2 = build_image_prompt_prefix(lore2, rule_ctx.get("time_theme", "day"))
     image1 = prefix1 + image1
-    image2 = prefix2 + image2
+    # When a Brain 1 signal is active, weave a subtle visual cue into Post 2's image prompt
+    image2 = prefix2 + image2 + (
+        f" Subtly incorporate a visual element inspired by: [{brain1_signal[:80]}]. "
+        f"Make it a background detail, colour shift, or symbolic object — not the focus."
+        if brain1_signal else ""
+    )
 
     return lore1, image1, lore2, image2
 
@@ -1633,6 +1756,13 @@ def main() -> None:
     # -- Godlike: Run all 55 systems to enrich the prompt context --
     godlike_context = _run_godlike_systems(unused_updates, rule_ctx, lore_history)
 
+    # -- Load Brain 1 signal for Brain 2 creative integration --
+    b1_signal, b1_ids_to_mark = load_brain1_signal()
+    if b1_signal:
+        print(f"[brain2] Brain 1 signal loaded ({len(b1_ids_to_mark)} updates): {b1_signal[:100]}...")
+    else:
+        print("[brain2] No new Brain 1 updates — 100% calendar lore this cycle.")
+
     # -- Step 8: Generate lore (50-fail graceful degradation) --
     print("[gk-brain] Generating lore pair...")
     lore_fail_counter = 0
@@ -1650,6 +1780,7 @@ def main() -> None:
                 weather=weather,
                 substack_context=substack_context,
                 godlike_context=godlike_context,
+                brain1_signal=b1_signal,
             )
             best_lore_data = (lore1, image_prompt1, lore2, image_prompt2)
             break
@@ -1793,21 +1924,9 @@ def main() -> None:
     # -- Step 11: Save lore history --
     save_lore_history(lore1, lore2)
 
-    # Always queue a lore-post wiki entry so the wiki gets updated every cycle
-    _now_dt = datetime.datetime.now(datetime.UTC)
-    _now_iso = _now_dt.isoformat().replace("+00:00", "Z")
-    lore_post_update = {
-        "type": "lore-post",
-        "source": "gk-brain-agent",
-        "title": f"GK BRAIN Lore Post — {_now_dt.strftime('%d %b %Y %H:%M')} UTC",
-        "content": (lore1[:400] + "\n\n---\n\n" + lore2[:400]).strip(),
-        "timestamp": _now_iso,
-        "used": True,
-        "wiki_update": True,
-        "wiki_done": False,
-        "lore_weight": 0.0,
-    }
-    add_to_queue([lore_post_update])
+    # Mark Brain 1 updates as used by Brain 2 (after successful post)
+    if b1_ids_to_mark:
+        mark_brain1_updates_used(b1_ids_to_mark)
 
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:

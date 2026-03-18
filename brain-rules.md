@@ -123,3 +123,53 @@ These rules define the foundational lore the agent must know when generating pos
 - NULL The Prophet prophesies: "In the Final Fork, all will return to static."
 - The AETHER CHAIN is the only known alternative to total collapse.
 - HODL Warriors will be summoned for the final defence of the Sacred Chain.
+
+---
+
+## DUAL BRAIN RULES
+
+DB-1: BRAIN 1 is the Online Canon Brain. It crawls the web every 2 hours,
+      learns from all website updates, and is the ONLY brain permitted to
+      push data to the Fandom wiki. It stores knowledge in brain1-canon.json
+      (rolling 200-entry log, crunched compact).
+
+DB-2: BRAIN 2 is the Telegram Lore Brain. It is a creative storyteller that
+      uses Brain 1 knowledge as inspiration. It NEVER touches the wiki — not
+      a single word. It stores only the last 7 days of lore posts in
+      brain2-telegram-lore.json for continuity, then forgets the rest.
+
+DB-3: BRAIN 2 reads new updates from BRAIN 1 (entries where b2_used=False)
+      every 2-hour cycle. It crunches each update to a 60-char signal. It
+      uses this signal at 20% influence in the Telegram lore — creatively,
+      never as a direct announcement. After posting, BRAIN 1 entries are
+      marked b2_used=True. BRAIN 2 never stores the raw update data itself.
+
+DB-4: BRAIN 2 lore NEVER goes to the wiki. Not a word. Only BRAIN 1 → wiki.
+
+DB-5: BRAIN 2 resets every Sunday at midnight UTC (7-day lore vault wipes).
+
+DB-6: The 20% Rule: When a Brain 1 signal is present, maximum 20% of the
+      Telegram lore may reflect it. 80% must be pure calendar-driven
+      storytelling. The community FEELS the update woven into the world —
+      they are NOT told about it like a press release.
+
+DB-7: Both brains save all data crunched as small as possible (compact JSON,
+      no whitespace, summaries capped at 60 chars).
+
+DB-8: Brain 1 rolling log is capped at 200 entries. Oldest entries are
+      dropped first when the cap is reached.
+
+DB-9: Brain 2's 7-day lore vault (brain2-telegram-lore.json) stores only
+      the lore posts themselves — not the source update data from Brain 1.
+
+DB-10: The raw Brain 1 signal data is used live in lore generation and then
+       forgotten by Brain 2. The fact that it was consumed is recorded in
+       Brain 1 via b2_used=True. Brain 2 learns about it only through the
+       lore it created — visible in the 7-day vault for continuity.
+
+DB-11: The image for Post 2 (Telegram image) must subtly reflect the Brain 1
+       signal when one is present — as a background detail, colour shift, or
+       symbolic object. Not the main focus.
+
+DB-12: If there are no new Brain 1 updates (all b2_used=True), the lore is
+       100% calendar-driven. No signal block is included in the prompt.
