@@ -740,6 +740,25 @@ def flush_stale_entries(max_age_days: int = 7) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Citation-checker loader (lazy import to keep module self-contained)
+# ---------------------------------------------------------------------------
+
+def _load_citation_checker():
+    """Load wiki-citation-checker.py via importlib. Returns None if not found."""
+    path = os.path.join(os.path.dirname(__file__), "wiki-citation-checker.py")
+    if not os.path.exists(path):
+        return None
+    spec = importlib.util.spec_from_file_location("wiki_citation_checker", path)
+    mod = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(mod)
+        return mod
+    except Exception as exc:
+        logger.warning("Could not load wiki-citation-checker.py: %s", exc)
+        return None
+
+
+# ---------------------------------------------------------------------------
 # Main public function
 # ---------------------------------------------------------------------------
 
@@ -788,6 +807,19 @@ def run_smart_wiki_updates(dry_run: bool = False) -> dict:
     session = fandom_auth.create_session()
     if session is None:
         return {"smart_merged": 0, "appended": 0, "failed": len(pending), "skipped": 0}
+
+    # --- Citation health-check pass (Rule 9) ---
+    # Run before any page write so all existing citation URLs are verified live.
+    # Errors inside the checker are caught internally and never block the write.
+    try:
+        wiki_citation_checker = _load_citation_checker()
+        if wiki_citation_checker is not None:
+            logger.info("Running citation health-check pass before wiki writes…")
+            wiki_citation_checker.check_and_repair_citations(session=session, dry_run=dry_run)
+        else:
+            logger.warning("wiki-citation-checker.py not found — skipping citation pass.")
+    except Exception as _cite_exc:
+        logger.warning("Citation health-check error (non-fatal): %s", _cite_exc)
 
     smart_count = 0
     append_count = 0
