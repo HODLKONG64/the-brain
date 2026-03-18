@@ -26,6 +26,7 @@ jobs:
       FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GROK_API_BASE: "https://api.x.ai/v1"
+      GROK_TEXT_MODEL: ${{ secrets.GROK_TEXT_MODEL || 'grok-3-latest' }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

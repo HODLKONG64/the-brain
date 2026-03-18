@@ -171,19 +171,7 @@ CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
 GROK_API_BASE = "https://api.x.ai/v1"
-ANTHROPIC_API_BASE = "https://api.anthropic.com/v1"
-ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
-
-# ── Model config ──
 GROK_TEXT_MODEL = os.environ.get("GROK_TEXT_MODEL", "grok-3-latest")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
-
-# ── Retry / timeout config ──
-GROK_CHAT_MAX_ATTEMPTS = 3
-GROK_CHAT_TIMEOUT_SEC  = 60
-GROK_CHAT_BACKOFF_BASE = 2
-GROK_IMAGE_TIMEOUT_SEC = 90
 
 # Minimum delay (seconds) between consecutive Fandom/MediaWiki API write calls.
 # Configurable via WIKI_API_DELAY env var (default 1.0).
@@ -729,7 +717,7 @@ def crawl_substack_for_art_and_content() -> str:
 # Grok API calls
 # ---------------------------------------------------------------------------
 
-def _llm_chat(messages: list, model: str = ANTHROPIC_MODEL) -> str:
+def _grok_chat(messages: list, model: str = GROK_TEXT_MODEL) -> str:
     """
     Send a chat completion request to the Anthropic Claude API and return the
     response text.
