@@ -44,7 +44,8 @@ import requests
 
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 
-WIKI_API = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/") + "/api.php"
+WIKI_BASE = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/")
+WIKI_API = WIKI_BASE + "/api.php"
 FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
 FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
 
@@ -125,6 +126,7 @@ def _login(session: requests.Session) -> bool:
         "username": FANDOM_USERNAME,
         "password": FANDOM_PASSWORD,
         "logintoken": token,
+        "loginreturnurl": WIKI_BASE,
         "rememberMe": 1,
         "format": "json",
     })
