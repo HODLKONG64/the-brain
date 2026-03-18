@@ -1,189 +1,110 @@
-# OFFICIAL SOURCE AUTHORITY RULES
+# OFFICIAL-SOURCE-AUTHORITY-RULES.md
+
 **Version:** 1.0  
-**Owner:** HODLKONG64  
-**Applies to:** ALL webcrawl agents, Brain 2 (gk-brain.py), crawl-brain.py, wiki-brain.py, wiki-smart-merger.py, and any future agent in this repo  
-**Last Updated:** 2026-03-18
+**Owner:** HODLKONG64 (@HodlKONG64)  
+**Purpose:** Single authoritative rulebook defining which external sources are permitted to trigger updates to the GKniftyHEADS Fandom wiki and what content is absolutely forbidden from appearing there.
 
 ---
 
-## RULE 1 — OFFICIAL SOURCE LIST (HIGHEST AUTHORITY)
+## RULE 1 — OFFICIAL SOURCES (What counts as an authoritative update)
 
-Any content found at the URLs below — or on any sub-page/child-page that lives under these domains — is OFFICIAL and AUTHORITATIVE.
+Only the following external online sources are recognised as authoritative for wiki updates:
 
-When a webcrawl agent finds new content from these sources that CONFLICTS with previously saved crawl data, the agent MUST:
-1. Accept the new content as correct
-2. Overwrite / replace the old saved data with the new data
-3. Save the new data to the relevant cache file (e.g. `crawl-results.json`, `substack-cache.json`, etc.)
-4. Delete the old conflicting entry — do NOT keep both versions
-5. Log the update in the crawl log with timestamp, source URL, and a brief description of what changed
+1. **Substack** — Posts published on the official GraffPunks / GKniftyHEADS Substack account(s).
+2. **Medium** — Articles published from the official Medium account(s).
+3. **Official websites** — Content changes on `graffpunks.live` and `graffitikings.co.uk`.
+4. **YouTube** — New video titles/descriptions from the official YouTube channel.
+5. **X / Twitter** — Posts from the official verified X/Twitter accounts.
+6. **Fandom wiki itself** — Corrections or additions found by cross-checking the official GKniftyHEADS Fandom wiki.
 
-### OFFICIAL SOURCE DOMAINS AND URLS
-
-#### SUBSTACK / MEDIUM (Lore, Strategy, Universe Updates)
-- https://graffpunks.substack.com/ (and ALL sub-pages/posts under this domain)
-- https://medium.com/@GKniftyHEADS (and ALL articles)
-- https://medium.com/@iamcharliebuster (and ALL articles)
-- https://medium.com/@noballgamesnfts (and ALL articles)
-- https://noballgames.substack.com/ (and ALL sub-pages/posts)
-- https://treefproject.substack.com/ (and ALL sub-pages/posts)
-
-#### OFFICIAL WEBSITES
-- https://graffpunks.live/
-- https://graffitikings.co.uk/
-
-#### YOUTUBE
-- https://www.youtube.com/@GKniftyHEADS/videos (and ALL videos/descriptions under this channel)
-
-#### X / TWITTER
-- https://x.com/GraffitiKings
-- https://x.com/GKNiFTYHEADS
-- https://x.com/HODLWARRIORS
-- https://x.com/GraffPunks
-- https://x.com/nftbuster
-
-#### INSTAGRAM
-- https://www.instagram.com/graffitikings/
-- https://www.instagram.com/gkniftyheads/
-- https://www.instagram.com/hodlwarriors/
-- https://www.instagram.com/graffpunks/
-- https://www.instagram.com/nftbuster/
-
-#### LINKTREE / HUB
-- https://linktr.ee/gkniftyheads (and ALL links it points to)
-
-#### TELEGRAM
-- https://t.me/gkniftyheads
-
-#### FACEBOOK
-- https://www.facebook.com/GraffPUNKS.Network/
-
-#### FANDOM WIKI (Official Canon Reference)
-- https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki (and ALL sub-pages under this wiki)
+Any source NOT in this list is **non-authoritative** and must not trigger a wiki write.
 
 ---
 
-## RULE 2 — CONFLICT RESOLUTION PROTOCOL
+## RULE 2 — NON-AUTHORITATIVE SOURCES (What is explicitly blocked)
 
-When ANY crawl agent finds new content from an OFFICIAL SOURCE (listed in Rule 1) that conflicts with previously cached/saved data:
+The following are **never** authoritative sources for wiki updates:
 
-```
-IF new_content.source IN official_sources:
-    → new_content IS CORRECT
-    → DELETE old conflicting data
-    → SAVE new_content to cache
-    → LOG the update with: timestamp, source_url, what_changed
-    → DO NOT keep both versions
-    → DO NOT ask for human confirmation — just update automatically
-ELSE:
-    → Flag the conflict for review
-    → Do NOT auto-overwrite
-    → Log as "unverified conflict — pending review"
-```
+- Brain 2 (`gk-brain-agent`) — Brain 2 is a content generator, not a source authority.
+- Telegram posts — Telegram channel posts are for audience distribution only.
+- Internal `.json` data files (`brain1-canon.json`, `wiki-update-queue.json`, etc.).
+- Auto-generated agent logs (`GK_BRAIN_Agent_Log` entries, diagnostic output).
+- `genesis-lore.md` — One-off bootstrap file; its content must never appear on the wiki.
 
 ---
 
-## RULE 3 — LORE SOURCING RULES FOR BRAIN 2 (gk-brain.py)
+## RULE 3 — TELEGRAM LORE POSTS (Explicitly forbidden from wiki)
 
-### What Brain 2 uses for lore inspiration:
-1. **PRIMARY SOURCE (70%):** The last 7 days of Brain 2's own Telegram posts (saved in lore history file — `lore-history.txt` or equivalent)
-2. **SECONDARY SOURCE (30%):** Fresh content crawled from the OFFICIAL SOURCES above (Substack posts, wiki updates, Medium articles)
-
-### What Brain 2 must NEVER use for lore:
-- `genesis-lore.md` — this was a one-off first-run inspiration file only. Brain 2 must NOT read or reference this file for lore generation after the initial setup run.
-- `brain1-canon.json` — Brain 1 signals are injected by the Brain 1 pipeline. Brain 2 does not read this file directly for lore.
-- Any cached crawl data older than 7 days
-
-### Brain 1 Signal Integration:
-- Brain 2 MUST incorporate Brain 1 signals (passed via the pipeline) into its lore posts
-- Brain 1 signal influence: **30% of lore content** should reflect or be inspired by the most recent Brain 1 updates
-- Only the most recent Brain 1 signals (within the last 7 days) are valid — older signals are stale and must be ignored
-- Only signals that were actually injected into the current prompt count as "used" — do NOT mark unused signals as used
+Brain 2's Telegram lore posts are **for Telegram only**.  
+They are **NEVER** pushed to the wiki.  
+`genesis-lore.md` content is **NEVER** pushed to the wiki.
 
 ---
 
-## RULE 4 — 2-HOUR RUN CYCLE SCHEDULE
+## RULE 4 — SOURCE TAGGING
 
-The agent runs every 2 hours on even UTC hours:
-- 00:00 UTC, 02:00 UTC, 04:00 UTC, 06:00 UTC, 08:00 UTC, 10:00 UTC
-- 12:00 UTC, 14:00 UTC, 16:00 UTC, 18:00 UTC, 20:00 UTC, 22:00 UTC
-
-On EVERY run, the crawl agent MUST:
-1. Fetch and check ALL OFFICIAL SOURCES listed in Rule 1 for new or updated content
-2. Follow sub-links / child pages on each domain to catch new posts, articles, videos
-3. Compare fetched content against previously cached data
-4. Apply Rule 2 conflict resolution
-5. Save updated cache files
-6. Pass any relevant new content/updates to Brain 2 for lore integration
-7. Check the Fandom wiki and flag any pages that are outdated vs current lore
-8. Log a crawl summary with: timestamp, sources checked, conflicts found, updates applied
+Every update queued in `wiki-update-queue.json` must include a `"source"` field that identifies the originating URL or platform (e.g. `"https://graffpunks.substack.com/p/..."`, `"youtube"`, `"x.com"`).  
+Updates with `source == "gk-brain-agent"` or `source == "telegram"` are automatically blocked by the source validation guard.
 
 ---
 
-## RULE 5 — WIKI SYNC RULES (wiki-brain.py / wiki-smart-merger.py)
+## RULE 5 — DEDUPLICATION
 
-The Fandom wiki at https://gkniftyheads.fandom.com/wiki/GKniftyHEADS_Wiki is the OFFICIAL PUBLIC CANON record.
+Before writing any update to the wiki, the agent must check:
 
-On each 2-hour cycle:
-1. Read the current wiki page content via the Fandom API
-2. Compare against the most recent Brain 2 lore posts (last 7 days)
-3. Compare against any new OFFICIAL SOURCE content fetched this cycle
-4. If the wiki is BEHIND or CONTRADICTS the official sources:
-   - Generate an update using the new official content
-   - Push the update to the wiki via the Fandom API
-   - Log: what page was updated, what changed, timestamp
-5. If the wiki is UP TO DATE — log "wiki in sync" and move on
+1. Source URL already present in page content → skip.
+2. Title + date already present in same line → skip.
+3. Content fingerprint (MD5 prefix embedded as wiki comment) already present → skip.
 
 ---
 
-## RULE 6 — CACHE FILE NAMING CONVENTION
+## RULE 6 — CROSS-CHECKER FIRST
 
-All crawl agents must save cached data to these standard files:
-
-| Data Type | File |
-|-----------|------|
-| General crawl results | `crawl-results.json` |
-| Substack post cache | `substack-cache.json` |
-| Fandom wiki cache | `wiki-cache.json` |
-| Lore conflict report | `lore-conflict-report.json` |
-| Crawl run log | `crawl-log.json` |
-| Agent briefing (auto-updated) | `PROJECT-BRIEFING.md` |
-
-All cache files store only data from the last 7 days. Entries older than 7 days are automatically deleted on each run.
+Before writing to the wiki the agent should run `wiki-cross-checker.py` to confirm the update is not already present on the Fandom wiki.  Only updates confirmed as **missing** from the wiki proceed to the write step.
 
 ---
 
-## RULE 7 — PROJECT BRIEFING AUTO-UPDATE
+## RULE 7 — LAYOUT SAFETY
 
-After every successful crawl cycle, the agent MUST update `PROJECT-BRIEFING.md` with:
-- Date/time of last successful crawl
-- Sources checked and their last-updated timestamps
-- Summary of any lore conflicts found and resolved
-- Current wiki sync status
-- Any Brain 1 signals received and their status (used / pending / stale)
+Before writing **any** wikitext to a page, the agent must validate the MediaWiki markup:
 
-This file is what new Copilot agents read to instantly get up to speed on the project without needing to ask questions.
+- All `{{` template tags must be closed with `}}`.
+- All `<div>` tags must be closed with `</div>`.
+- No vertical text artifacts (single-character lines caused by broken infoboxes).
+- No `writing-mode: vertical` or `transform: rotate` CSS.
 
----
-
-## RULE 8 — DO NOT CRAWL LIST
-
-These sources must NEVER be crawled, scraped, or used as data inputs:
-- Any random third-party NFT aggregator or marketplace not listed above
-- Any unofficial fan site or parody account
-- Any X/Twitter account not in the official list above
-- Any content from before 2021 unless it appears on an official source
+If validation fails → save to `wiki-rejected-drafts.json` and **skip** — do NOT write to wiki.
 
 ---
 
-## SUMMARY TABLE
+## RULE 8 — AGENT LOG PAGE
 
-| Rule | What it does |
-|------|-------------|
-| Rule 1 | Lists all official sources — content from these always wins |
-| Rule 2 | Auto-overwrite old data when official source has new version |
-| Rule 3 | Brain 2 lore sources: 70% own posts, 30% official crawl, never genesis-lore |
-| Rule 4 | Run every 2 hours on even UTC hours — full crawl every run |
-| Rule 5 | Wiki sync on every run — update if behind official sources |
-| Rule 6 | Standard cache file names for all agents |
-| Rule 7 | Auto-update PROJECT-BRIEFING.md after every run |
-| Rule 8 | Never crawl unofficial or non-listed sources |
+The `GK_BRAIN_Agent_Log` wiki page is the **only** page that may receive auto-generated agent diagnostic entries.  
+Agent log entries must **never** be written to the main wiki page (`GKniftyHEADS_Wiki`) or any lore/character pages.
+
+---
+
+## RULE 9 — WIKI CONTENT RESTRICTIONS (WHAT NEVER GOES TO THE WIKI)
+
+The following content types **MUST NEVER** be written to the Fandom wiki under any circumstances:
+
+1. **Brain 2 Telegram lore posts** — Brain 2's generated lore posts are for Telegram only. They are NEVER pushed to the wiki.
+2. **`genesis-lore.md` content** — This was a one-off bootstrap file. Its content must never appear on the wiki.
+3. **Brain 1 signal data** — `brain1-canon.json` entries are internal pipeline signals, not public wiki content.
+4. **Auto-generated agent logs** — GK_BRAIN_Agent_Log entries are internal diagnostics. They must only appear on the `GK_BRAIN_Agent_Log` wiki page if manually approved, never auto-pushed to the main wiki pages.
+5. **Any update where `source == "gk-brain-agent"`** — Brain 2 is a content generator, not a source authority.
+
+### ONLY these sources may trigger a wiki update:
+- New Substack posts or edits on official Substack domains
+- New Medium articles from official accounts
+- Official website (`graffpunks.live` / `graffitikings.co.uk`) content changes
+- New YouTube video descriptions from the official channel
+- Official X/Twitter posts from the listed accounts
+- Corrections or additions found by cross-checking the official Fandom wiki itself
+
+### Layout Safety Rule:
+Before writing ANY content to the wiki, the agent MUST validate the MediaWiki markup:
+- All `{{` template tags must be closed with `}}`
+- All `<div>` tags must be closed
+- No vertical text artifacts (broken sidebar infoboxes)
+- If validation fails → save to `wiki-rejected-drafts.json` and skip — do NOT write to wiki

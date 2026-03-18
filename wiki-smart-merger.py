@@ -97,6 +97,8 @@ QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 # Lock file used to prevent concurrent queue reads/writes.
 QUEUE_LOCK_FILE = QUEUE_FILE + ".lock"
 
+REJECTED_DRAFTS_FILE = os.path.join(os.path.dirname(__file__), "wiki-rejected-drafts.json")
+
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
 
@@ -144,6 +146,158 @@ DEFAULT_SECTION = "Uncategorized Updates"
 FINGERPRINT_CONTENT_LENGTH = 500   # chars of normalised content used for MD5
 FINGERPRINT_PREFIX_LENGTH = 16     # hex chars of MD5 stored as wiki comment
 CONTENT_SNIPPET_LENGTH = 200       # max chars of content shown in a wiki bullet
+
+
+# ---------------------------------------------------------------------------
+# Source validation guard
+# ---------------------------------------------------------------------------
+
+# Update types that must never be pushed to the wiki (Brain 2 / Telegram lore)
+_BLOCKED_UPDATE_TYPES = {"lore-post", "telegram-lore", "brain-lore"}
+
+# Official online source keywords allowed to trigger wiki updates
+_OFFICIAL_SOURCE_KEYWORDS = (
+    "substack",
+    "medium",
+    "graffpunks.live",
+    "graffitikings.co.uk",
+    "youtube",
+    "youtu.be",
+    "twitter.com",
+    "x.com",
+    "fandom.com",
+    "fandom.wiki",
+)
+
+
+def _is_valid_wiki_source(update: dict) -> bool:
+    """
+    Validate that a queued update originated from an official online source
+    before allowing it to be written to the Fandom wiki.
+
+    Returns False (and logs a warning) for:
+    - Any update from the gk-brain-agent (Brain 2 Telegram posts)
+    - Any update with a telegram source
+    - Lore-post / telegram-lore / brain-lore update types
+    - Content that originated from genesis-lore.md
+
+    Returns True only when the source is one of the approved official online
+    sources (Substack, Medium, official websites, YouTube, X/Twitter, Fandom).
+    """
+    source = update.get("source", "")
+    update_type = update.get("type", "")
+
+    def _block(reason: str) -> bool:
+        logger.info(
+            "[WIKI GUARD] Blocked wiki update — source not in official sources: %s / type: %s",
+            source or "(none)",
+            update_type or "(none)",
+        )
+        return False
+
+    # Brain 2 agent-generated posts
+    if source == "gk-brain-agent":
+        return _block("source is gk-brain-agent")
+
+    # Telegram source (any form)
+    if "telegram" in source.lower():
+        return _block("telegram source")
+
+    # Lore-post types must never go to wiki
+    if update_type in _BLOCKED_UPDATE_TYPES:
+        return _block(f"blocked update type: {update_type}")
+
+    # Brain 2 auto-queued wiki_update flag combined with agent source
+    if update.get("wiki_update") is True and source == "gk-brain-agent":
+        return _block("Brain 2 auto-queued update")
+
+    # genesis-lore.md content
+    origin = (
+        update.get("origin", "")
+        or update.get("file", "")
+        or update.get("source_file", "")
+        or ""
+    )
+    if "genesis-lore" in origin.lower():
+        return _block("genesis-lore.md content")
+
+    # If source is a URL/identifier, verify it comes from an approved domain.
+    # Empty or purely internal sources (no recognised official keyword) are blocked.
+    source_lower = source.lower()
+    if source_lower and not any(kw in source_lower for kw in _OFFICIAL_SOURCE_KEYWORDS):
+        # Only block when the source string looks like an explicit identifier
+        # (not an empty queue entry that predates source tagging).
+        if source_lower not in ("", "unknown", "manual"):
+            return _block("source not in approved official sources list")
+
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Wikitext layout validation
+# ---------------------------------------------------------------------------
+
+def _validate_wikitext_layout(wikitext: str, page_title: str) -> tuple[bool, str]:
+    """
+    Check *wikitext* for common broken layout patterns before writing to wiki.
+
+    Returns ``(True, "")`` when the markup looks safe to publish.
+    Returns ``(False, reason)`` when a problem is detected.
+    """
+    # 1. Unclosed {{ }} template tags
+    open_templates = wikitext.count("{{")
+    close_templates = wikitext.count("}}")
+    if open_templates != close_templates:
+        return False, (
+            f"unclosed template tags: {open_templates} '{{{{' vs {close_templates} '}}}}'"
+        )
+
+    # 2. Unclosed <div> tags
+    open_divs = len(re.findall(r"<div[\s>]", wikitext, re.IGNORECASE))
+    close_divs = len(re.findall(r"</div\s*>", wikitext, re.IGNORECASE))
+    if open_divs != close_divs:
+        return False, f"unclosed <div> tags: {open_divs} open vs {close_divs} close"
+
+    # 3. Vertical text artifacts — more than 3 consecutive single-character lines
+    lines = wikitext.splitlines()
+    consecutive_single = 0
+    for line in lines:
+        stripped = line.strip()
+        if re.match(r"^[A-Za-z]$", stripped):
+            consecutive_single += 1
+            if consecutive_single > 3:
+                return False, "vertical text artifact detected (>3 consecutive single-character lines)"
+        else:
+            consecutive_single = 0
+
+    # 4. Broken sidebar widget CSS
+    if "writing-mode: vertical" in wikitext or "transform: rotate" in wikitext:
+        return False, "broken sidebar widget CSS detected (writing-mode or transform:rotate)"
+
+    return True, ""
+
+
+def _save_rejected_draft(page_title: str, wikitext: str, reason: str) -> None:
+    """Persist rejected wikitext to wiki-rejected-drafts.json for human review."""
+    try:
+        drafts: list = []
+        if os.path.exists(REJECTED_DRAFTS_FILE):
+            try:
+                with open(REJECTED_DRAFTS_FILE, "r", encoding="utf-8") as fh:
+                    drafts = json.load(fh)
+            except (json.JSONDecodeError, OSError):
+                drafts = []
+        drafts.append({
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "page_title": page_title,
+            "reason": reason,
+            "wikitext": wikitext,
+        })
+        with open(REJECTED_DRAFTS_FILE, "w", encoding="utf-8") as fh:
+            json.dump(drafts, fh, indent=2)
+        logger.info("Rejected draft saved to %s", REJECTED_DRAFTS_FILE)
+    except Exception as exc:
+        logger.warning("Failed to save rejected draft: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -644,6 +798,11 @@ def run_smart_wiki_updates(dry_run: bool = False) -> dict:
 
     for update in pending:
         try:
+            # --- Source validation guard (must pass before any wiki write) ---
+            if not _is_valid_wiki_source(update):
+                update["wiki_done"] = True  # mark as processed so it won't retry
+                continue
+
             ts = update.get("timestamp", "")
             try:
                 dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
@@ -658,26 +817,39 @@ def run_smart_wiki_updates(dry_run: bool = False) -> dict:
                     main_page_content, update, display_time
                 )
                 if merged:
-                    ok_smart = fandom_auth.edit_page(
-                        session,
-                        MAIN_WIKI_PAGE,
-                        new_main_content,
-                        f"GK BRAIN smart-merge: {update.get('title', 'update')}",
-                        check_hash=False,  # We already ran our own dedup check.
+                    # --- Layout validation before writing ---
+                    layout_ok, layout_reason = _validate_wikitext_layout(
+                        new_main_content, MAIN_WIKI_PAGE
                     )
-                    if ok_smart:
-                        main_page_content = new_main_content
-                        smart_count += 1
-                        resolved_section = SECTION_MAP.get(
-                            update.get("type", ""), DEFAULT_SECTION
-                        )
+                    if not layout_ok:
                         logger.info(
-                            "Smart-merged '%s' into section '%s'",
-                            update.get("title"),
-                            resolved_section,
+                            "[LAYOUT GUARD] Blocked wiki write to %s — layout validation failed: %s",
+                            MAIN_WIKI_PAGE,
+                            layout_reason,
                         )
-                    else:
+                        _save_rejected_draft(MAIN_WIKI_PAGE, new_main_content, layout_reason)
                         merged = False
+                    else:
+                        ok_smart = fandom_auth.edit_page(
+                            session,
+                            MAIN_WIKI_PAGE,
+                            new_main_content,
+                            f"GK BRAIN smart-merge: {update.get('title', 'update')}",
+                            check_hash=False,  # We already ran our own dedup check.
+                        )
+                        if ok_smart:
+                            main_page_content = new_main_content
+                            smart_count += 1
+                            resolved_section = SECTION_MAP.get(
+                                update.get("type", ""), DEFAULT_SECTION
+                            )
+                            logger.info(
+                                "Smart-merged '%s' into section '%s'",
+                                update.get("title"),
+                                resolved_section,
+                            )
+                        else:
+                            merged = False
             except Exception as merge_exc:
                 logger.warning(
                     "Smart merge failed for '%s': %s — falling back to append.",
@@ -703,6 +875,19 @@ def run_smart_wiki_updates(dry_run: bool = False) -> dict:
                     f"detected on {display_time}. "
                     f"Type: {update.get('type', 'update')}.\n"
                 )
+                # Validate fallback snippet layout before appending.
+                layout_ok, layout_reason = _validate_wikitext_layout(
+                    fallback_entry, MAIN_WIKI_PAGE
+                )
+                if not layout_ok:
+                    logger.info(
+                        "[LAYOUT GUARD] Blocked fallback append to %s — layout validation failed: %s",
+                        MAIN_WIKI_PAGE,
+                        layout_reason,
+                    )
+                    _save_rejected_draft(MAIN_WIKI_PAGE, fallback_entry, layout_reason)
+                    failed_count += 1
+                    continue
                 ok_fallback = fandom_auth.append_to_page(
                     session,
                     MAIN_WIKI_PAGE,
