@@ -166,3 +166,6 @@ When ANTHROPIC_API_KEY is set, all primary lore text generation routes through C
 
 ### DB-12 — Telegram Rate Guard
 A mandatory time.sleep(2) MUST be called between posting Message 1 and Message 2 in every Telegram posting loop. This guards against Telegram's per-bot rate limits for rapid sequential messages to the same chat.
+
+### DB-13 — Auto-Pin After Post 2
+After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be logged but MUST NOT prevent the rest of the posting loop from continuing. The bot requires "Pin Messages" admin rights in each target chat for this to work; missing rights result in a logged warning only.
