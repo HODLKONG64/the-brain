@@ -354,7 +354,7 @@ def _sub_page_title(update: dict) -> str:
 def flush_stale_entries(max_age_days: int = 7) -> int:
     """
     Remove entries from the queue that are older than *max_age_days* days
-    and have already been processed (wiki_done=True) or are orphaned.
+    and have already been processed (wiki_done=True).
 
     Returns the number of entries removed.
     """
