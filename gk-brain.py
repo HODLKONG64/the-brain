@@ -40,6 +40,7 @@ def _load_module(name: str, filepath: str):
 
 _update_detector = _load_module("update_detector", "update-detector.py")
 _wiki_updater = _load_module("wiki_updater", "wiki-updater.py")
+_user_profile = _load_module("user_profile", "user-profile.py")
 
 # Execution reporter
 try:
@@ -1200,6 +1201,141 @@ def post_to_telegram(lore1, image1, lore2, image2) -> dict:
             print(f"[telegram] Error posting to {chat_id}: {exc}")
 
     return posting_info
+
+
+# ---------------------------------------------------------------------------
+# Telegram update processing (replies + /profile command)
+# ---------------------------------------------------------------------------
+
+# Keywords that mark a message as on-topic (Moonboys universe)
+_MOONBOYS_KEYWORDS = (
+    "moonboys", "gk", "graffpunks", "nft", "lore", "crypto",
+    "carp", "fishing", "graffiti", "rave", "lady-ink", "lady ink",
+    "parkour", "substack", "wiki", "brain", "character",
+)
+
+# Offset file stores the last processed Telegram update_id
+_TELEGRAM_OFFSET_FILE = os.path.join(BASE_DIR, "telegram-offset.json")
+
+
+def _load_telegram_offset() -> int:
+    """Return the last processed Telegram update offset (0 if none)."""
+    try:
+        with open(_TELEGRAM_OFFSET_FILE, "r", encoding="utf-8") as fh:
+            return json.load(fh).get("offset", 0)
+    except (OSError, json.JSONDecodeError):
+        return 0
+
+
+def _save_telegram_offset(offset: int) -> None:
+    """Persist the latest processed Telegram update offset."""
+    try:
+        with open(_TELEGRAM_OFFSET_FILE, "w", encoding="utf-8") as fh:
+            json.dump({"offset": offset}, fh)
+    except OSError as exc:
+        print(f"[telegram-updates] Failed to save offset: {exc}")
+
+
+def _is_moonboys_topic(text: str) -> bool:
+    """Return True if the message text references the Moonboys universe."""
+    lower = text.lower()
+    return any(kw in lower for kw in _MOONBOYS_KEYWORDS)
+
+
+def _telegram_api(method: str, params: dict | None = None) -> dict:
+    """Call a Telegram Bot API method and return the JSON response."""
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/{method}"
+    try:
+        resp = requests.post(url, json=params or {}, timeout=15)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as exc:
+        print(f"[telegram-api] {method} failed: {exc}")
+        return {"ok": False}
+
+
+def _send_telegram_reply(chat_id: int | str, text: str,
+                         reply_to_message_id: int | None = None) -> None:
+    """Send a text reply to a specific chat/message."""
+    params: dict = {"chat_id": chat_id, "text": text}
+    if reply_to_message_id:
+        params["reply_to_message_id"] = reply_to_message_id
+    _telegram_api("sendMessage", params)
+
+
+def process_telegram_updates() -> None:
+    """
+    Fetch pending Telegram updates (messages sent to the bot since last run)
+    and handle them:
+
+    - /profile command  → reply with the user's profile card
+    - Moonboys-related messages → record the reply (within 20/day cap)
+    - Off-topic messages → silently record the interaction but do not reply
+    """
+    if not TELEGRAM_BOT_TOKEN:
+        print("[telegram-updates] No bot token — skipping update processing.")
+        return
+
+    offset = _load_telegram_offset()
+    data = _telegram_api("getUpdates", {"offset": offset, "limit": 100, "timeout": 0})
+
+    if not data.get("ok"):
+        print("[telegram-updates] getUpdates failed.")
+        return
+
+    updates = data.get("result", [])
+    if not updates:
+        print("[telegram-updates] No pending updates.")
+        return
+
+    print(f"[telegram-updates] Processing {len(updates)} update(s).")
+
+    new_offset = offset
+    for upd in updates:
+        new_offset = max(new_offset, upd["update_id"] + 1)
+
+        msg = upd.get("message") or upd.get("edited_message")
+        if not msg:
+            continue
+
+        user = msg.get("from", {})
+        user_id = user.get("id")
+        username = user.get("username", "")
+        first_name = user.get("first_name", "")
+        chat_id = msg.get("chat", {}).get("id")
+        message_id = msg.get("message_id")
+        text = msg.get("text", "").strip()
+
+        if not user_id or not text:
+            continue
+
+        # Always keep the profile current
+        update_user(user_id, username=username, first_name=first_name)
+
+        # ── /profile command ─────────────────────────────────────────────
+        if text.lower().startswith("/profile"):
+            card = format_profile_card(user_id)
+            _send_telegram_reply(chat_id, card, reply_to_message_id=message_id)
+            print(f"[telegram-updates] Sent profile card to user {user_id}.")
+            continue
+
+        # ── Moonboys reply handling ──────────────────────────────────────
+        if _is_moonboys_topic(text):
+            allowed = record_reply(user_id, topic=text.split()[0].lower())
+            if not allowed:
+                # Daily cap reached — send a polite notice (once)
+                _send_telegram_reply(
+                    chat_id,
+                    "🧠 GK BRAIN says: you've hit today's reply limit (20/day). "
+                    "Come back tomorrow, yeah.",
+                    reply_to_message_id=message_id,
+                )
+                print(f"[telegram-updates] Daily limit enforced for user {user_id}.")
+        # Off-topic messages are noted via update_user (already called above)
+        # but do not count against the daily Moonboys reply quota.
+
+    _save_telegram_offset(new_offset)
+    print(f"[telegram-updates] Offset advanced to {new_offset}.")
 
 
 # ---------------------------------------------------------------------------

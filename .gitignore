@@ -2,6 +2,8 @@
 crawl-snapshot.json
 crawl-data/
 wiki-update-queue.json
+user-profiles.json
+telegram-offset.json
 
 # Python
 __pycache__/
