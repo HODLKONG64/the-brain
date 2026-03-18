@@ -198,3 +198,28 @@ Generated images MUST NEVER be written to disk. Images are produced in memory as
 
 ### DB-14 — Auto-Pin After Post 2
 After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be printed to stdout but MUST NOT prevent the rest of the posting loop from continuing. The bot requires "Pin Messages" admin rights in each target chat for this to work; missing rights result in a warning printed to stdout only.
+
+### DB-15 — Telegram API Compliance
+All Telegram interactions MUST comply with the full official rules documented in TELEGRAM-BOT-API-RULES.md. Key enforcements:
+- Text messages truncated at 4,096 characters; captions at 1,024 characters.
+- On 429 Too Many Requests: sleep exactly retry_after seconds, then retry ONCE.
+- On 403 Forbidden: log the chat_id and skip it for the current run — never retry.
+- Never run concurrent getUpdates polling instances (causes 409 Conflict).
+- bot-state.json MUST be read at cycle start and written at cycle end with the last update_id.
+
+### DB-16 — Master Backup Agent Runs Last
+master-backup-agent.py MUST run as the final agent step in every GitHub Actions workflow cycle, after crawl-brain, analytics-brain, gk-brain, and wiki-brain have all completed. This ensures it captures the latest state of every file before committing.
+
+### DB-17 — Master Backup Agent Conflict Quarantine
+If master-backup-agent.py detects that a new or changed file defines a rule/constant that CONTRADICTS a value already locked in master-backup-state.json (rule_snapshot), the conflicting entry MUST be placed in the conflict_log section and MUST NOT be merged into the active rule_snapshot. The conflict does NOT fail the workflow — it is logged for manual review only.
+
+### DB-18 — Master Backup Agent Scope
+The master backup agent tracks and absorbs logic from ALL of the following file types:
+- All markdown rule/canon/lore files
+- All Python agent files
+- The GitHub Actions workflow YAML
+- All JSON state files (tracked for SHA drift but not conflict-checked)
+Any new file added to the repo that contains logic/rules MUST be added to the TRACKED_FILES list in master-backup-agent.py via a PR.
+
+### DB-19 — No Agent May Import from Master Backup Agent
+master-backup-agent.py is a passive observer and snapshot keeper. No other agent may import from it, call its functions, or depend on its state file at runtime. It observes all; it controls none. Its output (master-backup-state.json) is for human audit and disaster recovery only — not for runtime decision-making by other agents.
