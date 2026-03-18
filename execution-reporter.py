@@ -304,8 +304,26 @@ class ExecutionReporter:
         """Write the JSON report to disk and print a console summary.
 
         Returns the path of the saved report file.
+        Never raises — always returns a (possibly empty) path.
         """
-        report = self._build_report()
+        try:
+            report = self._build_report()
+        except Exception as exc:
+            print(f"[reporter] Failed to build report ({exc}); saving partial report.")
+            report = {
+                "execution_id": getattr(self, "_execution_id", "unknown"),
+                "timestamp": getattr(self, "_timestamp", ""),
+                "final_status": getattr(self, "_final_status", "ERROR"),
+                "errors": getattr(self, "_errors", []) + [str(exc)],
+                "warnings": getattr(self, "_warnings", []),
+                "updates_found": [],
+                "lore_generation": {},
+                "image_generation": {},
+                "telegram_posting": {},
+                "wiki_updates": {},
+                "system_stats": {},
+                "quality_checks": {},
+            }
 
         # Determine output path
         filename = f"execution-report-{self._execution_id}.json"
@@ -320,7 +338,10 @@ class ExecutionReporter:
             print(f"[reporter] Could not save report to {filepath}: {exc}")
             filepath = ""
 
-        self._print_summary(report, filepath)
+        try:
+            self._print_summary(report, filepath)
+        except Exception as exc:
+            print(f"[reporter] Summary print failed ({exc}); report still saved.")
         return filepath
 
     # ------------------------------------------------------------------

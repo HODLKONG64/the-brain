@@ -114,28 +114,57 @@ def _get_login_token(session: requests.Session) -> str:
 
 
 def _login(session: requests.Session) -> bool:
-    """Log in to Fandom with bot credentials. Returns True on success."""
+    """Log in to Fandom with bot credentials. Returns True on success.
+
+    Retries up to 3 times with exponential backoff on transient errors.
+    Never crashes — logs all failures and returns False on auth failure.
+    """
     if not FANDOM_USERNAME or not FANDOM_PASSWORD:
         print("[wiki-smart-merger] FANDOM credentials not set — skipping.")
         return False
 
-    token = _get_login_token(session)
-    resp = session.post(WIKI_API, data={
-        "action": "clientlogin",
-        "loginmessageformat": "none",
-        "username": FANDOM_USERNAME,
-        "password": FANDOM_PASSWORD,
-        "logintoken": token,
-        "loginreturnurl": WIKI_BASE,
-        "rememberMe": 1,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    result = resp.json()
-    if result.get("clientlogin", {}).get("status") == "PASS":
-        print(f"[wiki-smart-merger] Logged in as {FANDOM_USERNAME}")
-        return True
-    print(f"[wiki-smart-merger] Login failed: {result}")
+    max_attempts = 3
+    last_exc: Exception = RuntimeError("No attempts made")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            token = _get_login_token(session)
+            resp = session.post(WIKI_API, data={
+                "action": "clientlogin",
+                "loginmessageformat": "none",
+                "username": FANDOM_USERNAME,
+                "password": FANDOM_PASSWORD,
+                "logintoken": token,
+                "loginreturnurl": WIKI_BASE,
+                "rememberMe": 1,
+                "format": "json",
+            })
+            resp.raise_for_status()
+            result = resp.json()
+            status = result.get("clientlogin", {}).get("status", "")
+            if status == "PASS":
+                print(f"[wiki-smart-merger] Logged in as {FANDOM_USERNAME}")
+                return True
+            message = result.get("clientlogin", {}).get("message", str(result))
+            print(f"[wiki-smart-merger] Login attempt {attempt}/{max_attempts} failed: {message}")
+            if status in ("FAIL",):
+                # Auth credential failure — no point retrying
+                return False
+            last_exc = RuntimeError(f"Login status: {status} — {message}")
+        except requests.exceptions.HTTPError as exc:
+            print(f"[wiki-smart-merger] Login HTTP error (attempt {attempt}/{max_attempts}): {exc}")
+            last_exc = exc
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            print(f"[wiki-smart-merger] Login connection error (attempt {attempt}/{max_attempts}): {exc}")
+            last_exc = exc
+        except Exception as exc:
+            print(f"[wiki-smart-merger] Login unexpected error (attempt {attempt}/{max_attempts}): {exc}")
+            last_exc = exc
+        if attempt < max_attempts:
+            wait = 2 ** attempt
+            print(f"[wiki-smart-merger] Retrying login in {wait}s…")
+            time.sleep(wait)
+
+    print(f"[wiki-smart-merger] All login attempts failed: {last_exc}")
     return False
 
 

@@ -112,7 +112,6 @@ _emotional_intel       = _safe_load("emotional_intel",        "emotional-intelli
 _skill_progression     = _safe_load("skill_progression",      "skill-progression-tracker.py")
 _relationship_model    = _safe_load("relationship_model",     "relationship-modeling-system.py")
 _arc_tracker           = _safe_load("arc_tracker",            "narrative-arc-tracker.py")
-_narrative_interp      = _safe_load("narrative_interp",       "narrative-interpolation-system.py")
 _personality_amp       = _safe_load("personality_amp",        "character-personality-amplifier.py")
 _world_bible           = _safe_load("world_bible",            "generative-world-bible.py")
 _arc_planner           = _safe_load("arc_planner",            "character-arc-planner.py")
@@ -157,10 +156,13 @@ _health_monitor        = _safe_load("health_monitor",         "system-health-mon
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 GROK_API_KEY = os.environ.get("GROK_API_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
 GROK_API_BASE = "https://api.x.ai/v1"
+ANTHROPIC_API_BASE = "https://api.anthropic.com/v1"
+ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
 
 # File paths
 BASE_DIR = os.path.dirname(__file__)
@@ -569,14 +571,71 @@ def crawl_substack_for_art_and_content() -> str:
 # Grok API calls
 # ---------------------------------------------------------------------------
 
-def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
+def _llm_chat(messages: list, model: str = ANTHROPIC_MODEL) -> str:
     """
-    Send a chat completion request to the Grok API and return the response text.
+    Send a chat completion request to the Anthropic Claude API and return the
+    response text.
 
     Retries up to 3 times with exponential backoff on transient errors (5xx,
     connection errors, or timeouts) before raising.  Client errors (4xx) are
     raised immediately without retrying.
+
+    Falls back to Grok API when ANTHROPIC_API_KEY is not set.
     """
+    if not ANTHROPIC_API_KEY:
+        print("[llm-chat] ANTHROPIC_API_KEY not set — falling back to Grok API.")
+        return _grok_chat_fallback(messages)
+
+    # Convert OpenAI-style messages to Anthropic format (extract system prompt)
+    system_content = ""
+    anthropic_messages = []
+    for msg in messages:
+        if msg.get("role") == "system":
+            system_content = msg.get("content", "")
+        else:
+            anthropic_messages.append({"role": msg["role"], "content": msg["content"]})
+
+    headers = {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+    }
+    payload: dict = {
+        "model": model,
+        "messages": anthropic_messages,
+        "max_tokens": 4096,
+    }
+    if system_content:
+        payload["system"] = system_content
+
+    max_attempts = 3
+    last_exc: Exception = RuntimeError("No attempts made")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            resp = requests.post(
+                f"{ANTHROPIC_API_BASE}/messages",
+                headers=headers,
+                json=payload,
+                timeout=90,
+            )
+            resp.raise_for_status()
+            return resp.json()["content"][0]["text"].strip()
+        except requests.exceptions.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            if status is not None and status < 500:
+                raise  # 4xx errors are not retryable
+            last_exc = exc
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            last_exc = exc
+        if attempt < max_attempts:
+            wait = 2 ** attempt
+            print(f"[llm-chat] Attempt {attempt}/{max_attempts} failed ({last_exc}); retrying in {wait}s…")
+            time.sleep(wait)
+    raise last_exc
+
+
+def _grok_chat_fallback(messages: list, model: str = "grok-4-fast") -> str:
+    """Fallback: send a chat completion request to the Grok API."""
     headers = {
         "Authorization": f"Bearer {GROK_API_KEY}",
         "Content-Type": "application/json",
@@ -602,7 +661,7 @@ def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
         except requests.exceptions.HTTPError as exc:
             status = exc.response.status_code if exc.response is not None else None
             if status is not None and status < 500:
-                raise  # 4xx errors are not retryable
+                raise
             last_exc = exc
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
             last_exc = exc
@@ -1029,7 +1088,7 @@ def generate_lore_pair(
         {"role": "user", "content": user_prompt},
     ]
 
-    raw = _grok_chat(messages)
+    raw = _llm_chat(messages)
 
     # Parse the four sections
     def _extract(label, text):
