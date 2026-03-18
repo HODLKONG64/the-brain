@@ -23,6 +23,22 @@ from bs4 import BeautifulSoup
 SNAPSHOT_FILE = os.path.join(os.path.dirname(__file__), "crawl-snapshot.json")
 
 # ---------------------------------------------------------------------------
+# Noise-reduction keyword guards
+# ---------------------------------------------------------------------------
+
+_RAVE_KEYWORDS = re.compile(
+    r"\b(drum.?bass|dnb|rave|jungle|techno|dj set|club night|fabric|xoyo|"
+    r"egg london|fold|printworks|ticket|lineup|set time)\b",
+    re.IGNORECASE,
+)
+
+_NEWS_KEYWORDS = re.compile(
+    r"\b(bitcoin|crypto|nft|blockchain|moonboys|graffpunks|web3|"
+    r"eth|solana|token|mint|drop|floor price)\b",
+    re.IGNORECASE,
+)
+
+# ---------------------------------------------------------------------------
 # URL catalogue (mirrors gkandcryptomoonboywebsitestosave.md)
 # ---------------------------------------------------------------------------
 
@@ -207,6 +223,12 @@ def _classify_update(category: str, html: str, url: str) -> dict | None:
         combined = (title + " " + content).lower()
         if not _is_significant_carp_catch(combined):
             return None
+
+    if category == "rave-real" and not _RAVE_KEYWORDS.search(title + " " + content):
+        return None
+
+    if category == "news-real" and not _NEWS_KEYWORDS.search(title + " " + content):
+        return None
 
     return {
         "type": category,

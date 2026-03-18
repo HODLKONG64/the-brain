@@ -162,6 +162,7 @@ CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
 GROK_API_BASE = "https://api.x.ai/v1"
+GROK_TEXT_MODEL = os.environ.get("GROK_TEXT_MODEL", "grok-3-latest")
 
 # Minimum delay (seconds) between consecutive Fandom/MediaWiki API write calls.
 # Configurable via WIKI_API_DELAY env var (default 1.0).
@@ -584,7 +585,7 @@ def crawl_substack_for_art_and_content() -> str:
 # Grok API calls
 # ---------------------------------------------------------------------------
 
-def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
+def _grok_chat(messages: list, model: str = GROK_TEXT_MODEL) -> str:
     """
     Send a chat completion request to the Grok API and return the response text.
 
