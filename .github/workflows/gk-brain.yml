@@ -1,5 +1,7 @@
 name: GK BRAIN - 2 Hour Lore + Replies
 on:
+  schedule:
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -15,8 +17,9 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
       CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
-      FANDOM_USERNAME: ${{ secrets.FANDOM_USERNAME }}
-      FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
+      MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+      FANDOM_BOT_USER: ${{ secrets.FANDOM_BOT_USER }}
+      FANDOM_BOT_PASSWORD: ${{ secrets.FANDOM_BOT_PASSWORD }}
       FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
       GROK_API_BASE: "https://api.x.ai/v1"
     steps:
