@@ -123,7 +123,7 @@ def _login(session: requests.Session) -> bool:
         "username": FANDOM_USERNAME,
         "password": FANDOM_PASSWORD,
         "logintoken": token,
-        "rememberMe": "1",
+        "rememberMe": 1,
         "format": "json",
     })
     resp.raise_for_status()
