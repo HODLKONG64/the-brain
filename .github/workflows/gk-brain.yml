@@ -60,8 +60,9 @@ jobs:
         id: wiki_brain
         run: python wiki-brain.py
         continue-on-error: true
-
-      # ── Upload execution report ──────────────────────────────────────────
+      - name: Run master-backup-agent
+        run: python master-backup-agent.py
+        continue-on-error: true
       - name: Upload execution report
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,8 +92,9 @@ jobs:
             anomaly-history.json \
             engagement-tracker.json \
             recommendations.json \
-            reports/ || true
-          git diff --cached --quiet || git commit -m "chore: GK BRAIN 4-brain state update [skip ci]"
+            brain1-canon.json \
+            master-backup-state.json || true
+          git diff --cached --quiet || git commit -m "chore: GK BRAIN state update [skip ci]"
           git push
         continue-on-error: true
 
