@@ -193,6 +193,14 @@ _NFT_KEYWORDS = re.compile(
     r"\b(nft|drop|mint|collection|moonboys?|graffpunks?|hodl|blocktopia)\b",
     re.IGNORECASE,
 )
+_RAVE_KEYWORDS = re.compile(
+    r"\b(drum.?bass|dnb|jungle|rave|dj set|london|bristol|manchester|uk tour|tickets?|event)\b",
+    re.IGNORECASE,
+)
+_NEWS_KEYWORDS = re.compile(
+    r"\b(bitcoin|ethereum|nft|defi|crypto|blockchain|web3|token|mint|drop|graffiti|street art)\b",
+    re.IGNORECASE,
+)
 
 
 def _is_significant_carp_catch(text: str) -> bool:
@@ -216,17 +224,19 @@ def _classify_update(category: str, html: str, url: str) -> dict | None:
     title = _extract_title(html, url)
     content = _extract_snippet(html)
     timestamp = datetime.datetime.utcnow().isoformat() + "Z"
+    combined = (title + " " + content).lower()
 
     if category == "fishing-real":
-        combined = (title + " " + content).lower()
         if not _is_significant_carp_catch(combined):
             return None
 
-    if category == "rave-real" and not _RAVE_KEYWORDS.search(title + " " + content):
-        return None
+    if category == "rave-real":
+        if not _RAVE_KEYWORDS.search(combined):
+            return None
 
-    if category == "news-real" and not _NEWS_KEYWORDS.search(title + " " + content):
-        return None
+    if category == "news-real":
+        if not _NEWS_KEYWORDS.search(combined):
+            return None
 
     return {
         "type": category,

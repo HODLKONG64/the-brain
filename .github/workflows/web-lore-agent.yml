@@ -1,0 +1,82 @@
+name: Brain 3 - Web Lore Agent (6-hour cycle)
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web-lore-agent
+  cancel-in-progress: false
+
+jobs:
+  web-lore-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+      GROK_TEXT_MODEL: ${{ secrets.GROK_TEXT_MODEL || 'grok-3-latest' }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || '' }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
+      WEB_LORE_TELEGRAM_ENABLED: ${{ secrets.WEB_LORE_TELEGRAM_ENABLED || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run Web Lore Agent (Brain 3)
+        run: python web-lore-agent.py
+      - name: Commit state files
+        run: |
+          git config user.name "GK BRAIN Agent"
+          git config user.email "gk-brain@users.noreply.github.com"
+          git add -f \
+            web-lore-cache.json \
+            web-lore-output.json \
+            non-canon-names.log \
+            web-lore-errors.log \
+            wiki-update-queue.json || true
+          git diff --cached --quiet || git commit -m "chore: Brain 3 web-lore state update [skip ci]"
+          git push
+        continue-on-error: true
+      - name: Upload web-lore output artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-lore-output-${{ github.run_number }}
+          path: |
+            web-lore-output.json
+            web-lore-errors.log
+            non-canon-names.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Notify Telegram on failure
+        if: failure()
+        run: |
+          python - <<'EOF'
+          import os, requests
+          token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+          chat_ids = [c.strip() for c in os.environ.get("CHANNEL_CHAT_IDS", "").split(",") if c.strip()]
+          if not token or not chat_ids:
+              print("[notify] No Telegram credentials — skipping failure notification.")
+          else:
+              run_id = os.environ.get("GITHUB_RUN_ID", "unknown")
+              run_url = f"https://github.com/HODLKONG64/the-brain/actions/runs/{run_id}"
+              msg = f"🚨 Brain 3 (Web Lore Agent) workflow FAILED\nRun: {run_url}"
+              for chat_id in chat_ids:
+                  try:
+                      requests.post(
+                          f"https://api.telegram.org/bot{token}/sendMessage",
+                          json={"chat_id": chat_id, "text": msg},
+                          timeout=10,
+                      )
+                  except Exception as e:
+                      print(f"[notify] Failed to notify {chat_id}: {e}")
+          EOF
