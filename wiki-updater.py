@@ -20,7 +20,7 @@ Environment variables (see fandom_auth.py for shared vars):
     WIKI_API_DELAY        Seconds to sleep between API write calls (default: 1.0)
 """
 
-import datetime
+import importlib.util
 import json
 import logging
 import os
@@ -43,6 +43,34 @@ logger = logging.getLogger("wiki-updater")
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Load centralised wiki-formatter module
+# ---------------------------------------------------------------------------
+
+def _load_wiki_formatter():
+    _path = os.path.join(os.path.dirname(__file__), "wiki-formatter.py")
+    _spec = importlib.util.spec_from_file_location("wiki_formatter", _path)
+    _mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    return _mod
+
+try:
+    _wf = _load_wiki_formatter()
+    _lore_to_encyclopedic = _wf.lore_to_encyclopedic
+    _apply_wikilinks = _wf.apply_wikilinks
+    _build_cite_ref = _wf.build_cite_ref
+    _build_infobox = _wf.build_infobox
+    _build_category_tags = _wf.build_category_tags
+    _ensure_references_section = _wf.ensure_references_section
+except Exception as _wf_exc:
+    print(f"[wiki-updater] wiki-formatter unavailable ({_wf_exc}); using stubs.")
+    def _lore_to_encyclopedic(t): return t
+    def _apply_wikilinks(t): return t
+    def _build_cite_ref(u, ti, ts): return ""
+    def _build_infobox(upd): return ""
+    def _build_category_tags(ut, yr): return ""
+    def _ensure_references_section(t): return t
 
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
@@ -159,30 +187,60 @@ def _append_to_page(
 # ---------------------------------------------------------------------------
 
 def _update_to_wikitext(update: dict) -> str:
-    """Convert a structured update dict to MediaWiki markup."""
-    ts = update.get("timestamp", datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+    """Convert a structured update dict to fully MediaWiki-compliant markup."""
+    ts = update.get("timestamp", datetime.datetime.utcnow().isoformat() + "Z")
     try:
         dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
         display_time = dt.strftime("%d %B %Y, %H:%M UTC")
+        year = dt.strftime("%Y")
     except Exception:
         display_time = ts
+        year = str(datetime.datetime.utcnow().year)
 
-    update_type = update.get("type", "update").replace("-", " ").title()
-    source = update.get("source", "")
+    update_type = update.get("type", "update")
+    source = update.get("url") or update.get("source", "")
     title = update.get("title", "Update")
     content = update.get("content", "")
 
-    lines = [
-        f"=== {title} ===",
-        f"''Detected: {display_time}''",
-        f"* '''Type:''' {update_type}",
-        f"* '''Source:''' [{source} {source}]",
-        "",
-        content,
-        "",
-        "----",
-    ]
-    return "\n".join(lines)
+    # 1. Convert first-person lore to encyclopedic third-person
+    content = _lore_to_encyclopedic(content)
+
+    # 2. Auto-link known GK universe entities
+    content = _apply_wikilinks(content)
+
+    # 3. Build inline citation
+    cite = _build_cite_ref(source, title, ts)
+    if cite:
+        content = content.rstrip() + cite
+
+    # 4. Build infobox block (empty string for non-applicable types)
+    infobox = _build_infobox(update)
+
+    # 5. Build category tags
+    cat_tags = _build_category_tags(update_type, year)
+
+    # Assemble page
+    parts: list[str] = []
+    if infobox:
+        parts.append(infobox)
+        parts.append("")
+    parts.append(f"=== {title} ===")
+    parts.append(f"''Detected: {display_time}''")
+    parts.append("")
+    parts.append(content)
+    parts.append("")
+    parts.append("----")
+
+    wikitext = "\n".join(parts)
+
+    # 6. Ensure References section
+    wikitext = _ensure_references_section(wikitext)
+
+    # 7. Append category tags
+    if cat_tags:
+        wikitext = wikitext.rstrip() + "\n\n" + cat_tags + "\n"
+
+    return wikitext
 
 
 def _sub_page_title(update: dict) -> str:

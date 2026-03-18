@@ -39,6 +39,7 @@ Environment variables (see fandom_auth.py for shared vars):
 
 import datetime
 import hashlib
+import importlib.util
 import json
 import logging
 import os
@@ -59,6 +60,34 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("wiki-smart-merger")
+
+# ---------------------------------------------------------------------------
+# Load centralised wiki-formatter module
+# ---------------------------------------------------------------------------
+
+def _load_wiki_formatter():
+    _path = os.path.join(os.path.dirname(__file__), "wiki-formatter.py")
+    _spec = importlib.util.spec_from_file_location("wiki_formatter", _path)
+    _mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    return _mod
+
+try:
+    _wf = _load_wiki_formatter()
+    _lore_to_encyclopedic = _wf.lore_to_encyclopedic
+    _apply_wikilinks = _wf.apply_wikilinks
+    _build_cite_ref = _wf.build_cite_ref
+    _build_category_tags = _wf.build_category_tags
+    _ensure_references_section = _wf.ensure_references_section
+    _ensure_categories = _wf.ensure_categories
+except Exception as _wf_exc:
+    print(f"[wiki-smart-merger] wiki-formatter unavailable ({_wf_exc}); using stubs.")
+    def _lore_to_encyclopedic(t): return t
+    def _apply_wikilinks(t): return t
+    def _build_cite_ref(u, ti, ts): return ""
+    def _build_category_tags(ut, yr): return ""
+    def _ensure_references_section(t): return t
+    def _ensure_categories(t, cats): return t
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -327,11 +356,15 @@ def _entry_already_present(body: str, update: dict) -> bool:
 # ---------------------------------------------------------------------------
 
 def _format_update_bullet(update: dict, display_time: str) -> str:
-    """Format a single update as a wiki bullet point with source attribution."""
+    """Format a single update as a wiki bullet point with inline citation."""
     title = update.get("title", "Update")
     source_url = update.get("url") or update.get("source", "")
     source_domain = _extract_domain(source_url) if source_url else ""
     content = update.get("content", "").strip()
+    ts = update.get("timestamp", "")
+
+    # Convert first-person lore to encyclopedic prose
+    content = _lore_to_encyclopedic(content)
 
     # Embed content fingerprint as a hidden comment for future duplicate detection.
     fingerprint_comment = ""
@@ -339,19 +372,32 @@ def _format_update_bullet(update: dict, display_time: str) -> str:
         fp = _get_content_fingerprint(content)
         fingerprint_comment = f"<!-- fp:{fp[:FINGERPRINT_PREFIX_LENGTH]} -->"
 
+    # Build inline citation
+    cite = _build_cite_ref(source_url, title, ts)
+
     if source_url:
         lines = [
             f"* '''[[{title}]]''' — {source_domain} — {display_time} {fingerprint_comment}",
         ]
+        if content:
+            snippet = content[:CONTENT_SNIPPET_LENGTH]
+            suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
+            # Apply wikilinks to snippet, then append citation
+            linked_snippet = _apply_wikilinks(snippet)
+            lines.append(f"  {linked_snippet}{suffix}{cite}")
+        elif cite:
+            lines[0] = lines[0].rstrip() + cite
     else:
         lines = [
             f"* '''{title}''' — {display_time} {fingerprint_comment}",
         ]
-
-    if content:
-        snippet = content[:CONTENT_SNIPPET_LENGTH]
-        suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
-        lines.append(f"  {snippet}{suffix}")
+        if content:
+            snippet = content[:CONTENT_SNIPPET_LENGTH]
+            suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
+            linked_snippet = _apply_wikilinks(snippet)
+            lines.append(f"  {linked_snippet}{suffix}{cite}")
+        elif cite:
+            lines[0] = lines[0].rstrip() + cite
 
     return "\n".join(lines)
 
@@ -400,7 +446,26 @@ def _smart_merge_update(
             update.get("title"),
         )
 
-    return _rebuild_page(sections), True
+    new_content = _rebuild_page(sections)
+
+    # Ensure == References == section exists
+    new_content = _ensure_references_section(new_content)
+
+    # Determine year from update timestamp
+    ts = update.get("timestamp", "")
+    try:
+        dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        year = dt.strftime("%Y")
+    except Exception:
+        year = str(datetime.datetime.utcnow().year)
+
+    # Build and append any missing category tags
+    cat_tags_str = _build_category_tags(update_type, year)
+    if cat_tags_str:
+        categories = [t for t in cat_tags_str.splitlines() if t.strip()]
+        new_content = _ensure_categories(new_content, categories)
+
+    return new_content, True
 
 
 def _build_agent_log_entry(update: dict, display_time: str, merged: bool) -> str:
