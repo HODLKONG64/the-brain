@@ -72,6 +72,12 @@ except Exception as _wf_exc:
     def _build_category_tags(ut, yr): return ""
     def _ensure_references_section(t): return t
 
+ERRORS_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-errors.json")
+
+# Retry configuration
+_MAX_RETRIES = 3
+_RETRY_STATUSES = {429, 503}
+
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
@@ -82,14 +88,74 @@ ERROR_LOG_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-errors.jso
 # Error logging
 # ---------------------------------------------------------------------------
 
+def _log_error(context: str, error: str) -> None:
+    """Append a failure record to wiki-update-errors.json."""
+    try:
+        errors: list = []
+        if os.path.exists(ERRORS_FILE):
+            try:
+                with open(ERRORS_FILE, "r", encoding="utf-8") as fh:
+                    errors = json.load(fh)
+            except (json.JSONDecodeError, OSError):
+                errors = []
+        errors.append({
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+            "context": context,
+            "error": str(error),
+        })
+        with open(ERRORS_FILE, "w", encoding="utf-8") as fh:
+            json.dump(errors, fh, indent=2)
+    except OSError:
+        pass
+
+
+# ---------------------------------------------------------------------------
+# Retry helper
+# ---------------------------------------------------------------------------
+
+def _api_request(method: str, session: requests.Session, url: str, **kwargs) -> requests.Response:
+    """Make an API request with up to _MAX_RETRIES retries on 429/503 errors."""
+    last_exc: Exception = RuntimeError("No request attempts made")
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            resp = session.request(method, url, **kwargs)
+            if resp.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+                wait = 2 ** attempt
+                print(f"[wiki-updater] HTTP {resp.status_code} — retry {attempt}/{_MAX_RETRIES} in {wait}s")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            return resp
+        except requests.exceptions.HTTPError as exc:
+            if exc.response is not None and exc.response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+                wait = 2 ** attempt
+                print(f"[wiki-updater] HTTP {exc.response.status_code} — retry {attempt}/{_MAX_RETRIES} in {wait}s")
+                time.sleep(wait)
+                last_exc = exc
+                continue
+            raise
+        except requests.exceptions.RequestException as exc:
+            if attempt < _MAX_RETRIES:
+                wait = 2 ** attempt
+                print(f"[wiki-updater] Request error — retry {attempt}/{_MAX_RETRIES} in {wait}s: {exc}")
+                time.sleep(wait)
+                last_exc = exc
+                continue
+            raise
+    raise last_exc
+
+
+# ---------------------------------------------------------------------------
+# MediaWiki API helpers
+# ---------------------------------------------------------------------------
+
 def _get_login_token(session: requests.Session) -> str:
-    resp = session.get(WIKI_API, params={
+    resp = _api_request("GET", session, WIKI_API, params={
         "action": "query",
         "meta": "tokens",
         "type": "login",
         "format": "json",
     })
-    resp.raise_for_status()
     return resp.json()["query"]["tokens"]["logintoken"]
 
 
@@ -100,42 +166,43 @@ def _login(session: requests.Session) -> bool:
         return False
 
     token = _get_login_token(session)
-    resp = session.post(WIKI_API, data={
-        "action": "login",
-        "lgname": FANDOM_USERNAME,
-        "lgpassword": FANDOM_PASSWORD,
-        "lgtoken": token,
+    resp = _api_request("POST", session, WIKI_API, data={
+        "action": "clientlogin",
+        "loginmessageformat": "none",
+        "username": FANDOM_USERNAME,
+        "password": FANDOM_PASSWORD,
+        "logintoken": token,
+        "rememberMe": 1,
         "format": "json",
     })
-    resp.raise_for_status()
     result = resp.json()
     if result.get("login", {}).get("result") == "Success":
         print(f"[wiki-updater] Logged in as {FANDOM_USERNAME}")
         return True
-    print(f"[wiki-updater] Login failed: {result}")
+    msg = f"Login failed: {result}"
+    print(f"[wiki-updater] {msg}")
+    _log_error("login", msg)
     return False
 
 
 def _get_csrf_token(session: requests.Session) -> str:
-    resp = session.get(WIKI_API, params={
+    resp = _api_request("GET", session, WIKI_API, params={
         "action": "query",
         "meta": "tokens",
         "format": "json",
     })
-    resp.raise_for_status()
     return resp.json()["query"]["tokens"]["csrftoken"]
 
 
 def _get_page_content(session: requests.Session, title: str) -> str:
     """Fetch current wikitext content of a page (empty string if new page)."""
-    resp = session.get(WIKI_API, params={
+    resp = _api_request("GET", session, WIKI_API, params={
         "action": "query",
         "prop": "revisions",
         "rvprop": "content",
         "titles": title,
         "format": "json",
     })
-    resp.raise_for_status()
     pages = resp.json()["query"]["pages"]
     for page in pages.values():
         revisions = page.get("revisions", [])
@@ -152,7 +219,7 @@ def _edit_page(
     csrf_token: str,
 ) -> bool:
     """Edit (or create) a wiki page. Returns True on success."""
-    resp = session.post(WIKI_API, data={
+    resp = _api_request("POST", session, WIKI_API, data={
         "action": "edit",
         "title": title,
         "text": content,
@@ -161,11 +228,12 @@ def _edit_page(
         "token": csrf_token,
         "format": "json",
     })
-    resp.raise_for_status()
     result = resp.json()
     if result.get("edit", {}).get("result") == "Success":
         return True
-    print(f"[wiki-updater] Edit failed for '{title}': {result}")
+    msg = f"Edit failed for '{title}': {result}"
+    print(f"[wiki-updater] {msg}")
+    _log_error(f"edit:{title}", msg)
     return False
 
 
@@ -343,8 +411,9 @@ def run_wiki_updates() -> dict:
         logger.info("No pending wiki updates.")
         return {"success": 0, "failed": 0, "skipped": 0}
 
-    session = fandom_auth.create_session()
-    if session is None:
+    session = requests.Session()
+    if not _login(session):
+        _log_error("run_wiki_updates", "Login failed — skipping wiki updates")
         return {"success": 0, "failed": len(pending), "skipped": 0}
 
     success_count = 0
@@ -355,8 +424,8 @@ def run_wiki_updates() -> dict:
             wikitext = _update_to_wikitext(update)
             sub_page = _sub_page_title(update)
 
-            # 1. Create a dedicated sub-page for this update.
-            sub_success = fandom_auth.edit_page(
+            # 1. Create a dedicated sub-page for this update
+            sub_success = _edit_page(
                 session,
                 sub_page,
                 wikitext,
@@ -375,7 +444,7 @@ def run_wiki_updates() -> dict:
                 f"* '''[[{sub_page}|{update.get('title', 'Update')}]]''' "
                 f"— {update.get('type', 'update')} — {display_time}"
             )
-            log_success = fandom_auth.append_to_page(
+            log_success = _append_to_page(
                 session,
                 AGENT_LOG_PAGE,
                 log_entry,
@@ -389,7 +458,7 @@ def run_wiki_updates() -> dict:
                 f"detected on {display_time}. "
                 f"Type: {update.get('type', 'update')}.\n"
             )
-            main_success = fandom_auth.append_to_page(
+            main_success = _append_to_page(
                 session,
                 MAIN_WIKI_PAGE,
                 latest_entry,
@@ -402,12 +471,15 @@ def run_wiki_updates() -> dict:
                 logger.info("Updated wiki for: %s", update.get("title"))
             else:
                 failed_count += 1
+                _log_error(
+                    f"update:{update.get('title', 'unknown')}",
+                    f"One or more page edits failed (sub={sub_success}, log={log_success}, main={main_success})",
+                )
 
         except Exception as exc:
-            logger.error(
-                "Error processing update '%s': %s", update.get("title"), exc
-            )
-            _log_error(f"run_wiki_updates: {update.get('title', 'unknown')}", str(exc))
+            msg = f"Error processing update '{update.get('title')}': {exc}"
+            print(f"[wiki-updater] {msg}")
+            _log_error(f"update:{update.get('title', 'unknown')}", msg)
             failed_count += 1
 
         # Polite rate limit between update entries.
