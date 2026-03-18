@@ -26,28 +26,47 @@ Hybrid approach:
 Usage (from gk-brain.py or standalone):
     from wiki_smart_merger import run_smart_wiki_updates
     run_smart_wiki_updates()
+
+Environment variables (see fandom_auth.py for shared vars):
+    FANDOM_BOT_USER       Fandom bot username (preferred over FANDOM_USERNAME)
+    FANDOM_USERNAME       Fandom username (fallback)
+    FANDOM_BOT_PASSWORD   Fandom bot password (preferred over FANDOM_PASSWORD)
+    FANDOM_PASSWORD       Fandom password (fallback)
+    FANDOM_WIKI_URL       Wiki base URL (default: https://gkniftyheads.fandom.com)
+    WIKI_DRY_RUN          Set to "1" to skip all actual writes (default: disabled)
+    WIKI_API_DELAY        Seconds to sleep between API write calls (default: 1.0)
 """
 
 import datetime
 import hashlib
 import json
+import logging
 import os
 import re
 import time
 from urllib.parse import urlparse
 
-import requests
+import filelock
+
+import fandom_auth
+
+# ---------------------------------------------------------------------------
+# Logging setup
+# ---------------------------------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("wiki-smart-merger")
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
-
-WIKI_BASE = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/")
-WIKI_API = WIKI_BASE + "/api.php"
-FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
-FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
+# Lock file used to prevent concurrent queue reads/writes.
+QUEUE_LOCK_FILE = QUEUE_FILE + ".lock"
 
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
@@ -94,115 +113,34 @@ DEFAULT_SECTION = "Uncategorized Updates"
 
 # Fingerprinting constants
 FINGERPRINT_CONTENT_LENGTH = 500   # chars of normalised content used for MD5
-FINGERPRINT_PREFIX_LENGTH = 16     # hex chars of MD5 hash stored in wiki comments
+FINGERPRINT_PREFIX_LENGTH = 16     # hex chars of MD5 stored as wiki comment
 CONTENT_SNIPPET_LENGTH = 200       # max chars of content shown in a wiki bullet
 
 
 # ---------------------------------------------------------------------------
-# MediaWiki API helpers (mirrors wiki-updater.py; kept self-contained)
+# Queue management (file-locked to prevent race conditions)
 # ---------------------------------------------------------------------------
 
-def _get_login_token(session: requests.Session) -> str:
-    resp = session.get(WIKI_API, params={
-        "action": "query",
-        "meta": "tokens",
-        "type": "login",
-        "format": "json",
-    })
-    resp.raise_for_status()
-    return resp.json()["query"]["tokens"]["logintoken"]
+def _load_queue() -> list:
+    """Load the queue file under an exclusive file lock."""
+    lock = filelock.FileLock(QUEUE_LOCK_FILE, timeout=30)
+    with lock:
+        if os.path.exists(QUEUE_FILE):
+            try:
+                with open(QUEUE_FILE, "r", encoding="utf-8") as fh:
+                    return json.load(fh)
+            except (json.JSONDecodeError, OSError):
+                logger.warning("Queue file unreadable — starting with empty queue.")
+                return []
+    return []
 
 
-def _login(session: requests.Session) -> bool:
-    """Log in to Fandom with bot credentials. Returns True on success."""
-    if not FANDOM_USERNAME or not FANDOM_PASSWORD:
-        print("[wiki-smart-merger] FANDOM credentials not set — skipping.")
-        return False
-
-    token = _get_login_token(session)
-    resp = session.post(WIKI_API, data={
-        "action": "clientlogin",
-        "loginmessageformat": "none",
-        "username": FANDOM_USERNAME,
-        "password": FANDOM_PASSWORD,
-        "logintoken": token,
-        "loginreturnurl": WIKI_BASE,
-        "rememberMe": 1,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    result = resp.json()
-    if result.get("clientlogin", {}).get("status") == "PASS":
-        print(f"[wiki-smart-merger] Logged in as {FANDOM_USERNAME}")
-        return True
-    print(f"[wiki-smart-merger] Login failed: {result}")
-    return False
-
-
-def _get_csrf_token(session: requests.Session) -> str:
-    resp = session.get(WIKI_API, params={
-        "action": "query",
-        "meta": "tokens",
-        "format": "json",
-    })
-    resp.raise_for_status()
-    return resp.json()["query"]["tokens"]["csrftoken"]
-
-
-def _get_page_content(session: requests.Session, title: str) -> str:
-    """Return current wikitext of a page, or empty string if the page is new."""
-    resp = session.get(WIKI_API, params={
-        "action": "query",
-        "prop": "revisions",
-        "rvprop": "content",
-        "titles": title,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    pages = resp.json()["query"]["pages"]
-    for page in pages.values():
-        revisions = page.get("revisions", [])
-        if revisions:
-            return revisions[0].get("*", "")
-    return ""
-
-
-def _edit_page(
-    session: requests.Session,
-    title: str,
-    content: str,
-    summary: str,
-    csrf_token: str,
-) -> bool:
-    """Replace the full content of a wiki page. Returns True on success."""
-    resp = session.post(WIKI_API, data={
-        "action": "edit",
-        "title": title,
-        "text": content,
-        "summary": summary,
-        "bot": "true",
-        "token": csrf_token,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    result = resp.json()
-    if result.get("edit", {}).get("result") == "Success":
-        return True
-    print(f"[wiki-smart-merger] Edit failed for '{title}': {result}")
-    return False
-
-
-def _append_to_page(
-    session: requests.Session,
-    title: str,
-    section_wikitext: str,
-    summary: str,
-    csrf_token: str,
-) -> bool:
-    """Append wikitext to the bottom of a page (simple layer). Returns True on success."""
-    existing = _get_page_content(session, title)
-    new_content = existing.strip() + "\n\n" + section_wikitext.strip() + "\n"
-    return _edit_page(session, title, new_content, summary, csrf_token)
+def _save_queue(queue: list) -> None:
+    """Save the queue file under an exclusive file lock."""
+    lock = filelock.FileLock(QUEUE_LOCK_FILE, timeout=30)
+    with lock:
+        with open(QUEUE_FILE, "w", encoding="utf-8") as fh:
+            json.dump(queue, fh, indent=2)
 
 
 # ---------------------------------------------------------------------------
@@ -211,20 +149,22 @@ def _append_to_page(
 
 def _parse_sections(wikitext: str) -> dict[str, str]:
     """
-    Parse wikitext into a dict of {section_heading: section_body}.
+    Parse wikitext into an ordered dict of {section_heading: section_body}.
 
-    Handles == Level 2 == headings only (top-level wiki sections).
-    Returns an ordered dict where key '' holds any pre-heading preamble.
+    Matches ``== Heading ==`` with optional surrounding whitespace.
+    The key ``""`` holds any pre-heading preamble.
     """
     sections: dict[str, str] = {}
     current_heading = ""
     buffer: list[str] = []
 
     for line in wikitext.splitlines():
-        match = re.match(r"^==\s*(.+?)\s*==\s*$", line)
-        if match:
+        # Robust heading regex: capture opening and closing = runs separately so
+        # we can verify they are identical (rejects mismatched counts like == h ===).
+        match = re.match(r"^(={2,})\s*(.+?)\s*(={2,})\s*$", line)
+        if match and match.group(1) == match.group(3):
             sections[current_heading] = "\n".join(buffer)
-            current_heading = match.group(1)
+            current_heading = match.group(2)
             buffer = []
         else:
             buffer.append(line)
@@ -240,15 +180,10 @@ def _rebuild_page(sections: dict[str, str]) -> str:
         if heading == "":
             parts.append(body)
         else:
+            # Always use proper MediaWiki == Section Name == syntax.
             parts.append(f"== {heading} ==")
             parts.append(body)
     return "\n".join(parts).strip() + "\n"
-
-
-def _section_contains(body: str, keywords: list[str]) -> bool:
-    """Return True if any keyword appears in body (case-insensitive)."""
-    lower = body.lower()
-    return any(kw.lower() in lower for kw in keywords)
 
 
 def _get_content_fingerprint(text: str) -> str:
@@ -267,29 +202,40 @@ def _extract_domain(url: str) -> str:
 
 def _entry_already_present(body: str, update: dict) -> bool:
     """
-    Smart duplicate detection using source URL, title+timestamp, and content
-    hash fingerprinting.
+    Smart duplicate detection using source URL, exact title+date match,
+    and content-hash fingerprint.
 
-    Returns True if this exact data is already on the wiki page.
+    Returns True if this update appears to already be present in *body*.
     """
-    # 1. Check by source URL (most reliable)
+    # 1. Check by source URL (most reliable — exact key match).
     source_url = update.get("url") or update.get("source", "")
     if source_url and source_url in body:
+        logger.debug(
+            "Duplicate detected by source URL for '%s'", update.get("title")
+        )
         return True
 
-    # 2. Check by title + date (exact match)
+    # 2. Check by exact title + date (not a substring match against full content).
     title = update.get("title", "")
     timestamp = update.get("timestamp", "")
     if title and timestamp:
         date_part = timestamp[:10]  # YYYY-MM-DD
-        if re.search(re.escape(title) + r".*" + re.escape(date_part), body, re.IGNORECASE):
-            return True
+        # Both title and date must be present in the same line.
+        for line in body.splitlines():
+            if title.lower() in line.lower() and date_part in line:
+                logger.debug(
+                    "Duplicate detected by title+date for '%s'", title
+                )
+                return True
 
-    # 3. Check by content fingerprint (first FINGERPRINT_PREFIX_LENGTH chars of MD5 hash)
+    # 3. Check by content fingerprint embedded as a wiki comment.
     content = update.get("content", "")
     if content and len(content) > 50:
         fingerprint = _get_content_fingerprint(content)
         if fingerprint[:FINGERPRINT_PREFIX_LENGTH] in body:
+            logger.debug(
+                "Duplicate detected by fingerprint for '%s'", update.get("title")
+            )
             return True
 
     return False
@@ -306,7 +252,7 @@ def _format_update_bullet(update: dict, display_time: str) -> str:
     source_domain = _extract_domain(source_url) if source_url else ""
     content = update.get("content", "").strip()
 
-    # Embed content fingerprint as a hidden comment for future duplicate detection
+    # Embed content fingerprint as a hidden comment for future duplicate detection.
     fingerprint_comment = ""
     if content and len(content) > 50:
         fp = _get_content_fingerprint(content)
@@ -316,18 +262,15 @@ def _format_update_bullet(update: dict, display_time: str) -> str:
         lines = [
             f"* '''[[{title}]]''' — {source_domain} — {display_time} {fingerprint_comment}",
         ]
-        if content:
-            snippet = content[:CONTENT_SNIPPET_LENGTH]
-            suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
-            lines.append(f"  {snippet}{suffix}")
     else:
         lines = [
             f"* '''{title}''' — {display_time} {fingerprint_comment}",
         ]
-        if content:
-            snippet = content[:CONTENT_SNIPPET_LENGTH]
-            suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
-            lines.append(f"  {snippet}{suffix}")
+
+    if content:
+        snippet = content[:CONTENT_SNIPPET_LENGTH]
+        suffix = "..." if len(content) > CONTENT_SNIPPET_LENGTH else ""
+        lines.append(f"  {snippet}{suffix}")
 
     return "\n".join(lines)
 
@@ -338,33 +281,43 @@ def _smart_merge_update(
     display_time: str,
 ) -> tuple[str, bool]:
     """
-    Attempt to smart-merge one update into page_content.
+    Attempt to smart-merge one update into *page_content*.
 
-    Returns (new_page_content, merged_ok).
-    merged_ok is False only when the update was already present.
-    Unknown update types are placed in DEFAULT_SECTION instead of being dropped.
+    Returns ``(new_page_content, merged_ok)``.
+    ``merged_ok`` is False only when the update was already present (duplicate).
+    Unknown update types are placed in DEFAULT_SECTION.
     """
     update_type = update.get("type", "")
     target_section = SECTION_MAP.get(update_type, DEFAULT_SECTION)
 
     sections = _parse_sections(page_content)
 
-    # Check whether update already exists anywhere on the page
+    # Duplicate check before touching anything.
     if _entry_already_present(page_content, update):
-        print(
-            f"[wiki-smart-merger] '{update.get('title')}' already present — skipping smart merge."
+        logger.info(
+            "Skipping duplicate: '%s' already present on page.", update.get("title")
         )
         return page_content, False
 
     bullet = _format_update_bullet(update, display_time)
 
     if target_section in sections:
-        # Insert bullet at the top of the existing section body
+        # Insert bullet at the top of the existing section body.
         existing_body = sections[target_section]
         sections[target_section] = bullet + "\n" + existing_body
+        logger.debug(
+            "Inserted '%s' into existing section '%s'",
+            update.get("title"),
+            target_section,
+        )
     else:
-        # Create new section at the end of the page
+        # Create new section at the end of the page with proper MediaWiki syntax.
         sections[target_section] = bullet + "\n"
+        logger.debug(
+            "Created new section '%s' for '%s'",
+            target_section,
+            update.get("title"),
+        )
 
     return _rebuild_page(sections), True
 
@@ -395,25 +348,6 @@ def _sub_page_title(update: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Queue management
-# ---------------------------------------------------------------------------
-
-def _load_queue() -> list:
-    if os.path.exists(QUEUE_FILE):
-        try:
-            with open(QUEUE_FILE, "r", encoding="utf-8") as fh:
-                return json.load(fh)
-        except (json.JSONDecodeError, OSError):
-            return []
-    return []
-
-
-def _save_queue(queue: list) -> None:
-    with open(QUEUE_FILE, "w", encoding="utf-8") as fh:
-        json.dump(queue, fh, indent=2)
-
-
-# ---------------------------------------------------------------------------
 # Main public function
 # ---------------------------------------------------------------------------
 
@@ -424,28 +358,27 @@ def run_smart_wiki_updates() -> dict:
     Returns:
         {"smart_merged": int, "appended": int, "failed": int, "skipped": int}
     """
-    if not FANDOM_USERNAME or not FANDOM_PASSWORD:
-        print("[wiki-smart-merger] Credentials missing — skipping wiki update.")
+    if not fandom_auth.FANDOM_USERNAME or not fandom_auth.FANDOM_PASSWORD:
+        logger.warning("FANDOM credentials missing — skipping wiki update.")
         return {"smart_merged": 0, "appended": 0, "failed": 0, "skipped": 0}
 
     queue = _load_queue()
     pending = [u for u in queue if u.get("wiki_update") and not u.get("wiki_done")]
 
     if not pending:
-        print("[wiki-smart-merger] No pending wiki updates.")
+        logger.info("No pending wiki updates.")
         return {"smart_merged": 0, "appended": 0, "failed": 0, "skipped": 0}
 
-    session = requests.Session()
-    if not _login(session):
+    session = fandom_auth.create_session()
+    if session is None:
         return {"smart_merged": 0, "appended": 0, "failed": len(pending), "skipped": 0}
 
-    csrf_token = _get_csrf_token(session)
     smart_count = 0
     append_count = 0
     failed_count = 0
 
-    # Fetch the main wiki page once; update in-memory for each entry
-    main_page_content = _get_page_content(session, MAIN_WIKI_PAGE)
+    # Fetch the main wiki page once; update in-memory for each entry.
+    main_page_content = fandom_auth.get_page_content(session, MAIN_WIKI_PAGE)
 
     for update in pending:
         try:
@@ -463,41 +396,44 @@ def run_smart_wiki_updates() -> dict:
                     main_page_content, update, display_time
                 )
                 if merged:
-                    ok_smart = _edit_page(
+                    ok_smart = fandom_auth.edit_page(
                         session,
                         MAIN_WIKI_PAGE,
                         new_main_content,
                         f"GK BRAIN smart-merge: {update.get('title', 'update')}",
-                        csrf_token,
+                        check_hash=False,  # We already ran our own dedup check.
                     )
                     if ok_smart:
                         main_page_content = new_main_content
                         smart_count += 1
-                        resolved_section = SECTION_MAP.get(update.get('type', ''), DEFAULT_SECTION)
-                        print(
-                            f"[wiki-smart-merger] Smart-merged '{update.get('title')}' "
-                            f"into section '{resolved_section}'"
+                        resolved_section = SECTION_MAP.get(
+                            update.get("type", ""), DEFAULT_SECTION
+                        )
+                        logger.info(
+                            "Smart-merged '%s' into section '%s'",
+                            update.get("title"),
+                            resolved_section,
                         )
                     else:
                         merged = False
             except Exception as merge_exc:
-                print(
-                    f"[wiki-smart-merger] Smart merge failed for "
-                    f"'{update.get('title')}': {merge_exc} — falling back to append."
+                logger.warning(
+                    "Smart merge failed for '%s': %s — falling back to append.",
+                    update.get("title"),
+                    merge_exc,
                 )
                 merged = False
 
             # --- Layer 1: Simple append (always runs as audit log) ---
             log_entry = _build_agent_log_entry(update, display_time, merged)
-            ok_log = _append_to_page(
+            ok_log = fandom_auth.append_to_page(
                 session,
                 AGENT_LOG_PAGE,
                 log_entry,
                 "GK BRAIN auto-log entry",
-                csrf_token,
             )
 
-            # If smart merge did not fire, also append a brief entry to the main page
+            # If smart merge did not fire, also append a brief entry to the main page.
             if not merged:
                 fallback_entry = (
                     f"\n== Latest Agent Update ==\n"
@@ -505,15 +441,14 @@ def run_smart_wiki_updates() -> dict:
                     f"detected on {display_time}. "
                     f"Type: {update.get('type', 'update')}.\n"
                 )
-                ok_fallback = _append_to_page(
+                ok_fallback = fandom_auth.append_to_page(
                     session,
                     MAIN_WIKI_PAGE,
                     fallback_entry,
                     "GK BRAIN: latest update (fallback append)",
-                    csrf_token,
                 )
-                # Re-read main page so next iteration has fresh content
-                main_page_content = _get_page_content(session, MAIN_WIKI_PAGE)
+                # Re-read main page so next iteration has fresh content.
+                main_page_content = fandom_auth.get_page_content(session, MAIN_WIKI_PAGE)
 
                 if ok_fallback and ok_log:
                     append_count += 1
@@ -527,21 +462,22 @@ def run_smart_wiki_updates() -> dict:
                     failed_count += 1
 
         except Exception as exc:
-            print(
-                f"[wiki-smart-merger] Error processing "
-                f"'{update.get('title')}': {exc}"
+            logger.error(
+                "Error processing '%s': %s", update.get("title"), exc
             )
             failed_count += 1
 
-        # Polite rate limit
-        time.sleep(2)
+        # Polite rate limit between entries.
+        time.sleep(fandom_auth.API_DELAY)
 
     _save_queue(queue)
 
-    print(
-        f"[wiki-smart-merger] Done — "
-        f"smart_merged={smart_count}, appended={append_count}, "
-        f"failed={failed_count}, skipped={len(queue) - len(pending)}"
+    logger.info(
+        "Done — smart_merged=%d, appended=%d, failed=%d, skipped=%d",
+        smart_count,
+        append_count,
+        failed_count,
+        len(queue) - len(pending),
     )
     return {
         "smart_merged": smart_count,
@@ -556,6 +492,5 @@ def run_smart_wiki_updates() -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Running smart wiki merger…")
     result = run_smart_wiki_updates()
     print(json.dumps(result, indent=2))

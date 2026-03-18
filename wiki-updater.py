@@ -9,131 +9,43 @@ Called by gk-brain.py after Telegram posts are sent.
 Usage (from gk-brain.py):
     from wiki_updater import run_wiki_updates
     run_wiki_updates()
+
+Environment variables (see fandom_auth.py for shared vars):
+    FANDOM_BOT_USER       Fandom bot username (preferred over FANDOM_USERNAME)
+    FANDOM_USERNAME       Fandom username (fallback)
+    FANDOM_BOT_PASSWORD   Fandom bot password (preferred over FANDOM_PASSWORD)
+    FANDOM_PASSWORD       Fandom password (fallback)
+    FANDOM_WIKI_URL       Wiki base URL (default: https://gkniftyheads.fandom.com)
+    WIKI_DRY_RUN          Set to "1" to skip all actual writes (default: disabled)
+    WIKI_API_DELAY        Seconds to sleep between API write calls (default: 1.0)
 """
 
+import datetime
 import json
+import logging
 import os
 import re
-import datetime
 import time
 
-import requests
+import fandom_auth
+
+# ---------------------------------------------------------------------------
+# Logging setup
+# ---------------------------------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("wiki-updater")
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
 
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
-
-WIKI_API = "https://gkniftyheads.fandom.com/api.php"
-FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
-FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
-
-# Main wiki page that receives a "Latest Updates" section
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
-
-
-# ---------------------------------------------------------------------------
-# MediaWiki API helpers
-# ---------------------------------------------------------------------------
-
-def _get_login_token(session: requests.Session) -> str:
-    resp = session.get(WIKI_API, params={
-        "action": "query",
-        "meta": "tokens",
-        "type": "login",
-        "format": "json",
-    })
-    resp.raise_for_status()
-    return resp.json()["query"]["tokens"]["logintoken"]
-
-
-def _login(session: requests.Session) -> bool:
-    """Log in to Fandom with bot credentials. Returns True on success."""
-    if not FANDOM_USERNAME or not FANDOM_PASSWORD:
-        print("[wiki-updater] FANDOM credentials not set — skipping wiki updates.")
-        return False
-
-    token = _get_login_token(session)
-    resp = session.post(WIKI_API, data={
-        "action": "clientlogin",
-        "loginmessageformat": "none",
-        "username": FANDOM_USERNAME,
-        "password": FANDOM_PASSWORD,
-        "logintoken": token,
-        "rememberMe": 1,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    result = resp.json()
-    if result.get("clientlogin", {}).get("status") == "PASS":
-        print(f"[wiki-updater] Logged in as {FANDOM_USERNAME}")
-        return True
-    print(f"[wiki-updater] Login failed: {result}")
-    return False
-
-
-def _get_csrf_token(session: requests.Session) -> str:
-    resp = session.get(WIKI_API, params={
-        "action": "query",
-        "meta": "tokens",
-        "format": "json",
-    })
-    resp.raise_for_status()
-    return resp.json()["query"]["tokens"]["csrftoken"]
-
-
-def _get_page_content(session: requests.Session, title: str) -> str:
-    """Fetch current wikitext content of a page (empty string if new page)."""
-    resp = session.get(WIKI_API, params={
-        "action": "query",
-        "prop": "revisions",
-        "rvprop": "content",
-        "titles": title,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    pages = resp.json()["query"]["pages"]
-    for page in pages.values():
-        revisions = page.get("revisions", [])
-        if revisions:
-            return revisions[0].get("*", "")
-    return ""
-
-
-def _edit_page(
-    session: requests.Session,
-    title: str,
-    content: str,
-    summary: str,
-    csrf_token: str,
-) -> bool:
-    """Edit (or create) a wiki page. Returns True on success."""
-    resp = session.post(WIKI_API, data={
-        "action": "edit",
-        "title": title,
-        "text": content,
-        "summary": summary,
-        "bot": "true",
-        "token": csrf_token,
-        "format": "json",
-    })
-    resp.raise_for_status()
-    result = resp.json()
-    if result.get("edit", {}).get("result") == "Success":
-        return True
-    print(f"[wiki-updater] Edit failed for '{title}': {result}")
-    return False
-
-
-def _append_to_page(
-    session: requests.Session,
-    title: str,
-    section_wikitext: str,
-    summary: str,
-    csrf_token: str,
-) -> bool:
-    """Append a section to an existing page (or create if not exists)."""
-    existing = _get_page_content(session, title)
-    new_content = existing.strip() + "\n\n" + section_wikitext.strip() + "\n"
-    return _edit_page(session, title, new_content, summary, csrf_token)
 
 
 # ---------------------------------------------------------------------------
@@ -143,7 +55,6 @@ def _append_to_page(
 def _update_to_wikitext(update: dict) -> str:
     """Convert a structured update dict to MediaWiki markup."""
     ts = update.get("timestamp", datetime.datetime.utcnow().isoformat() + "Z")
-    # Parse ISO timestamp for display
     try:
         dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
         display_time = dt.strftime("%d %B %Y, %H:%M UTC")
@@ -208,10 +119,10 @@ def add_to_queue(updates: list) -> None:
     Called by gk-brain.py after update detection.
     """
     queue = _load_queue()
-    existing_sources = {e.get("source", "") + e.get("timestamp", "") for e in queue}
+    existing_keys = {e.get("source", "") + e.get("timestamp", "") for e in queue}
     for u in updates:
         key = u.get("source", "") + u.get("timestamp", "")
-        if key not in existing_sources:
+        if key not in existing_keys:
             queue.append(u)
     _save_queue(queue)
 
@@ -246,25 +157,32 @@ def run_wiki_updates() -> dict:
     """
     Process all pending wiki updates from the queue.
 
+    Each update:
+      1. Creates a dedicated sub-page (wikitext formatted entry).
+      2. Appends a brief entry to the agent log page.
+      3. Adds a "Latest Agent Update" section to the main wiki page.
+
+    Content-hash checking is handled by fandom_auth.edit_page() — pages that
+    haven't changed are skipped automatically.
+
     Returns:
         {"success": int, "failed": int, "skipped": int}
     """
-    if not FANDOM_USERNAME or not FANDOM_PASSWORD:
-        print("[wiki-updater] Credentials missing — skipping wiki update.")
+    if not fandom_auth.FANDOM_USERNAME or not fandom_auth.FANDOM_PASSWORD:
+        logger.warning("FANDOM credentials missing — skipping wiki update.")
         return {"success": 0, "failed": 0, "skipped": 0}
 
     queue = _load_queue()
     pending = [u for u in queue if u.get("wiki_update") and not u.get("wiki_done")]
 
     if not pending:
-        print("[wiki-updater] No pending wiki updates.")
+        logger.info("No pending wiki updates.")
         return {"success": 0, "failed": 0, "skipped": 0}
 
-    session = requests.Session()
-    if not _login(session):
+    session = fandom_auth.create_session()
+    if session is None:
         return {"success": 0, "failed": len(pending), "skipped": 0}
 
-    csrf_token = _get_csrf_token(session)
     success_count = 0
     failed_count = 0
 
@@ -273,16 +191,15 @@ def run_wiki_updates() -> dict:
             wikitext = _update_to_wikitext(update)
             sub_page = _sub_page_title(update)
 
-            # 1. Create a dedicated sub-page for this update
-            ok = _edit_page(
+            # 1. Create a dedicated sub-page for this update.
+            ok = fandom_auth.edit_page(
                 session,
                 sub_page,
                 wikitext,
                 f"GK BRAIN auto-update: {update.get('title', 'update')}",
-                csrf_token,
             )
 
-            # 2. Append a brief entry to the main agent log
+            # 2. Append a brief entry to the main agent log.
             ts = update.get("timestamp", "")
             try:
                 dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
@@ -294,51 +211,57 @@ def run_wiki_updates() -> dict:
                 f"* '''[[{sub_page}|{update.get('title', 'Update')}]]''' "
                 f"— {update.get('type', 'update')} — {display_time}"
             )
-            ok2 = _append_to_page(
+            ok2 = fandom_auth.append_to_page(
                 session,
                 AGENT_LOG_PAGE,
                 log_entry,
                 "GK BRAIN auto-log entry",
-                csrf_token,
             )
 
-            # 3. Update the main wiki page "Latest Agent Updates" section
+            # 3. Update the main wiki page with a "Latest Agent Update" section.
             latest_entry = (
                 f"\n== Latest Agent Update ==\n"
                 f"'''[[{sub_page}|{update.get('title', 'Update')}]]''' "
                 f"detected on {display_time}. "
                 f"Type: {update.get('type', 'update')}.\n"
             )
-            ok3 = _append_to_page(
+            ok3 = fandom_auth.append_to_page(
                 session,
                 MAIN_WIKI_PAGE,
                 latest_entry,
                 "GK BRAIN: latest update",
-                csrf_token,
             )
 
             if ok and ok2 and ok3:
                 update["wiki_done"] = True
                 success_count += 1
-                print(f"[wiki-updater] Updated wiki for: {update.get('title')}")
+                logger.info("Updated wiki for: %s", update.get("title"))
             else:
                 failed_count += 1
 
         except Exception as exc:
-            print(f"[wiki-updater] Error processing update '{update.get('title')}': {exc}")
+            logger.error(
+                "Error processing update '%s': %s", update.get("title"), exc
+            )
             failed_count += 1
 
-        # Polite rate limit
-        time.sleep(2)
+        # Polite rate limit between update entries.
+        time.sleep(fandom_auth.API_DELAY)
 
-    # Persist queue with updated wiki_done flags
+    # Persist queue with updated wiki_done flags.
     _save_queue(queue)
 
-    print(
-        f"[wiki-updater] Done — success={success_count}, "
-        f"failed={failed_count}, skipped={len(queue) - len(pending)}"
+    logger.info(
+        "Done — success=%d, failed=%d, skipped=%d",
+        success_count,
+        failed_count,
+        len(queue) - len(pending),
     )
-    return {"success": success_count, "failed": failed_count, "skipped": len(queue) - len(pending)}
+    return {
+        "success": success_count,
+        "failed": failed_count,
+        "skipped": len(queue) - len(pending),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -346,6 +269,5 @@ def run_wiki_updates() -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Running wiki updater…")
     result = run_wiki_updates()
     print(json.dumps(result, indent=2))

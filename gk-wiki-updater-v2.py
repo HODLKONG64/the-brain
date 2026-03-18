@@ -1,51 +1,124 @@
-import requests
-import time
+"""
+gk-wiki-updater-v2.py — GK BRAIN Fandom Wiki Updater v2
+
+Thin wrapper around the shared fandom_auth module that provides a simple
+page-update interface.  Inherits all improvements from fandom_auth.py:
+
+    - Two-step Fandom/MediaWiki clientlogin
+    - Retry with exponential backoff (3 attempts, 2 s / 4 s / 8 s)
+    - Content-hash deduplication (skips unchanged pages)
+    - Dry-run mode (WIKI_DRY_RUN=1)
+    - Consistent logging via Python logging
+
+Environment variables (all handled by fandom_auth.py):
+    FANDOM_BOT_USER       Fandom bot username (preferred over FANDOM_USERNAME)
+    FANDOM_USERNAME       Fandom username (fallback)
+    FANDOM_BOT_PASSWORD   Fandom bot password (preferred over FANDOM_PASSWORD)
+    FANDOM_PASSWORD       Fandom password (fallback)
+    FANDOM_WIKI_URL       Wiki base URL (default: https://gkniftyheads.fandom.com)
+    WIKI_DRY_RUN          Set to "1" to skip all actual writes (default: disabled)
+    WIKI_API_DELAY        Seconds to sleep between API write calls (default: 1.0)
+"""
+
 import logging
-from requests_oauthlib import OAuth1
+from typing import Optional
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+import requests
 
-# OAuth credentials
-consumer_key = 'YOUR_CONSUMER_KEY'
-consumer_secret = 'YOUR_CONSUMER_SECRET'
-token = 'YOUR_ACCESS_TOKEN'
-token_secret = 'YOUR_ACCESS_TOKEN_SECRET'
+import fandom_auth
 
-# Initialize OAuth1 session
-auth = OAuth1(consumer_key, consumer_secret, token, token_secret)
+# ---------------------------------------------------------------------------
+# Logging setup
+# ---------------------------------------------------------------------------
 
-# Fandom wiki integration details
-subdomain = 'gkniftyheads'
-url = f'https://{subdomain}.fandom.com/api/v1/
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("gk-wiki-updater-v2")
 
-# Function to fetch data from the Fandom API
 
-def fetch_data(endpoint):
-    try:
-        response = requests.get(url + endpoint, auth=auth)
-        response.raise_for_status()
-        logging.info(f'Successfully fetched data from {endpoint}')
-        return response.json()
-    except requests.exceptions.HTTPError as err:
-        logging.error(f'HTTP error occurred: {err}')
-    except Exception as e:
-        logging.error(f'An error occurred: {e}')
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
-# Check rate limits
+def update_wiki_page(
+    title: str,
+    content: str,
+    summary: str = "GK BRAIN automated update",
+    session: Optional[requests.Session] = None,
+) -> bool:
+    """
+    Update *title* on the Fandom wiki with *content*.
 
-def check_rate_limit():
-    limit_info = fetch_data('rate_limit')
-    if limit_info:
-        remaining = limit_info['resources']['core']['remaining']
-        reset_time = limit_info['resources']['core']['reset']
-        if remaining == 0:
-            wait_time = reset_time - int(time.time())
-            logging.info(f'Rate limit exceeded. Waiting for {wait_time} seconds.')
-            time.sleep(wait_time)
+    If *session* is not provided, a new authenticated session is created.
+    Passing an existing session avoids repeated logins when updating
+    multiple pages in a single run.
 
-# Example usage
-if __name__ == '__main__':
-    check_rate_limit()
-    data = fetch_data('some_endpoint')
-    # Process data as needed
+    Returns True on success (including no-op if content is unchanged).
+    """
+    if session is None:
+        session = fandom_auth.create_session()
+        if session is None:
+            logger.error("Could not create authenticated session.")
+            return False
+
+    return fandom_auth.edit_page(session, title, content, summary)
+
+
+def append_wiki_page(
+    title: str,
+    section_wikitext: str,
+    summary: str = "GK BRAIN automated append",
+    session: Optional[requests.Session] = None,
+) -> bool:
+    """
+    Append *section_wikitext* to the bottom of *title*.
+
+    If *session* is not provided, a new authenticated session is created.
+
+    Returns True on success.
+    """
+    if session is None:
+        session = fandom_auth.create_session()
+        if session is None:
+            logger.error("Could not create authenticated session.")
+            return False
+
+    return fandom_auth.append_to_page(session, title, section_wikitext, summary)
+
+
+def get_page(
+    title: str,
+    session: Optional[requests.Session] = None,
+) -> str:
+    """
+    Fetch the current wikitext of *title*.
+
+    Returns an empty string if the page does not exist.
+    """
+    if session is None:
+        session = fandom_auth.create_session()
+        if session is None:
+            logger.error("Could not create authenticated session.")
+            return ""
+
+    return fandom_auth.get_page_content(session, title)
+
+
+# ---------------------------------------------------------------------------
+# CLI self-test
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 3:
+        print("Usage: python gk-wiki-updater-v2.py <page_title> <content>")
+        sys.exit(1)
+
+    page_title = sys.argv[1]
+    page_content = sys.argv[2]
+
+    ok = update_wiki_page(page_title, page_content)
+    print("Success:", ok)
