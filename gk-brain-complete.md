@@ -148,3 +148,18 @@ The agent loads this file every run.
 
 ## DB-14: AUTO-PIN MESSAGE 2 (locked)
 After both lore posts are successfully sent to Telegram, the bot must call `pinChatMessage` on the Message 2 message ID. Pinning failure is non-fatal — log the error to stdout and continue.
+
+## MB-1: MASTER BACKUP PURPOSE (locked)
+`master-backup-agent.py` is the single passive observer for the entire GK BRAIN system. It maintains an append-only snapshot (`master-backup-state.json`) of every rule, constant, and logic value across all tracked files. It has zero runtime authority — it cannot start, stop, or modify any other agent.
+
+## MB-2: BACKUP ABSORPTION PROTOCOL (locked)
+On every run, the backup agent: (1) SHA-256 fingerprints all tracked files, (2) for any changed or new file, extracts DB-N/MB-N rules from `.md` files and module-level constants from `.py` files, (3) conflict-checks against locked rule files, (4) merges safe updates into `rule_snapshot`, (5) quarantines conflicts in `conflict_log`, (6) appends an audit entry, (7) writes atomically via `tmp + os.replace`. Always exits 0.
+
+## MB-3: CONFLICT RESOLUTION PROTOCOL (locked)
+Conflicts in `conflict_log` are resolved by the repo owner manually. Resolution steps: (1) read both `existing_value` and `incoming_value` in the conflict entry, (2) determine which is correct by checking the authoritative source file, (3) update the rule in the correct source file, (4) clear the conflict entry by setting `"resolution": "accepted"` or `"resolution": "rejected"`. The backup agent will re-absorb the correct value on the next run.
+
+## MB-4: DISASTER RECOVERY (locked)
+If any agent file is corrupted or accidentally deleted, `master-backup-state.json` provides the last known-good snapshot of all rules and constants. Recovery procedure: (1) read `rule_snapshot` section, (2) find all entries with `"source_file": "<lost file>"`, (3) reconstruct the file from those entries. The `audit_trail` section provides a timestamped history of every change.
+
+## MB-5: NEW FILE ONBOARDING (locked)
+When a new agent, rule file, workflow, or canon file is added to the repo, it MUST be added to `TRACKED_FILES` in `master-backup-agent.py` in the same PR. If the new file contains locked rules, it must also be added to `LOCKED_RULE_FILES`. The backup agent will automatically absorb and fingerprint the new file on its next run.

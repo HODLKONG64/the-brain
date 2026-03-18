@@ -33,6 +33,9 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run Web Lore Agent (Brain 3)
         run: python web-lore-agent.py
+      - name: 🗄️ Run Master Backup Agent (post web-lore)
+        run: python master-backup-agent.py
+        continue-on-error: true
       - name: Commit state files
         run: |
           git config user.name "GK BRAIN Agent"
@@ -42,7 +45,8 @@ jobs:
             web-lore-output.json \
             non-canon-names.log \
             web-lore-errors.log \
-            wiki-update-queue.json || true
+            wiki-update-queue.json \
+            master-backup-state.json || true
           git diff --cached --quiet || git commit -m "chore: Brain 3 web-lore state update [skip ci]"
           git push
         continue-on-error: true
