@@ -417,13 +417,31 @@ def _save_queue(queue: list) -> None:
 # Main public function
 # ---------------------------------------------------------------------------
 
-def run_smart_wiki_updates() -> dict:
+def run_smart_wiki_updates(dry_run: bool = False) -> dict:
     """
     Process all pending wiki updates using the hybrid smart-merge + append strategy.
+
+    Args:
+        dry_run: If True, print what would be written without making any API calls.
 
     Returns:
         {"smart_merged": int, "appended": int, "failed": int, "skipped": int}
     """
+    if dry_run:
+        queue = _load_queue()
+        pending = [u for u in queue if u.get("wiki_update") and not u.get("wiki_done")]
+        print(f"[wiki-smart-merger] DRY-RUN — {len(pending)} pending update(s) would be processed:")
+        for u in pending:
+            ts = u.get("timestamp", "")
+            try:
+                dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                display_time = dt.strftime("%d %B %Y, %H:%M UTC")
+            except Exception:
+                display_time = ts
+            section = SECTION_MAP.get(u.get("type", ""), DEFAULT_SECTION)
+            print(f"  • [{u.get('type', '?')}] {u.get('title', '?')} → section '{section}' at {display_time}")
+        return {"smart_merged": 0, "appended": 0, "failed": 0, "skipped": len(pending)}
+
     if not FANDOM_USERNAME or not FANDOM_PASSWORD:
         print("[wiki-smart-merger] Credentials missing — skipping wiki update.")
         return {"smart_merged": 0, "appended": 0, "failed": 0, "skipped": 0}
@@ -556,6 +574,16 @@ def run_smart_wiki_updates() -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="GK BRAIN Smart Wiki Merger")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print what would be written to the wiki without making any API calls.",
+    )
+    args = parser.parse_args()
+
     print("Running smart wiki merger…")
-    result = run_smart_wiki_updates()
+    result = run_smart_wiki_updates(dry_run=args.dry_run)
     print(json.dumps(result, indent=2))
