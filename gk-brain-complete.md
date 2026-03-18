@@ -111,3 +111,33 @@ Use the Character Bible + Substack art style for all characters. The agent appen
 This master file now contains **100% of every brain-rules.md and character-bible.md version** ever created in this chat. All rules, storylines, characters, and details are here in one place.
 
 The agent loads this file every run.
+
+---
+
+## MASTER BACKUP AGENT — SYSTEM RULES (MB-1 through MB-5)
+
+### MB-1 — Purpose
+The Master Backup Agent (master-backup-agent.py) is the single-source-of-truth backup system for the entire GK BRAIN multi-agent architecture. It runs last every cycle and saves a complete snapshot of every file SHA fingerprint and extracted logic rules to master-backup-state.json.
+
+### MB-2 — Update Absorption Protocol
+Every run: scan all tracked files, fingerprint each file, extract rules, conflict-check against locked rules, absorb safe rules into rule_snapshot, quarantine conflicting rules into conflict_log, commit updated state. This ensures master-backup-state.json always reflects the most current, conflict-free version of all system logic.
+
+### MB-3 — Conflict Resolution Protocol
+Quarantined conflicts in conflict_log are reviewed manually by the repo owner. Resolution options:
+1. Accept new value: Remove old entry from rule_snapshot, allow re-absorption on next run.
+2. Reject new value: Revert the source file change via PR.
+3. Fork rule: Create a new rule key for the variant (e.g. DB-12-v2).
+No automated conflict resolution is permitted — human review required for all locked-rule conflicts.
+
+### MB-4 — Disaster Recovery
+In the event of total system failure, any AI agent can reconstruct the full GK BRAIN system from:
+1. master-backup-state.json (rule_snapshot + file_registry + audit_trail)
+2. The most recent versions of TRACKED_FILES from the repo
+3. genesis-lore.md for lore continuity seed
+
+### MB-5 — Adding New Agents or Logic Files
+When a new agent or rule file is added to the repo:
+1. Add the file path to TRACKED_FILES in master-backup-agent.py
+2. If the file contains locked/immutable rules, add it to LOCKED_RULE_FILES
+3. If the file is runtime state only (not logic), add it to STATE_ONLY_FILES
+4. Open a PR — the master backup agent will absorb it on the next workflow run after merge
