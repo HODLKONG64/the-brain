@@ -1157,14 +1157,10 @@ def mark_brain1_updates_used(updates: list) -> None:
     except (OSError, json.JSONDecodeError):
         data = {"updates": [], "character_facts": {}, "web_discoveries": []}
 
-    used_ids = {id(u) for u in updates}
+    used_keys = {(u.get("title"), u.get("timestamp")) for u in updates}
     for existing in data.get("updates", []):
-        for u in updates:
-            if (
-                existing.get("title") == u.get("title")
-                and existing.get("timestamp") == u.get("timestamp")
-            ):
-                existing["b2_used"] = True
+        if (existing.get("title"), existing.get("timestamp")) in used_keys:
+            existing["b2_used"] = True
 
     try:
         with open(BRAIN1_CANON_FILE, "w", encoding="utf-8") as fh:

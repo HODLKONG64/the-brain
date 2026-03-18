@@ -6,4 +6,4 @@ scikit-learn
 wikipedia
 lxml
 python-dotenv>=1.0.0
-anthropic
+anthropic>=0.20.0
