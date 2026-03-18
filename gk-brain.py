@@ -17,6 +17,7 @@ Execution flow:
 """
 
 import base64
+import logging
 import os
 import random
 import re
@@ -161,6 +162,20 @@ CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
 GROK_API_BASE = "https://api.x.ai/v1"
+
+# Minimum delay (seconds) between consecutive Fandom/MediaWiki API write calls.
+# Configurable via WIKI_API_DELAY env var (default 1.0).
+WIKI_API_DELAY: float = float(os.environ.get("WIKI_API_DELAY", "1.0"))
+
+# ---------------------------------------------------------------------------
+# Logging setup
+# ---------------------------------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+_log = logging.getLogger("gk-brain")
 
 # File paths
 BASE_DIR = os.path.dirname(__file__)
@@ -1816,36 +1831,36 @@ def main() -> None:
         persist_queue_updates(unused_updates)
 
     # -- Step 12: Wiki update (smart merge preferred, simple append fallback) --
-    print(f"[wiki-check] FANDOM_BOT_USER set: {bool(os.environ.get('FANDOM_BOT_USER'))}")
-    print(f"[wiki-check] FANDOM_BOT_PASSWORD set: {bool(os.environ.get('FANDOM_BOT_PASSWORD'))}")
-    print(f"[wiki-check] FANDOM_WIKI_URL set: {bool(os.environ.get('FANDOM_WIKI_URL'))}")
+    _log.info("[wiki-check] FANDOM_BOT_USER set: %s", bool(os.environ.get('FANDOM_BOT_USER')))
+    _log.info("[wiki-check] FANDOM_BOT_PASSWORD set: %s", bool(os.environ.get('FANDOM_BOT_PASSWORD')))
+    _log.info("[wiki-check] FANDOM_WIKI_URL set: %s", bool(os.environ.get('FANDOM_WIKI_URL')))
     queue_content = _read_file(QUEUE_FILE, "[]")
     try:
         queue_data = json.loads(queue_content)
-        print(f"[wiki-check] Queue file entries: {len(queue_data)}")
+        _log.info("[wiki-check] Queue file entries: %d", len(queue_data))
     except Exception:
-        print(f"[wiki-check] Queue file empty or invalid JSON")
+        _log.warning("[wiki-check] Queue file empty or invalid JSON")
     if _run_smart_wiki_updates:
-        print("[wiki-check] Using wiki-smart-merger strategy.")
+        _log.info("[wiki-check] Using wiki-smart-merger strategy.")
     else:
-        print("[wiki-check] wiki-smart-merger NOT available — will use wiki-updater fallback.")
+        _log.info("[wiki-check] wiki-smart-merger NOT available — will use wiki-updater fallback.")
     # Combine current-cycle updates with any backlog in the queue file
     _queue_backlog = []
     try:
         _queue_raw = _read_file(QUEUE_FILE, "[]")
         _queue_backlog = [u for u in json.loads(_queue_raw) if u.get("wiki_update") and not u.get("wiki_done")]
     except Exception as _qe:
-        print(f"[gk-brain] Could not load queue backlog: {_qe}")
+        _log.error("[gk-brain] Could not load queue backlog: %s", _qe)
     wiki_pending = _queue_backlog  # queue already contains current-cycle entry added above
     if wiki_pending and _cross_check_and_flag_missing is not None:
-        print(f"[gk-brain] Cross-checking {len(wiki_pending)} entries against wiki...")
+        _log.info("[gk-brain] Cross-checking %d entries against wiki...", len(wiki_pending))
         try:
             wiki_pending = _cross_check_and_flag_missing()
-            print(f"[gk-brain] {len(wiki_pending)} updates missing from wiki — will process.")
+            _log.info("[gk-brain] %d updates missing from wiki — will process.", len(wiki_pending))
         except Exception as exc:
-            print(f"[gk-brain] Cross-check failed ({exc}) — proceeding with all pending updates.")
+            _log.warning("[gk-brain] Cross-check failed (%s) — proceeding with all pending updates.", exc)
     if wiki_pending:
-        print(f"[gk-brain] Updating wiki ({len(wiki_pending)} entries)...")
+        _log.info("[gk-brain] Updating wiki (%d entries)...", len(wiki_pending))
         smart_merge_succeeded = False
         wiki_smart_count = 0
         wiki_append_count = 0
@@ -1853,18 +1868,18 @@ def main() -> None:
         if _run_smart_wiki_updates is not None:
             try:
                 wiki_result = _run_smart_wiki_updates()
-                print(f"[gk-brain] Smart wiki merge result: {wiki_result}")
+                _log.info("[gk-brain] Smart wiki merge result: %s", wiki_result)
                 smart_merge_succeeded = True
                 wiki_smart_count = len(wiki_pending)
             except Exception as exc:
-                print(f"[gk-brain] Smart wiki merge failed ({exc}) — falling back to simple updater.")
+                _log.error("[gk-brain] Smart wiki merge failed (%s) — falling back to simple updater.", exc)
         if not smart_merge_succeeded:
             try:
                 wiki_result = run_wiki_updates()
-                print(f"[gk-brain] Wiki update result: {wiki_result}")
+                _log.info("[gk-brain] Wiki update result: %s", wiki_result)
                 wiki_append_count = len(wiki_pending)
             except Exception as exc:
-                print(f"[gk-brain] Wiki update failed: {exc}")
+                _log.error("[gk-brain] Wiki update failed: %s", exc)
                 wiki_failed_count = len(wiki_pending)
         if reporter is not None:
             try:
@@ -1889,15 +1904,15 @@ def main() -> None:
                     entries=wiki_entries,
                 )
             except Exception as _rep_exc:
-                print(f"[reporter] log_wiki_updated failed: {_rep_exc}")
+                _log.warning("[reporter] log_wiki_updated failed: %s", _rep_exc)
     else:
-        print("[gk-brain] No wiki updates needed this cycle.")
+        _log.info("[gk-brain] No wiki updates needed this cycle.")
         if reporter is not None:
             try:
                 reporter.log_wiki_updated(pending=0, processed=0)
             except Exception as _rep_exc:
-                print(f"[reporter] log_wiki_updated failed: {_rep_exc}")
-    print("[wiki-check] Wiki update attempt complete.")
+                _log.warning("[reporter] log_wiki_updated failed: %s", _rep_exc)
+    _log.info("[wiki-check] Wiki update attempt complete.")
 
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()
