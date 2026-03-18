@@ -23,8 +23,6 @@ import re
 import json
 import time
 import datetime
-import signal
-import sys
 import traceback
 
 import requests
@@ -185,9 +183,6 @@ _GIRL_IMAGES = [
     os.path.join(_ASSETS_DIR, "bonnet_styles_females_set_2", "girlsimagesettwo.png"),
 ]
 
-# Stuck-agent timeout in seconds
-MAX_RUN_SECONDS = 300  # 5 minutes
-
 # Maximum lore/image generation attempts before using partial data and continuing
 LORE_MAX_FAILS = 50
 IMAGE_MAX_FAILS = 50
@@ -207,18 +202,47 @@ _TG_MSG1_RATIO = 0.8
 # Two hits reduces false positives from incidental pronoun use.
 _FEMALE_DETECTION_THRESHOLD = 2
 
+_FACE_EXPRESSIONS = [
+    "surprised with wide eyes",
+    "grinning wide",
+    "squinting focused",
+    "jaw dropped",
+    "smirking sly",
+    "eyes wide in awe",
+    "brow furrowed serious",
+    "cackling",
+    "winking",
+    "thousand yard stare",
+    "tongue out cocky",
+    "grimacing",
+    "gleaming smile",
+    "nostril flared furious",
+    "dreamy half-closed",
+    "teeth gritted",
+    "soft nostalgic half-smile",
+    "manic wide grin",
+    "tears streaming but smiling",
+    "hollow exhausted thousand-stare",
+]
+
+_OFFICIAL_CRAWL_URLS = [
+    "https://substack.com/@graffpunks/posts",
+    "https://graffpunks.substack.com/",
+    "https://graffpunks.live/",
+    "https://graffitikings.co.uk/",
+    "https://gkniftyheads.com/",
+    "https://medium.com/@GKniftyHEADS",
+    "https://medium.com/@graffpunksuk",
+    "https://neftyblocks.com/collection/gkstonedboys",
+    "https://www.youtube.com/@GKniftyHEADS",
+]
+
+_DEDICATED_PAGE_TOKEN_THRESHOLD = 3
+
 
 # ---------------------------------------------------------------------------
-# Timeout / stuck-agent handling
+# Telegram helpers
 # ---------------------------------------------------------------------------
-
-def _handle_timeout(signum, frame):
-    """Called if the agent runs for more than MAX_RUN_SECONDS.
-    Logs the timeout and exits; never sends an 'AT THE DOCTORS' alert.
-    """
-    print("[gk-brain] TIMEOUT: agent exceeded 5 minutes. Exiting gracefully.")
-    sys.exit(1)
-
 
 def _telegram_post(method: str, **params) -> dict:
     """Make a Telegram Bot API call using requests."""
@@ -684,6 +708,163 @@ def _build_update_context_text(updates: list) -> str:
     return "\n".join(lines)
 
 
+def _search_dedicated_art_page(character_tokens: list) -> str:
+    """
+    AC-1 through AC-4: Search for a dedicated art page for the character.
+
+    1. Check lore-history.md for a cached URL.
+    2. Crawl official URLs to find a dedicated page (≥3 token mentions).
+    3. Extract up to 6 image URLs from the dedicated page.
+    4. Log found URL in lore-history.md under DEDICATED ART PAGES FOUND.
+
+    Returns a reference source string for the image prompt prefix.
+    """
+    if not character_tokens:
+        return (
+            "Layer 1 upper body base + Layer 2 GraffPUNKS bonnet shape "
+            "(rounded yellow head/torso, exact eagle beak centre, eagle birds each side, "
+            "white feathers above eyes, green hair pulled through, yellow leather, ears out sides)"
+        )
+
+    try:
+        # AC-1: Check lore-history.md cache
+        history = _read_file(LORE_HISTORY_FILE, "")
+        for token in character_tokens:
+            token_lower = token.lower()
+            if "DEDICATED ART PAGES FOUND" in history:
+                section = history.split("DEDICATED ART PAGES FOUND")[-1]
+                for line in section.splitlines():
+                    if token_lower in line.lower() and "http" in line:
+                        url_match = re.search(r'https?://\S+', line)
+                        if url_match:
+                            print(f"[art-search] Cache hit for '{token}': {url_match.group()}")
+                            return f"Dedicated page: {url_match.group()}"
+
+        # AC-2: Crawl official URLs
+        for url in _OFFICIAL_CRAWL_URLS:
+            try:
+                resp = requests.get(
+                    url,
+                    timeout=10,
+                    headers={"User-Agent": "GKBrainBot/1.0"},
+                )
+                if resp.status_code != 200:
+                    continue
+                text = resp.text.lower()
+                # AC-3: Count token mentions
+                max_hits = max(text.count(t.lower()) for t in character_tokens)
+                if max_hits >= _DEDICATED_PAGE_TOKEN_THRESHOLD:
+                    # Extract up to 6 image URLs
+                    soup = BeautifulSoup(resp.text, "html.parser")
+                    img_urls = []
+                    for img in soup.find_all("img", src=True):
+                        src = img["src"]
+                        if src.startswith("http") and any(
+                            ext in src.lower() for ext in (".jpg", ".jpeg", ".png", ".webp", ".gif")
+                        ):
+                            img_urls.append(src)
+                        if len(img_urls) >= 6:
+                            break
+
+                    # AC-4: Log in lore-history.md
+                    log_entry = (
+                        f"\n## DEDICATED ART PAGES FOUND\n"
+                        f"- {character_tokens[0]}: {url}\n"
+                    )
+                    existing = _read_file(LORE_HISTORY_FILE, "")
+                    if "DEDICATED ART PAGES FOUND" not in existing:
+                        try:
+                            with open(LORE_HISTORY_FILE, "a", encoding="utf-8") as fh:
+                                fh.write(log_entry)
+                        except OSError:
+                            pass
+
+                    ref_source = f"Dedicated page: {url}"
+                    if img_urls:
+                        ref_source += " | Reference images: " + ", ".join(img_urls)
+                    print(f"[art-search] Dedicated page found for {character_tokens}: {url}")
+                    return ref_source
+            except Exception as crawl_exc:
+                print(f"[art-search] Could not crawl {url}: {crawl_exc}")
+                continue
+    except Exception as exc:
+        print(f"[art-search] Search failed: {exc}")
+
+    # Fallback to Layer 1 + Layer 2
+    return (
+        "Layer 1 upper body base + Layer 2 GraffPUNKS bonnet shape "
+        "(rounded yellow head/torso, exact eagle beak centre, eagle birds each side, "
+        "white feathers above eyes, green hair pulled through, yellow leather, ears out sides)"
+    )
+
+
+def build_image_prompt_prefix(lore_text: str, time_theme: str = "day") -> str:
+    """
+    AC-7, AC-8, AC-9: Build the mandatory image prompt prefix.
+
+    - Detects character tokens from lore text
+    - Searches for a dedicated art page (AC-1 through AC-4)
+    - Selects a random face expression (AC-8)
+    - Always mandates black charcoal pencil on white paper (AC-9)
+    - Always requires at least 1 person in the scene
+
+    Returns the full mandatory prefix string.
+    """
+    try:
+        # Detect character tokens from lore text
+        character_keywords = [
+            "graffpunks", "moonboys", "bitcoin kid", "alfie", "jodie zoom",
+            "lady-ink", "lady ink", "queen p-fly", "queen sarah", "null the prophet",
+            "hodl warrior", "elder codex", "moongirl", "crowned royal",
+        ]
+        lore_lower = lore_text.lower()
+        found_tokens = [kw for kw in character_keywords if kw in lore_lower]
+
+        # AC-1 through AC-4: Search for dedicated art page
+        ref_source = _search_dedicated_art_page(found_tokens)
+
+        # AC-8: Random face expression
+        expression = random.choice(_FACE_EXPRESSIONS)
+
+        # Determine gender hint from lore
+        gender_hint = _detect_character_gender(lore_text)
+        if gender_hint == "female":
+            ref_files = (
+                "girlsimagesetone.png (female faces/expressions), "
+                "girlsimagesettwo.png (female bonnets/accessories)"
+            )
+        else:
+            ref_files = (
+                "boysimagesetone.png (male faces/expressions), "
+                "boysimagesettwo.png (male bonnets/accessories)"
+            )
+
+        prefix = (
+            "BLACK CHARCOAL PENCIL ON WHITE PAPER STYLE ONLY. "
+            "No colour. No photorealism. No paint. Drawn with a black charcoal pencil on white paper. "
+            f"Use 100% {ref_source}. "
+            "Head + bonnet as one inseparable unit. "
+            f"Face expression: {expression} (matching lore mood: {time_theme}). "
+            "96% shape fidelity to reference — 4% creative zone for minor surface details only. "
+            "Clothing: main faction uniform unless exception trigger active. "
+            "Bonnet 3D elements (all locked at 96%): eagle beak dead centre, eagle birds each side, "
+            "white feathers above eyes, green hair pulled through, yellow leather material, ears visible out the sides. "
+            "Colours, textures, background, and scene elements may vary freely within the 4% zone. "
+            f"Reference character files: {ref_files}. "
+            "At least 1 person MUST be featured. "
+            "Character must have rounded yellow head/torso with GraffPUNKS bonnet (non-negotiable). "
+            "Scene details: "
+        )
+        return prefix
+    except Exception as exc:
+        print(f"[image-prefix] Failed to build prefix: {exc}")
+        return (
+            "BLACK CHARCOAL PENCIL ON WHITE PAPER STYLE ONLY. No colour. No photorealism. "
+            "At least 1 Crypto Moonboys character MUST appear (rounded yellow head/torso, GraffPUNKS bonnet). "
+            "Scene details: "
+        )
+
+
 def generate_lore_pair(
     rule_ctx: dict,
     updates: list,
@@ -869,15 +1050,18 @@ def generate_lore_pair(
     if not image2:
         image2 = image1
 
-    # Prepend character bible style instruction
-    style_prefix = (
-        "Generate a high-detail GraffPunks style scene in the artist's universe. "
-        "Never change hair, face, clothing, colours, or style from established refs. "
-        "Match the scene to the lore text perfectly, including time of day, weather, "
-        "lighting, and season. "
+    # AC-7, AC-8, AC-9: Build mandatory image prompt prefix for each post
+    prefix1 = build_image_prompt_prefix(lore1, rule_ctx.get("time_theme", "day"))
+    prefix2 = build_image_prompt_prefix(lore2, rule_ctx.get("time_theme", "day"))
+    image1 = prefix1 + image1
+    image2 = prefix2 + image2
+
+    # AC-13: Append full image prompt to lore2 so users can generate it themselves
+    lore2 = (
+        lore2
+        + "\n\n---\n🎨 IMAGE PROMPT (generate yourself with any AI):\n"
+        + image2
     )
-    image1 = style_prefix + image1
-    image2 = style_prefix + image2
 
     return lore1, image1, lore2, image2
 
@@ -1050,6 +1234,23 @@ def _safe_call(mod, func_name: str, *args, **kwargs):
         return None
 
 
+def _safe_call_timed(mod, func_name: str, timeout_secs: int = 10, *args, **kwargs):
+    """Call mod.func_name with a timeout; return None if it exceeds timeout_secs."""
+    import threading
+    result_container = [None]
+
+    def _target():
+        result_container[0] = _safe_call(mod, func_name, *args, **kwargs)
+
+    t = threading.Thread(target=_target, daemon=True)
+    t.start()
+    t.join(timeout=timeout_secs)
+    if t.is_alive():
+        print(f"[godlike] {func_name} timed out after {timeout_secs}s — skipping.")
+        return None
+    return result_container[0]
+
+
 def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> str:
     """
     Run all 55 systems in tier order and return a combined context string
@@ -1059,17 +1260,17 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
     ctx_parts = []
 
     # ── Tier 1: Data Layer ──────────────────────────────────────────────────
-    validated   = _safe_call(_data_validator,      "validate_updates",    updates)         or updates
-    causal_ctx  = _safe_call(_causal_inference,    "build_causal_context", validated, rule_ctx) or ""
-    _safe_call(_knowledge_graph, "update_knowledge_graph", validated, lore_history)
-    fused       = _safe_call(_multi_source_fusion, "fuse_updates",        validated)       or validated
-    world_state = _safe_call(_world_state_sim,     "get_world_state",     rule_ctx)        or {}
-    anomaly_res = _safe_call(_anomaly_detector,    "detect_anomalies",    fused)           or {"clean_updates": fused}
+    validated   = _safe_call_timed(_data_validator,      "validate_updates",    10, updates)         or updates
+    causal_ctx  = _safe_call_timed(_causal_inference,    "build_causal_context", 10, validated, rule_ctx) or ""
+    _safe_call_timed(_knowledge_graph, "update_knowledge_graph", 10, validated, lore_history)
+    fused       = _safe_call_timed(_multi_source_fusion, "fuse_updates",        10, validated)       or validated
+    world_state = _safe_call_timed(_world_state_sim,     "get_world_state",     10, rule_ctx)        or {}
+    anomaly_res = _safe_call_timed(_anomaly_detector,    "detect_anomalies",    10, fused)           or {"clean_updates": fused}
     clean_upd   = anomaly_res.get("clean_updates", fused)
-    clean_upd   = _safe_call(_temporal_alignment,  "align_timestamps",    clean_upd)       or clean_upd
-    clean_upd   = _safe_call(_source_attribution,  "attribute_updates",   clean_upd)       or clean_upd
-    clean_upd   = _safe_call(_priority_queue,      "prioritize_updates",  clean_upd, rule_ctx) or clean_upd
-    clean_upd   = _safe_call(_deduplication,       "deduplicate_updates", clean_upd)       or clean_upd
+    clean_upd   = _safe_call_timed(_temporal_alignment,  "align_timestamps",    10, clean_upd)       or clean_upd
+    clean_upd   = _safe_call_timed(_source_attribution,  "attribute_updates",   10, clean_upd)       or clean_upd
+    clean_upd   = _safe_call_timed(_priority_queue,      "prioritize_updates",  10, clean_upd, rule_ctx) or clean_upd
+    clean_upd   = _safe_call_timed(_deduplication,       "deduplicate_updates", 10, clean_upd)       or clean_upd
 
     if causal_ctx:
         ctx_parts.append(f"CAUSAL CONTEXT:\n{causal_ctx}")
@@ -1081,14 +1282,14 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
         )
 
     # ── Tier 2: Planning Layer ───────────────────────────────────────────────
-    narrative_plan = _safe_call(_hierarchical_planning, "get_narrative_plan",  rule_ctx, lore_history) or {}
-    adapt_weights  = _safe_call(_adaptive_priority,     "get_adaptive_weights", rule_ctx)              or {}
-    social_ctx     = _safe_call(_theory_of_mind,        "get_social_context",  rule_ctx, lore_history) or ""
-    _safe_call(_narrative_constraints, "apply_constraints", {"rule_ctx": rule_ctx})
-    _safe_call(_symbolic_reasoning,    "validate_narrative_logic", "", {})
-    strategy_hint  = _safe_call(_rl_optimizer,    "get_strategy_hints",  rule_ctx) or ""
-    transfer_hint  = _safe_call(_transfer_learning, "get_transfer_hints")           or ""
-    _safe_call(_uncertainty_quant, "quantify_uncertainty", clean_upd)
+    narrative_plan = _safe_call_timed(_hierarchical_planning, "get_narrative_plan",  10, rule_ctx, lore_history) or {}
+    adapt_weights  = _safe_call_timed(_adaptive_priority,     "get_adaptive_weights", 10, rule_ctx)              or {}
+    social_ctx     = _safe_call_timed(_theory_of_mind,        "get_social_context",  10, rule_ctx, lore_history) or ""
+    _safe_call_timed(_narrative_constraints, "apply_constraints", 10, {"rule_ctx": rule_ctx})
+    _safe_call_timed(_symbolic_reasoning,    "validate_narrative_logic", 10, "", {})
+    strategy_hint  = _safe_call_timed(_rl_optimizer,    "get_strategy_hints",  10, rule_ctx) or ""
+    transfer_hint  = _safe_call_timed(_transfer_learning, "get_transfer_hints", 10)           or ""
+    _safe_call_timed(_uncertainty_quant, "quantify_uncertainty", 10, clean_upd)
 
     if narrative_plan:
         ctx_parts.append(
@@ -1103,16 +1304,16 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
         ctx_parts.append(f"LEARNED PATTERNS: {transfer_hint}")
 
     # ── Tier 3: Character Layer ──────────────────────────────────────────────
-    char_memory    = _safe_call(_character_memory,   "get_character_memory")                          or ""
-    emotional_st   = _safe_call(_emotional_intel,    "get_emotional_state", rule_ctx, lore_history)   or {}
-    skill_levels   = _safe_call(_skill_progression,  "get_skill_levels")                              or {}
-    relationships  = _safe_call(_relationship_model, "get_relationship_context")                      or ""
-    active_arcs    = _safe_call(_arc_tracker,        "get_active_arcs")                               or []
-    _safe_call(_narrative_interp, "interpolate_gap", "", "", rule_ctx)
-    personality_h  = _safe_call(_personality_amp,    "get_personality_hints", rule_ctx, emotional_st) or ""
-    _safe_call(_world_bible,      "update_world_bible", lore_history)
-    arc_direction  = _safe_call(_arc_planner,        "get_arc_direction",  rule_ctx, active_arcs)     or ""
-    mem_refs       = _safe_call(_memory_references,  "get_memory_references", rule_ctx, lore_history) or ""
+    char_memory    = _safe_call_timed(_character_memory,   "get_character_memory",   10)                         or ""
+    emotional_st   = _safe_call_timed(_emotional_intel,    "get_emotional_state", 10, rule_ctx, lore_history)   or {}
+    skill_levels   = _safe_call_timed(_skill_progression,  "get_skill_levels",    10)                           or {}
+    relationships  = _safe_call_timed(_relationship_model, "get_relationship_context", 10)                      or ""
+    active_arcs    = _safe_call_timed(_arc_tracker,        "get_active_arcs",     10)                           or []
+    _safe_call_timed(_narrative_interp, "interpolate_gap", 10, "", "", rule_ctx)
+    personality_h  = _safe_call_timed(_personality_amp,    "get_personality_hints", 10, rule_ctx, emotional_st) or ""
+    _safe_call_timed(_world_bible,      "update_world_bible", 10, lore_history)
+    arc_direction  = _safe_call_timed(_arc_planner,        "get_arc_direction",  10, rule_ctx, active_arcs)     or ""
+    mem_refs       = _safe_call_timed(_memory_references,  "get_memory_references", 10, rule_ctx, lore_history) or ""
 
     if char_memory:
         ctx_parts.append(f"CHARACTER MEMORY:\n{char_memory}")
@@ -1136,16 +1337,16 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
         ctx_parts.append(f"PERSONALITY TONE: {personality_h}")
 
     # ── Tier 4: Generation Layer ─────────────────────────────────────────────
-    emergent_hooks = _safe_call(_emergent_stories, "find_emergent_hooks", clean_upd, rule_ctx) or []
-    lore_fuse_ctx  = _safe_call(_lore_fusion,      "fuse_lore_context",   clean_upd, rule_ctx, emergent_hooks) or ""
-    npc_dialogue   = _safe_call(_dialogue_gen,     "get_npc_dialogue_context", rule_ctx, {})  or ""
-    sentiment_dir  = _safe_call(_sentiment_analyzer, "get_sentiment_direction", [lore_history]) or ""
-    style_hint     = _safe_call(_style_transfer,   "get_style_hints",     "telegram")           or ""
-    tension_hint   = _safe_call(_tension_curve,    "get_tension_hint",    rule_ctx, {})         or ""
-    meta_hint      = _safe_call(_meta_narrative,   "get_meta_hints",      rule_ctx, emotional_st) or ""
-    gap_filler     = _safe_call(_narrative_interp_eng, "get_gap_filler",  "", "")               or ""
-    causal_narr    = _safe_call(_causal_weaving,   "get_causal_narrative_hints", clean_upd, rule_ctx, causal_ctx) or ""
-    universe_hint  = _safe_call(_universe_engine,  "get_universe_hints",  rule_ctx, active_arcs) or ""
+    emergent_hooks = _safe_call_timed(_emergent_stories, "find_emergent_hooks", 10, clean_upd, rule_ctx) or []
+    lore_fuse_ctx  = _safe_call_timed(_lore_fusion,      "fuse_lore_context",   10, clean_upd, rule_ctx, emergent_hooks) or ""
+    npc_dialogue   = _safe_call_timed(_dialogue_gen,     "get_npc_dialogue_context", 10, rule_ctx, {})  or ""
+    sentiment_dir  = _safe_call_timed(_sentiment_analyzer, "get_sentiment_direction", 10, [lore_history]) or ""
+    style_hint     = _safe_call_timed(_style_transfer,   "get_style_hints",     10, "telegram")           or ""
+    tension_hint   = _safe_call_timed(_tension_curve,    "get_tension_hint",    10, rule_ctx, {})         or ""
+    meta_hint      = _safe_call_timed(_meta_narrative,   "get_meta_hints",      10, rule_ctx, emotional_st) or ""
+    gap_filler     = _safe_call_timed(_narrative_interp_eng, "get_gap_filler",  10, "", "")               or ""
+    causal_narr    = _safe_call_timed(_causal_weaving,   "get_causal_narrative_hints", 10, clean_upd, rule_ctx, causal_ctx) or ""
+    universe_hint  = _safe_call_timed(_universe_engine,  "get_universe_hints",  10, rule_ctx, active_arcs) or ""
 
     if lore_fuse_ctx:
         ctx_parts.append(f"LORE FUSION:\n{lore_fuse_ctx}")
@@ -1166,10 +1367,10 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
     # Tier 5 checks are applied in _run_godlike_qa below.
 
     # ── Tier 6: Analytics ───────────────────────────────────────────────────
-    learning_hint = _safe_call(_learning_loop,        "get_learning_hints", rule_ctx)  or ""
-    trend_pred    = _safe_call(_trend_engine,         "get_trend_predictions", rule_ctx) or ""
-    comp_insights = _safe_call(_comparative_analysis, "get_performance_insights")       or ""
-    _safe_call(_recursive_discovery, "discover_meta_updates", lore_history)
+    learning_hint = _safe_call_timed(_learning_loop,        "get_learning_hints", 10, rule_ctx)  or ""
+    trend_pred    = _safe_call_timed(_trend_engine,         "get_trend_predictions", 10, rule_ctx) or ""
+    comp_insights = _safe_call_timed(_comparative_analysis, "get_performance_insights", 10)       or ""
+    _safe_call_timed(_recursive_discovery, "discover_meta_updates", 10, lore_history)
 
     if learning_hint:
         ctx_parts.append(f"LEARNING HINTS: {learning_hint}")
@@ -1179,7 +1380,7 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
         ctx_parts.append(f"PERFORMANCE INSIGHTS: {comp_insights}")
 
     # ── Tier 7: Integration ──────────────────────────────────────────────────
-    _safe_call(_health_monitor, "run_health_check", [])
+    _safe_call_timed(_health_monitor, "run_health_check", 10, [])
 
     print(f"[godlike] All 55 systems ran. Context parts: {len(ctx_parts)}")
     return "\n\n".join(ctx_parts)
@@ -1191,12 +1392,12 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
     lightly filtered — and prints any issues found.
     """
     for label, lore in [("Post 1", lore1), ("Post 2", lore2)]:
-        quality = _safe_call(_quality_gate,        "check_quality",        lore, updates) or {}
-        contra  = _safe_call(_contradiction_check, "check_contradictions", lore, lore_history, rule_ctx) or {}
-        ethical = _safe_call(_ethical_filter,      "filter_content",       lore) or {}
-        coheren = _safe_call(_coherence_validator, "validate_coherence",   lore, rule_ctx) or {}
-        plagiar = _safe_call(_plagiarism_detect,   "check_originality",    lore, updates) or {}
-        consist = _safe_call(_consistency_proof,   "prove_consistency",    lore, {}) or {}
+        quality = _safe_call_timed(_quality_gate,        "check_quality",        10, lore, updates) or {}
+        contra  = _safe_call_timed(_contradiction_check, "check_contradictions", 10, lore, lore_history, rule_ctx) or {}
+        ethical = _safe_call_timed(_ethical_filter,      "filter_content",       10, lore) or {}
+        coheren = _safe_call_timed(_coherence_validator, "validate_coherence",   10, lore, rule_ctx) or {}
+        plagiar = _safe_call_timed(_plagiarism_detect,   "check_originality",    10, lore, updates) or {}
+        consist = _safe_call_timed(_consistency_proof,   "prove_consistency",    10, lore, {}) or {}
 
         issues = []
         if quality.get("issues"):
@@ -1229,11 +1430,6 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    # Set up stuck-agent timeout (Unix only; GitHub Actions runs on Linux)
-    if hasattr(signal, "SIGALRM"):
-        signal.signal(signal.SIGALRM, _handle_timeout)
-        signal.alarm(MAX_RUN_SECONDS)
-
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
     # -- Initialise execution reporter --
@@ -1534,10 +1730,6 @@ def main() -> None:
 
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()
-
-    # Cancel the alarm
-    if hasattr(signal, "SIGALRM"):
-        signal.alarm(0)
 
     print(f"[gk-brain] Cycle complete at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
