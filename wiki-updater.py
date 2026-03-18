@@ -54,26 +54,104 @@ ERROR_LOG_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-errors.jso
 # Error logging
 # ---------------------------------------------------------------------------
 
-def _log_error(context: str, error: str) -> None:
-    """Append an error entry to wiki-update-errors.json."""
-    entry = {
-        "timestamp": datetime.datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "context": context,
-        "error": error,
-    }
-    try:
-        existing: list = []
-        if os.path.exists(ERROR_LOG_FILE):
-            try:
-                with open(ERROR_LOG_FILE, "r", encoding="utf-8") as fh:
-                    existing = json.load(fh)
-            except (json.JSONDecodeError, OSError):
-                existing = []
-        existing.append(entry)
-        with open(ERROR_LOG_FILE, "w", encoding="utf-8") as fh:
-            json.dump(existing, fh, indent=2)
-    except OSError as exc:
-        logger.warning("Could not write to error log: %s", exc)
+def _get_login_token(session: requests.Session) -> str:
+    resp = session.get(WIKI_API, params={
+        "action": "query",
+        "meta": "tokens",
+        "type": "login",
+        "format": "json",
+    })
+    resp.raise_for_status()
+    return resp.json()["query"]["tokens"]["logintoken"]
+
+
+def _login(session: requests.Session) -> bool:
+    """Log in to Fandom with bot credentials. Returns True on success."""
+    if not FANDOM_USERNAME or not FANDOM_PASSWORD:
+        print("[wiki-updater] FANDOM credentials not set — skipping wiki updates.")
+        return False
+
+    token = _get_login_token(session)
+    resp = session.post(WIKI_API, data={
+        "action": "login",
+        "lgname": FANDOM_USERNAME,
+        "lgpassword": FANDOM_PASSWORD,
+        "lgtoken": token,
+        "format": "json",
+    })
+    resp.raise_for_status()
+    result = resp.json()
+    if result.get("login", {}).get("result") == "Success":
+        print(f"[wiki-updater] Logged in as {FANDOM_USERNAME}")
+        return True
+    print(f"[wiki-updater] Login failed: {result}")
+    return False
+
+
+def _get_csrf_token(session: requests.Session) -> str:
+    resp = session.get(WIKI_API, params={
+        "action": "query",
+        "meta": "tokens",
+        "format": "json",
+    })
+    resp.raise_for_status()
+    return resp.json()["query"]["tokens"]["csrftoken"]
+
+
+def _get_page_content(session: requests.Session, title: str) -> str:
+    """Fetch current wikitext content of a page (empty string if new page)."""
+    resp = session.get(WIKI_API, params={
+        "action": "query",
+        "prop": "revisions",
+        "rvprop": "content",
+        "titles": title,
+        "format": "json",
+    })
+    resp.raise_for_status()
+    pages = resp.json()["query"]["pages"]
+    for page in pages.values():
+        revisions = page.get("revisions", [])
+        if revisions:
+            return revisions[0].get("*", "")
+    return ""
+
+
+def _edit_page(
+    session: requests.Session,
+    title: str,
+    content: str,
+    summary: str,
+    csrf_token: str,
+) -> bool:
+    """Edit (or create) a wiki page. Returns True on success."""
+    resp = session.post(WIKI_API, data={
+        "action": "edit",
+        "title": title,
+        "text": content,
+        "summary": summary,
+        "bot": "true",
+        "token": csrf_token,
+        "format": "json",
+    })
+    resp.raise_for_status()
+    result = resp.json()
+    if result.get("edit", {}).get("result") == "Success":
+        return True
+    print(f"[wiki-updater] Edit failed for '{title}': {result}")
+    return False
+
+
+def _append_to_page(
+    session: requests.Session,
+    title: str,
+    section_wikitext: str,
+    summary: str,
+    csrf_token: str,
+) -> bool:
+    """Append a section to an existing page (or create if not exists)."""
+    existing = _get_page_content(session, title)
+    new_content = existing.strip() + "\n\n" + section_wikitext.strip() + "\n"
+    return _edit_page(session, title, new_content, summary, csrf_token)
 
 
 # ---------------------------------------------------------------------------

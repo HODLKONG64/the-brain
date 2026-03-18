@@ -135,12 +135,93 @@ def _load_queue() -> list:
     return []
 
 
-def _save_queue(queue: list) -> None:
-    """Save the queue file under an exclusive file lock."""
-    lock = filelock.FileLock(QUEUE_LOCK_FILE, timeout=30)
-    with lock:
-        with open(QUEUE_FILE, "w", encoding="utf-8") as fh:
-            json.dump(queue, fh, indent=2)
+def _login(session: requests.Session) -> bool:
+    """Log in to Fandom with bot credentials. Returns True on success."""
+    if not FANDOM_USERNAME or not FANDOM_PASSWORD:
+        print("[wiki-smart-merger] FANDOM credentials not set — skipping.")
+        return False
+
+    token = _get_login_token(session)
+    resp = session.post(WIKI_API, data={
+        "action": "login",
+        "lgname": FANDOM_USERNAME,
+        "lgpassword": FANDOM_PASSWORD,
+        "lgtoken": token,
+        "format": "json",
+    })
+    resp.raise_for_status()
+    result = resp.json()
+    if result.get("login", {}).get("result") == "Success":
+        print(f"[wiki-smart-merger] Logged in as {FANDOM_USERNAME}")
+        return True
+    print(f"[wiki-smart-merger] Login failed: {result}")
+    return False
+
+
+def _get_csrf_token(session: requests.Session) -> str:
+    resp = session.get(WIKI_API, params={
+        "action": "query",
+        "meta": "tokens",
+        "format": "json",
+    })
+    resp.raise_for_status()
+    return resp.json()["query"]["tokens"]["csrftoken"]
+
+
+def _get_page_content(session: requests.Session, title: str) -> str:
+    """Return current wikitext of a page, or empty string if the page is new."""
+    resp = session.get(WIKI_API, params={
+        "action": "query",
+        "prop": "revisions",
+        "rvprop": "content",
+        "titles": title,
+        "format": "json",
+    })
+    resp.raise_for_status()
+    pages = resp.json()["query"]["pages"]
+    for page in pages.values():
+        revisions = page.get("revisions", [])
+        if revisions:
+            return revisions[0].get("*", "")
+    return ""
+
+
+def _edit_page(
+    session: requests.Session,
+    title: str,
+    content: str,
+    summary: str,
+    csrf_token: str,
+) -> bool:
+    """Replace the full content of a wiki page. Returns True on success."""
+    resp = session.post(WIKI_API, data={
+        "action": "edit",
+        "title": title,
+        "text": content,
+        "summary": summary,
+        "bot": "true",
+        "token": csrf_token,
+        "format": "json",
+    })
+    resp.raise_for_status()
+    result = resp.json()
+    if result.get("edit", {}).get("result") == "Success":
+        return True
+    print(f"[wiki-smart-merger] Edit failed for '{title}': {result}")
+    return False
+
+
+def _append_to_page(
+    session: requests.Session,
+    title: str,
+    section_wikitext: str,
+    summary: str,
+    csrf_token: str,
+) -> bool:
+    """Append wikitext to the bottom of a page (simple layer). Returns True on success."""
+    existing = _get_page_content(session, title)
+    new_content = existing.strip() + "\n\n" + section_wikitext.strip() + "\n"
+    return _edit_page(session, title, new_content, summary, csrf_token)
 
 
 # ---------------------------------------------------------------------------
