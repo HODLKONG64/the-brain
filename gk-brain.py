@@ -184,9 +184,13 @@ _GIRL_IMAGES = [
     os.path.join(_ASSETS_DIR, "bonnet_styles_females_set_2", "girlsimagesettwo.png"),
 ]
 
-# Maximum lore/image generation attempts before using partial data and continuing
-LORE_MAX_FAILS = 50
-IMAGE_MAX_FAILS = 50
+# ── Retry / timeout config ──────────────────────────────────────────────────
+GROK_CHAT_MAX_ATTEMPTS   = 3
+GROK_CHAT_TIMEOUT_SEC    = 60
+GROK_CHAT_BACKOFF_BASE   = 2          # seconds; doubles each retry
+GROK_IMAGE_TIMEOUT_SEC   = 90
+IMAGE_MAX_FAILS          = 50         # keep existing value
+LORE_MAX_FAILS           = 50         # keep existing value
 
 # Telegram character limits and split configuration.
 # MSG1 is a plain-text message (no image); MSG2 is an image caption.
@@ -587,7 +591,7 @@ def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
         "max_tokens": 4000,
         "temperature": 0.9,
     }
-    max_attempts = 3
+    max_attempts = GROK_CHAT_MAX_ATTEMPTS
     last_exc: Exception = RuntimeError("No attempts made")
     for attempt in range(1, max_attempts + 1):
         try:
@@ -595,7 +599,7 @@ def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
                 f"{GROK_API_BASE}/chat/completions",
                 headers=headers,
                 json=payload,
-                timeout=60,
+                timeout=GROK_CHAT_TIMEOUT_SEC,
             )
             resp.raise_for_status()
             return resp.json()["choices"][0]["message"]["content"].strip()
@@ -607,7 +611,7 @@ def _grok_chat(messages: list, model: str = "grok-4-fast") -> str:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
             last_exc = exc
         if attempt < max_attempts:
-            wait = 2 ** attempt
+            wait = GROK_CHAT_BACKOFF_BASE ** attempt
             print(f"[grok-chat] Attempt {attempt}/{max_attempts} failed ({last_exc}); retrying in {wait}s…")
             time.sleep(wait)
     raise last_exc
@@ -678,7 +682,7 @@ def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | No
             f"{GROK_API_BASE}/images/generations",
             headers=headers,
             json=payload,
-            timeout=120,
+            timeout=GROK_IMAGE_TIMEOUT_SEC,
         )
         resp.raise_for_status()
         image_url = resp.json()["data"][0]["url"]
@@ -1070,7 +1074,7 @@ def generate_lore_pair(
 # ---------------------------------------------------------------------------
 
 def save_lore_history(post1: str, post2: str) -> None:
-    """Append today's lore posts to lore-history.md (keeps last 7 days)."""
+    """Append today's lore posts to lore-history.md (keeps last 14 days)."""
     now = datetime.datetime.now(datetime.UTC)
     separator = f"\n\n---\n## {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
 
@@ -1078,8 +1082,8 @@ def save_lore_history(post1: str, post2: str) -> None:
 
     new_entry = separator + post1 + "\n\n" + post2
 
-    # Keep last ~20,000 characters (roughly 7 days of history)
-    combined = (existing + new_entry)[-20000:]
+    # Keep last ~40,000 characters (roughly 14 days of history)
+    combined = (existing + new_entry)[-40000:]
 
     try:
         with open(LORE_HISTORY_FILE, "w", encoding="utf-8") as fh:
@@ -1564,6 +1568,13 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    _REQUIRED_ENV = ["GROK_API_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"]
+    _missing = [v for v in _REQUIRED_ENV if not os.environ.get(v)]
+    if _missing:
+        raise EnvironmentError(
+            f"[gk-brain] Missing required environment variables: {', '.join(_missing)}"
+        )
+
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
     # -- Initialise execution reporter --

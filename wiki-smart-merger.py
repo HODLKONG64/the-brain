@@ -413,6 +413,30 @@ def _save_queue(queue: list) -> None:
         json.dump(queue, fh, indent=2)
 
 
+def flush_stale_entries(max_age_days: int = 7) -> None:
+    """Remove entries older than *max_age_days* that are already marked used."""
+    if not os.path.exists(QUEUE_FILE):
+        return
+    try:
+        with open(QUEUE_FILE, "r", encoding="utf-8") as fh:
+            entries = json.load(fh)
+    except (json.JSONDecodeError, OSError):
+        return
+
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=max_age_days)
+    kept = [
+        e for e in entries
+        if not e.get("used")
+        or datetime.datetime.fromisoformat(
+            e.get("timestamp", "1970-01-01T00:00:00Z").replace("Z", "+00:00")
+        ) >= cutoff
+    ]
+    if len(kept) < len(entries):
+        with open(QUEUE_FILE, "w", encoding="utf-8") as fh:
+            json.dump(kept, fh, indent=2)
+        print(f"[wiki-merger] Flushed {len(entries) - len(kept)} stale queue entries.")
+
+
 # ---------------------------------------------------------------------------
 # Main public function
 # ---------------------------------------------------------------------------
@@ -537,6 +561,7 @@ def run_smart_wiki_updates() -> dict:
         time.sleep(2)
 
     _save_queue(queue)
+    flush_stale_entries()
 
     print(
         f"[wiki-smart-merger] Done — "
