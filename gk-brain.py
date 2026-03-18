@@ -70,6 +70,15 @@ except Exception as _e:
     print(f"[gk-brain] wiki-cross-checker unavailable ({_e}), will skip cross-check.")
     _cross_check_and_flag_missing = None
 
+# Page builder — creates rich structured pages for new Crypto Moonboys entities
+try:
+    _wiki_page_builder = _load_module("wiki_page_builder", "wiki-page-builder.py")
+    _build_wiki_page = _wiki_page_builder.build_wiki_page
+    print("[gk-brain] wiki-page-builder loaded.")
+except Exception as _e:
+    print(f"[gk-brain] wiki-page-builder unavailable ({_e}), will skip structured page creation.")
+    _build_wiki_page = None
+
 detect_updates = _update_detector.detect_updates
 add_to_queue = _wiki_updater.add_to_queue
 run_wiki_updates = _wiki_updater.run_wiki_updates
@@ -2123,6 +2132,45 @@ def main() -> None:
             except Exception as _rep_exc:
                 _log.warning("[reporter] log_wiki_updated failed: %s", _rep_exc)
     _log.info("[wiki-check] Wiki update attempt complete.")
+
+    # -- Step 12b: Build structured wiki pages for entity-type updates --
+    if _build_wiki_page is not None:
+        _entity_types = {
+            "character", "character-profile", "lore_event", "lore-post",
+            "nft_collection", "nft", "weapon", "location", "place",
+            "toy", "game", "key",
+        }
+        _entity_updates = [
+            u for u in wiki_pending
+            if u.get("type", "") in _entity_types and u.get("title")
+        ] if wiki_pending else []
+        if _entity_updates:
+            print(f"[wiki-page-builder] Building structured pages for {len(_entity_updates)} entities...")
+            for _eu in _entity_updates:
+                try:
+                    _eu_entity = {
+                        "type": _eu.get("type", "character"),
+                        "title": _eu.get("title", ""),
+                        "summary": _eu.get("content", "")[:300],
+                        "content_sections": [
+                            {"heading": "Details", "body": _eu.get("content", "")}
+                        ],
+                        "categories": [
+                            s.replace("-", " ").title()
+                            for s in [_eu.get("type", "")]
+                            if s
+                        ],
+                        "image_url": _eu.get("image_url") or None,
+                        "image_caption": _eu.get("title", ""),
+                        "source_urls": [_eu.get("source", "")] if _eu.get("source") else [],
+                        "related_pages": [],
+                    }
+                    _page_result = _build_wiki_page(_eu_entity)
+                    print(f"[wiki-page-builder] {_page_result}")
+                except Exception as _pb_exc:
+                    print(f"[wiki-page-builder] Failed for '{_eu.get('title')}': {_pb_exc}")
+        else:
+            print("[wiki-page-builder] No entity-type updates requiring structured pages this cycle.")
 
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()

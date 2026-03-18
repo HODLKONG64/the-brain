@@ -2,6 +2,40 @@
 # All previous brain-rules.md + character-bible.md versions merged
 # 100% of all conversation history locked in — nothing left out
 
+## HARD RULE — 2-HOUR WEBCRAWL + WIKI UPDATE CYCLE (locked, non-negotiable)
+Every agent run MUST execute the following cycle IN FULL, in this exact order, with no steps skipped:
+1. Run the full webcrawl (all URLs in the LINKS section below).
+2. Detect all new updates since the last run.
+3. Post lore + images to Telegram.
+4. Run wiki-smart-merger to push detected updates to the Fandom wiki.
+5. Run wiki-page-builder for every newly discovered or updated Crypto Moonboys entity (character, lore event, NFT collection, weapon/key, location, toy, game). Each entity page must be fully structured (infobox, sections, See Also, External Links, References, categories).
+6. Run wiki-cross-checker to verify all saves are reflected on the wiki.
+This cycle is mandatory every 2 hours, triggered by the GitHub Actions cron. Under no circumstances may any step be omitted or deferred.
+
+## WIKI PAGE CREATION RULES (locked)
+When creating or refreshing a wiki page via wiki-page-builder.py, the agent MUST:
+- Include the correct infobox template for the entity type (see wiki-page-builder.py `_INFOBOX_TEMPLATES`).
+- Wikilink every keyword in the page body that matches an existing wiki page title, using [[Page Title]] syntax. Use the `_apply_wikilinks` function.
+- Embed and caption the canonical entity image following wiki-image-rules.md exactly.
+- Add ALL relevant categories to the page including entity-type categories, faction categories, and the default "GK BRAIN Auto-Generated" category.
+- Inject a back-link (`* [[New Page Title]]`) into the `== See Also ==` section of every page listed in `related_pages`.
+- Source and cite all data from the highest-priority source available (Substack > official sites > AI-generated).
+
+## WIKI IMAGE RULES (locked — see wiki-image-rules.md for full details)
+All images on wiki pages must: be uploaded to the wiki (no hotlinking), named `Entity_Title.ext` with underscores, embedded as `[[File:Name.ext|thumb|right|Caption.]]`, captioned in ≤15 words with source credit, and cited with a `<ref>` in the References section. Missing images: add `[[Category:Pages needing images]]` and leave the infobox image field blank.
+
+## WIKI INTERLINKING RULES (locked)
+- Every new or refreshed wiki page must have ALL keywords that match existing wiki page titles converted to `[[Page Title]]` wikilinks (first occurrence only).
+- When a new page is created, ALL pages listed in its `related_pages` field must be updated to include a `* [[New Page Title]]` entry in their `== See Also ==` section.
+- The agent must never remove existing wikilinks when updating a page.
+
+## WIKI CATEGORY RULES (locked)
+Every new wiki page MUST include ALL of the following category groups that apply:
+- Entity-type category: `Characters`, `Lore Events`, `NFT Collections`, `Weapons`, `Locations`, `Toys`, `Games`, `Keys`
+- Faction category (if applicable): `GraffPUNKS`, `Moonboys`, `HODL X Warriors`, `Crowned Royal Moongirls`, `Bitcoin X Kids`, `OG Bitcoin Kids`, `Blocktopia`, `Hard Fork Games`
+- Auto-generated marker: `GK BRAIN Auto-Generated`
+- Missing-image marker (if no image available): `Pages needing images`
+
 ## SUBSTACK CRAWL PRIORITY (locked)
 The agent must crawl https://substack.com/@graffpunks/posts FIRST every 2 hours for any conflicting data or new content. Use this to update the Eternal Codex, characters, lore, and all rules moving forward. If new official content conflicts with anything the agent previously made up, immediately scrap the old data and switch to the new official Substack content.
 
