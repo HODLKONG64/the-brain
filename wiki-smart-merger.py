@@ -683,38 +683,6 @@ def _sub_page_title(update: dict) -> str:
 # Stale entry cleanup
 # ---------------------------------------------------------------------------
 
-def flush_stale_entries(max_age_days: int = 7) -> int:
-    """
-    Remove entries from the queue that are older than *max_age_days* days
-    and have already been processed (wiki_done=True).
-
-    Returns the number of entries removed.
-    """
-    queue = _load_queue()
-    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=max_age_days)
-    kept = []
-    removed = 0
-    for entry in queue:
-        # Always keep entries not yet wiki_done
-        if not entry.get("wiki_done"):
-            kept.append(entry)
-            continue
-        ts = entry.get("timestamp", "")
-        try:
-            entry_dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-            if entry_dt >= cutoff:
-                kept.append(entry)
-            else:
-                removed += 1
-        except Exception:
-            kept.append(entry)  # keep entries with unparseable timestamps
-
-    if removed:
-        _save_queue(kept)
-        logger.info("flush_stale_entries: removed %d stale entries.", removed)
-    return removed
-
-
 def flush_stale_entries(max_age_days: int = 7) -> None:
     """Remove entries older than *max_age_days* that are already marked used."""
     if not os.path.exists(QUEUE_FILE):
@@ -950,8 +918,6 @@ def run_smart_wiki_updates(dry_run: bool = False) -> dict:
         time.sleep(fandom_auth.API_DELAY)
 
     _save_queue(queue)
-    flush_stale_entries()
-
     flush_stale_entries()
 
     logger.info(
