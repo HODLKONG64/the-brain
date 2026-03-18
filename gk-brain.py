@@ -841,8 +841,8 @@ def build_image_prompt_prefix(lore_text: str, time_theme: str = "day") -> str:
             )
 
         prefix = (
-            "BLACK CHARCOAL PENCIL ON WHITE PAPER STYLE ONLY. "
-            "No colour. No photorealism. No paint. Drawn with a black charcoal pencil on white paper. "
+            "STRICT BLACK AND WHITE ONLY. BLACK CHARCOAL PENCIL ON WHITE PAPER. ZERO COLOUR. NO EXCEPTIONS. "
+            "No colour anywhere in the image. No photorealism. No paint. No shading with colour. Pure black charcoal lines and marks on pure white paper only. "
             f"Use 100% {ref_source}. "
             "Head + bonnet as one inseparable unit. "
             f"Face expression: {expression} (matching lore mood: {time_theme}). "
@@ -850,7 +850,7 @@ def build_image_prompt_prefix(lore_text: str, time_theme: str = "day") -> str:
             "Clothing: main faction uniform unless exception trigger active. "
             "Bonnet 3D elements (all locked at 96%): eagle beak dead centre, eagle birds each side, "
             "white feathers above eyes, green hair pulled through, yellow leather material, ears visible out the sides. "
-            "Colours, textures, background, and scene elements may vary freely within the 4% zone. "
+            "NO COLOUR ANYWHERE. Black charcoal lines on white paper only. Zero colour in any element including background, clothing, skin, scene. 4% creative zone applies to line weight and texture variation only — never colour. "
             f"Reference character files: {ref_files}. "
             "At least 1 person MUST be featured. "
             "Character must have rounded yellow head/torso with GraffPUNKS bonnet (non-negotiable). "
@@ -860,8 +860,8 @@ def build_image_prompt_prefix(lore_text: str, time_theme: str = "day") -> str:
     except Exception as exc:
         print(f"[image-prefix] Failed to build prefix: {exc}")
         return (
-            "BLACK CHARCOAL PENCIL ON WHITE PAPER STYLE ONLY. No colour. No photorealism. "
-            "At least 1 Crypto Moonboys character MUST appear (rounded yellow head/torso, GraffPUNKS bonnet). "
+            "STRICT BLACK AND WHITE ONLY. BLACK CHARCOAL PENCIL ON WHITE PAPER. ZERO COLOUR. NO EXCEPTIONS. "
+            "No colour anywhere. At least 1 Crypto Moonboys character MUST appear (rounded yellow head/torso shape, GraffPUNKS bonnet). "
             "Scene details: "
         )
 
@@ -1802,6 +1802,19 @@ def main() -> None:
         persist_queue_updates(unused_updates)
 
     # -- Step 12: Wiki update (smart merge preferred, simple append fallback) --
+    print(f"[wiki-check] FANDOM_USERNAME set: {bool(os.environ.get('FANDOM_USERNAME'))}")
+    print(f"[wiki-check] FANDOM_PASSWORD set: {bool(os.environ.get('FANDOM_PASSWORD'))}")
+    print(f"[wiki-check] FANDOM_WIKI_URL set: {bool(os.environ.get('FANDOM_WIKI_URL'))}")
+    queue_content = _read_file(QUEUE_FILE, "[]")
+    try:
+        queue_data = json.loads(queue_content)
+        print(f"[wiki-check] Queue file entries: {len(queue_data)}")
+    except Exception:
+        print(f"[wiki-check] Queue file empty or invalid JSON")
+    if _run_smart_wiki_updates:
+        print("[wiki-check] Using wiki-smart-merger strategy.")
+    else:
+        print("[wiki-check] wiki-smart-merger NOT available — will use wiki-updater fallback.")
     wiki_pending = [u for u in updates if u.get("wiki_update") and not u.get("wiki_done")]
     if wiki_pending and _cross_check_and_flag_missing is not None:
         print(f"[gk-brain] Cross-checking {len(wiki_pending)} entries against wiki...")
@@ -1863,6 +1876,7 @@ def main() -> None:
                 reporter.log_wiki_updated(pending=0, processed=0)
             except Exception as _rep_exc:
                 print(f"[reporter] log_wiki_updated failed: {_rep_exc}")
+    print("[wiki-check] Wiki update attempt complete.")
 
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()
