@@ -193,30 +193,8 @@ When ANTHROPIC_API_KEY is set, all primary lore text generation routes through C
 ### DB-12 — Telegram Rate Guard
 A mandatory time.sleep(2) MUST be called between posting Message 1 and Message 2 in every Telegram posting loop. This guards against Telegram's per-bot rate limits for rapid sequential messages to the same chat.
 
-### DB-13 — Auto-Pin After Message 2
-After successfully posting Message 2 (the image/caption post) to a Telegram chat, the bot MUST attempt to pin that message using `pinChatMessage` with `disable_notification=True`. Pinning failure MUST NOT block or interrupt the posting flow — log the error and continue.
+### DB-13 — Image Memory-Only Policy
+Generated images MUST NEVER be written to disk. Images are produced in memory as bytes, streamed directly to Telegram via multipart upload (_telegram_send_photo()), and then discarded. No image file (PNG, JPG, or any binary) may be persisted to the repository, local filesystem, or any storage layer. Execution reports may log image metadata (size in KB, prompt text, status) but MUST NOT store raw image bytes.
 
-### DB-14 — Telegram API Compliance
-All Telegram interactions MUST comply with the full official rules documented in `TELEGRAM-BOT-API-RULES.md`. Key enforcements:
-- Text messages truncated at 4,096 characters; captions at 1,024 characters.
-- On `429 Too Many Requests`: sleep exactly `retry_after` seconds, then retry ONCE.
-- On `403 Forbidden`: log the chat_id and skip it for the current run — never retry.
-- Never run concurrent `getUpdates` polling instances (causes `409 Conflict`).
-- `bot-state.json` MUST be read at cycle start and written at cycle end with the last `update_id`.
-
-### DB-15 — Master Backup Agent Runs Last
-`master-backup-agent.py` MUST run as the final agent step in every GitHub Actions workflow cycle, after crawl-brain, analytics-brain, gk-brain, and wiki-brain have all completed. This ensures it captures the latest state of every file before committing.
-
-### DB-16 — Master Backup Agent Conflict Quarantine
-If `master-backup-agent.py` detects that a new or changed file defines a rule/constant that CONTRADICTS a value already locked in `master-backup-state.json` (rule_snapshot), the conflicting entry MUST be placed in the `conflict_log` section and MUST NOT be merged into the active rule_snapshot. The conflict does NOT fail the workflow — it is logged for manual review only.
-
-### DB-17 — Master Backup Agent Scope
-The master backup agent tracks and absorbs logic from ALL of the following file types:
-- All `*.md` rule/canon/lore files
-- All `*.py` agent files
-- The GitHub Actions workflow YAML
-- All `*.json` state files (tracked for SHA drift but not conflict-checked)
-Any new file added to the repo that contains logic/rules MUST be added to the `TRACKED_FILES` list in `master-backup-agent.py` via a PR.
-
-### DB-18 — No Agent May Import from Master Backup Agent
-`master-backup-agent.py` is a passive observer and snapshot keeper. No other agent may import from it, call its functions, or depend on its state file at runtime. It observes all; it controls none. Its output (`master-backup-state.json`) is for human audit and disaster recovery only — not for runtime decision-making by other agents.
+### DB-14 — Auto-Pin After Post 2
+After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be printed to stdout but MUST NOT prevent the rest of the posting loop from continuing. The bot requires "Pin Messages" admin rights in each target chat for this to work; missing rights result in a warning printed to stdout only.

@@ -316,7 +316,7 @@ def _pin_message(chat_id: str, message_id: int) -> None:
 
     Requires the bot to have 'Pin Messages' admin right in the target chat.
     Uses disable_notification=True so members are not spammed with a pin alert.
-    Errors are logged but never raised — pin failure must never block posting.
+    Errors are printed to stdout but never raised — pin failure must never block posting.
     """
     try:
         _telegram_post(
@@ -1667,6 +1667,7 @@ def post_to_telegram(lore1, image1, lore2, image2) -> dict:
             posting_info["msg2_status"] = "success"
 
             # Pin Message 2 silently — best-effort (bot needs Pin Messages admin right)
+            # msg2_result is the full Telegram API response dict: {"ok": true, "result": {"message_id": ..., ...}}
             msg2_id = (msg2_result or {}).get("result", {}).get("message_id")
             if msg2_id:
                 _pin_message(chat_id, msg2_id)
