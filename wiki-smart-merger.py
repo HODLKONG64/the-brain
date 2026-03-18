@@ -45,8 +45,9 @@ import requests
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 
 WIKI_API = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/") + "/api.php"
-FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
-FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
+_WIKI_BASE = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/")
+FANDOM_USERNAME = os.environ.get("FANDOM_USERNAME", os.environ.get("FANDOM_BOT_USER", ""))
+FANDOM_PASSWORD = os.environ.get("FANDOM_PASSWORD", os.environ.get("FANDOM_BOT_PASSWORD", ""))
 
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
@@ -111,25 +112,29 @@ def _get_login_token(session: requests.Session) -> str:
 
 
 def _login(session: requests.Session) -> bool:
-    """Log in to Fandom with bot credentials. Returns True on success."""
+    """Log in to Fandom with bot credentials using clientlogin. Returns True on success."""
     if not FANDOM_USERNAME or not FANDOM_PASSWORD:
         print("[wiki-smart-merger] FANDOM credentials not set — skipping.")
         return False
 
     token = _get_login_token(session)
     resp = session.post(WIKI_API, data={
-        "action": "login",
-        "lgname": FANDOM_USERNAME,
-        "lgpassword": FANDOM_PASSWORD,
-        "lgtoken": token,
+        "action": "clientlogin",
+        "loginmessageformat": "html",
+        "username": FANDOM_USERNAME,
+        "password": FANDOM_PASSWORD,
+        "logintoken": token,
+        "loginreturnurl": f"{_WIKI_BASE}/wiki/Special:UserLogin",
         "format": "json",
     })
     resp.raise_for_status()
     result = resp.json()
-    if result.get("login", {}).get("result") == "Success":
+    status = result.get("clientlogin", {}).get("status", "")
+    if status == "PASS":
         print(f"[wiki-smart-merger] Logged in as {FANDOM_USERNAME}")
         return True
-    print(f"[wiki-smart-merger] Login failed: {result}")
+    message = result.get("clientlogin", {}).get("message", result)
+    print(f"[wiki-smart-merger] Login failed (status={status}): {message}")
     return False
 
 
@@ -149,15 +154,26 @@ def _get_page_content(session: requests.Session, title: str) -> str:
         "action": "query",
         "prop": "revisions",
         "rvprop": "content",
+        "rvslots": "main",
         "titles": title,
         "format": "json",
+        "formatversion": "2",
     })
     resp.raise_for_status()
-    pages = resp.json()["query"]["pages"]
-    for page in pages.values():
-        revisions = page.get("revisions", [])
-        if revisions:
-            return revisions[0].get("*", "")
+    pages = resp.json().get("query", {}).get("pages", [])
+    if isinstance(pages, list):
+        # formatversion=2 returns a list
+        for page in pages:
+            revisions = page.get("revisions", [])
+            if revisions:
+                return revisions[0].get("slots", {}).get("main", {}).get("content", "")
+    else:
+        # fallback for old dict format
+        for page in pages.values():
+            revisions = page.get("revisions", [])
+            if revisions:
+                slot = revisions[0].get("slots", {}).get("main", {})
+                return slot.get("content", revisions[0].get("*", ""))
     return ""
 
 
@@ -182,7 +198,9 @@ def _edit_page(
     result = resp.json()
     if result.get("edit", {}).get("result") == "Success":
         return True
-    print(f"[wiki-smart-merger] Edit failed for '{title}': {result}")
+    error_code = result.get("error", {}).get("code", "unknown")
+    error_info = result.get("error", {}).get("info", str(result))
+    print(f"[wiki-smart-merger] Edit failed for '{title}': code={error_code} — {error_info}")
     return False
 
 
