@@ -126,7 +126,7 @@ These rules define the foundational lore the agent must know when generating pos
 
 ---
 
-## DUAL BRAIN ARCHITECTURE RULES (DB-1 — DB-12)
+## DUAL BRAIN ARCHITECTURE RULES (DB-1 — DB-13)
 
 ### DB-1 — Wiki Separation
 Brain 3 (gk-brain.py) MUST NOT queue its own Telegram lore posts to the wiki queue. Only real-world updates detected by crawl-brain or analytics-brain belong in the wiki. The wiki reflects external facts, not internal lore posts.
@@ -166,3 +166,6 @@ When ANTHROPIC_API_KEY is set, all primary lore text generation routes through C
 
 ### DB-12 — Telegram Rate Guard
 A mandatory time.sleep(2) MUST be called between posting Message 1 and Message 2 in every Telegram posting loop. This guards against Telegram's per-bot rate limits for rapid sequential messages to the same chat.
+
+### DB-13 — Image Memory-Only Policy
+Generated images MUST NEVER be written to disk. Images are produced in memory as bytes, streamed directly to Telegram via multipart upload (_telegram_send_photo()), and then discarded. No image file (PNG, JPG, or any binary) may be persisted to the repository, local filesystem, or any storage layer. Execution reports may log image metadata (size in KB, prompt text, status) but MUST NOT store raw image bytes.

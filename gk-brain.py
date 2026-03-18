@@ -616,7 +616,7 @@ def _grok_chat(messages: list, model: str = GROK_TEXT_MODEL) -> str:
         "max_tokens": 4000,
         "temperature": 0.9,
     }
-    max_attempts = 3
+    max_attempts = GROK_CHAT_MAX_ATTEMPTS
     last_exc: Exception = RuntimeError("No attempts made")
     for attempt in range(1, max_attempts + 1):
         try:
@@ -624,7 +624,7 @@ def _grok_chat(messages: list, model: str = GROK_TEXT_MODEL) -> str:
                 f"{GROK_API_BASE}/chat/completions",
                 headers=headers,
                 json=payload,
-                timeout=60,
+                timeout=GROK_CHAT_TIMEOUT_SEC,
             )
             resp.raise_for_status()
             return resp.json()["choices"][0]["message"]["content"].strip()
@@ -636,7 +636,7 @@ def _grok_chat(messages: list, model: str = GROK_TEXT_MODEL) -> str:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
             last_exc = exc
         if attempt < max_attempts:
-            wait = 2 ** attempt
+            wait = GROK_CHAT_BACKOFF_BASE ** attempt
             print(f"[grok-chat] Attempt {attempt}/{max_attempts} failed ({last_exc}); retrying in {wait}s…")
             time.sleep(wait)
     raise last_exc
@@ -738,7 +738,7 @@ def _grok_image(prompt: str, reference_image: bytes | None = None) -> bytes | No
             f"{GROK_API_BASE}/images/generations",
             headers=headers,
             json=payload,
-            timeout=120,
+            timeout=GROK_IMAGE_TIMEOUT_SEC,
         )
         resp.raise_for_status()
         image_url = resp.json()["data"][0]["url"]
@@ -1142,11 +1142,24 @@ def generate_lore_pair(
 # ---------------------------------------------------------------------------
 
 def load_brain1_signal() -> list:
-    """Load unused Brain1 updates from brain1-canon.json."""
+    """Load unused Brain1 updates from brain1-canon.json, excluding stale entries (> 7 days old)."""
     try:
         with open(BRAIN1_CANON_FILE, "r", encoding="utf-8") as fh:
             data = json.load(fh)
-        return [u for u in data.get("updates", []) if not u.get("b2_used")]
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
+        result = []
+        for u in data.get("updates", []):
+            if u.get("b2_used"):
+                continue
+            ts = u.get("timestamp", "")
+            try:
+                entry_dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                if entry_dt < cutoff:
+                    continue  # stale — do NOT mark as used
+            except Exception:
+                pass  # if timestamp unparseable, include the entry
+            result.append(u)
+        return result
     except (OSError, json.JSONDecodeError):
         return []
 
@@ -1195,7 +1208,7 @@ def save_brain1_update(update: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def save_lore_history(post1: str, post2: str) -> None:
-    """Append today's lore posts to lore-history.md (keeps last 7 days)."""
+    """Append today's lore posts to lore-history.md (keeps last 14 days)."""
     now = datetime.datetime.now(datetime.UTC)
     separator = f"\n\n---\n## {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
 
@@ -1991,9 +2004,13 @@ def main() -> None:
     # -- Step 11: Save lore history --
     save_lore_history(lore1, lore2)
 
-    # Mark Brain1 signal updates as used after successful post
-    if brain1_signal and telegram_info.get("msg1_status") == "success":
-        mark_brain1_updates_used(brain1_signal)
+    # Mark Brain1 signal updates as used after successful post (both messages)
+    if (
+        brain1_signal
+        and telegram_info.get("msg1_status") == "success"
+        and telegram_info.get("msg2_status") == "success"
+    ):
+        mark_brain1_updates_used(brain1_signal[:3])
 
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:
