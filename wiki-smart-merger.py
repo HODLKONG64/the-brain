@@ -118,15 +118,17 @@ def _login(session: requests.Session) -> bool:
 
     token = _get_login_token(session)
     resp = session.post(WIKI_API, data={
-        "action": "login",
-        "lgname": FANDOM_USERNAME,
-        "lgpassword": FANDOM_PASSWORD,
-        "lgtoken": token,
+        "action": "clientlogin",
+        "loginmessageformat": "none",
+        "username": FANDOM_USERNAME,
+        "password": FANDOM_PASSWORD,
+        "logintoken": token,
+        "rememberMe": "1",
         "format": "json",
     })
     resp.raise_for_status()
     result = resp.json()
-    if result.get("login", {}).get("result") == "Success":
+    if result.get("clientlogin", {}).get("status") == "PASS":
         print(f"[wiki-smart-merger] Logged in as {FANDOM_USERNAME}")
         return True
     print(f"[wiki-smart-merger] Login failed: {result}")

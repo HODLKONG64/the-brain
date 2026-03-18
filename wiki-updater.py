@@ -22,8 +22,8 @@ import requests
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 
 WIKI_API = "https://gkniftyheads.fandom.com/api.php"
-FANDOM_USERNAME = os.environ.get("FANDOM_USERNAME", "")
-FANDOM_PASSWORD = os.environ.get("FANDOM_PASSWORD", "")
+FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
+FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
 
 # Main wiki page that receives a "Latest Updates" section
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
@@ -53,15 +53,17 @@ def _login(session: requests.Session) -> bool:
 
     token = _get_login_token(session)
     resp = session.post(WIKI_API, data={
-        "action": "login",
-        "lgname": FANDOM_USERNAME,
-        "lgpassword": FANDOM_PASSWORD,
-        "lgtoken": token,
+        "action": "clientlogin",
+        "loginmessageformat": "none",
+        "username": FANDOM_USERNAME,
+        "password": FANDOM_PASSWORD,
+        "logintoken": token,
+        "rememberMe": "1",
         "format": "json",
     })
     resp.raise_for_status()
     result = resp.json()
-    if result.get("login", {}).get("result") == "Success":
+    if result.get("clientlogin", {}).get("status") == "PASS":
         print(f"[wiki-updater] Logged in as {FANDOM_USERNAME}")
         return True
     print(f"[wiki-updater] Login failed: {result}")

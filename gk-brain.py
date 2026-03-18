@@ -1802,8 +1802,8 @@ def main() -> None:
         persist_queue_updates(unused_updates)
 
     # -- Step 12: Wiki update (smart merge preferred, simple append fallback) --
-    print(f"[wiki-check] FANDOM_USERNAME set: {bool(os.environ.get('FANDOM_USERNAME'))}")
-    print(f"[wiki-check] FANDOM_PASSWORD set: {bool(os.environ.get('FANDOM_PASSWORD'))}")
+    print(f"[wiki-check] FANDOM_BOT_USER set: {bool(os.environ.get('FANDOM_BOT_USER', os.environ.get('FANDOM_USERNAME', '')))}")
+    print(f"[wiki-check] FANDOM_BOT_PASSWORD set: {bool(os.environ.get('FANDOM_BOT_PASSWORD', os.environ.get('FANDOM_PASSWORD', '')))}")
     print(f"[wiki-check] FANDOM_WIKI_URL set: {bool(os.environ.get('FANDOM_WIKI_URL'))}")
     queue_content = _read_file(QUEUE_FILE, "[]")
     try:
