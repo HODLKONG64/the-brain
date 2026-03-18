@@ -1062,13 +1062,6 @@ def generate_lore_pair(
     image1 = prefix1 + image1
     image2 = prefix2 + image2
 
-    # AC-13: Append full image prompt to lore2 so users can generate it themselves
-    lore2 = (
-        lore2
-        + "\n\n---\n🎨 IMAGE PROMPT (generate yourself with any AI):\n"
-        + image2
-    )
-
     return lore1, image1, lore2, image2
 
 
