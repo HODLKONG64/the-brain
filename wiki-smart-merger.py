@@ -53,6 +53,8 @@ AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
 
 # Mapping: update type → wiki section heading (title-case, no '==' markers)
 SECTION_MAP: dict[str, str] = {
+    # Lore Posts
+    "lore-post": "Latest Lore Posts",
     # Fishing
     "fishing-real": "Fishing Records",
     "fishing": "Fishing Records",
