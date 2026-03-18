@@ -225,9 +225,13 @@ _GIRL_IMAGES = [
     os.path.join(_ASSETS_DIR, "bonnet_styles_females_set_2", "girlsimagesettwo.png"),
 ]
 
-# Maximum lore/image generation attempts before using partial data and continuing
-LORE_MAX_FAILS = 50
-IMAGE_MAX_FAILS = 50
+# ── Retry / timeout config ──────────────────────────────────────────────────
+GROK_CHAT_MAX_ATTEMPTS   = 3
+GROK_CHAT_TIMEOUT_SEC    = 60
+GROK_CHAT_BACKOFF_BASE   = 2          # seconds; doubles each retry
+GROK_IMAGE_TIMEOUT_SEC   = 90
+IMAGE_MAX_FAILS          = 50         # keep existing value
+LORE_MAX_FAILS           = 50         # keep existing value
 
 # Telegram character limits and split configuration.
 # MSG1 is a plain-text message (no image); MSG2 is an image caption.
@@ -2019,6 +2023,13 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    _REQUIRED_ENV = ["GROK_API_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"]
+    _missing = [v for v in _REQUIRED_ENV if not os.environ.get(v)]
+    if _missing:
+        raise EnvironmentError(
+            f"[gk-brain] Missing required environment variables: {', '.join(_missing)}"
+        )
+
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
     # -- Dual Brain: Sunday reset check --
