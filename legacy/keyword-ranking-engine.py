@@ -10,19 +10,25 @@ Usage:
     results = rank_keywords(documents)
 """
 
+import os
 import re
 import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 FANDOM_WIKI_BASE = "https://gkniftyheads.fandom.com/wiki/"
-TOP_N = 30
+TOP_N = 30  # number of keywords to return
 
 
 def _check_fandom_coverage(keyword: str) -> bool:
     """Check if a keyword has a dedicated GKniftyHEADS Fandom wiki page."""
     slug = keyword.strip().replace(" ", "_").title()
     url = FANDOM_WIKI_BASE + slug
-    headers = {"User-Agent": "GKBrainBot/1.0 (+https://github.com/HODLKONG64/the-brain)"}
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (compatible; GKBrainBot/1.0; "
+            "+https://github.com/HODLKONG64/the-brain)"
+        )
+    }
     try:
         resp = requests.head(url, headers=headers, timeout=10, allow_redirects=True)
         return resp.status_code == 200
@@ -45,10 +51,11 @@ def rank_keywords(documents: list, top_n: int = TOP_N, check_wiki: bool = False)
     if not documents or not any(d.strip() for d in documents):
         return []
 
+    # Filter to GK-relevant tokens only (min 3 chars, alphabetic or hyphenated)
     vectorizer = TfidfVectorizer(
         max_features=500,
         stop_words="english",
-        token_pattern=r"(?u)\b[A-Za-z][A-Za-z\-]{2,}\b",
+        token_pattern=r"(?u)\b[A-Za-z][A-Za-z-]{2,}\b",
         ngram_range=(1, 2),
     )
     try:

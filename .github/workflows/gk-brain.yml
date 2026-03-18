@@ -1,4 +1,4 @@
-name: GK BRAIN - 2 Hour Lore + Replies
+name: GK BRAIN - 4 Brain System (2 Hour Cycle)
 on:
   schedule:
     - cron: '0 */2 * * *'
@@ -18,14 +18,15 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
-      GROK_TEXT_MODEL: ${{ secrets.GROK_TEXT_MODEL || 'grok-3-latest' }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || '' }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
       MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
       FANDOM_BOT_USER: ${{ secrets.FANDOM_BOT_USER }}
       FANDOM_BOT_PASSWORD: ${{ secrets.FANDOM_BOT_PASSWORD }}
       FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       GROK_API_BASE: "https://api.x.ai/v1"
+      GROK_TEXT_MODEL: ${{ secrets.GROK_TEXT_MODEL || 'grok-3-latest' }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -35,26 +36,47 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run crawl-brain
+
+      # ── Brain 1: Crawl Brain ─────────────────────────────────────────────
+      - name: 🕷️ Run Crawl Brain
+        id: crawl_brain
         run: python crawl-brain.py
         continue-on-error: true
-      - name: Run analytics-brain
+
+      # ── Brain 2: Analytics Brain ─────────────────────────────────────────
+      - name: 📊 Run Analytics Brain
+        id: analytics_brain
         run: python analytics-brain.py
         continue-on-error: true
-      - name: Run GK BRAIN
+
+      # ── Brain 3: Lore Brain ──────────────────────────────────────────────
+      - name: 🧠 Run Lore Brain (GK BRAIN)
+        id: lore_brain
         run: python gk-brain.py
-      - name: Run wiki-brain
+        continue-on-error: true
+
+      # ── Brain 4: Wiki Brain ──────────────────────────────────────────────
+      - name: 📖 Run Wiki Brain
+        id: wiki_brain
         run: python wiki-brain.py
+        continue-on-error: true
+      - name: Run master-backup-agent
+        run: python master-backup-agent.py
         continue-on-error: true
       - name: Upload execution report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: execution-report-${{ github.run_number }}
-          path: execution-report-*.json
+          path: |
+            execution-report-*.json
+            reports/analytics-report-*.json
           if-no-files-found: ignore
           retention-days: 14
+
+      # ── Commit all updated state files ───────────────────────────────────
       - name: Commit updated state files
+        if: always()
         run: |
           git config user.name "GK BRAIN Agent"
           git config user.email "gk-brain@users.noreply.github.com"
@@ -63,36 +85,35 @@ jobs:
             reply-tracker.json \
             bot-state.json \
             crawl-snapshot.json \
+            crawl-results.json \
+            crawl-fingerprints.json \
             wiki-update-queue.json \
             telegram-offset.json \
             anomaly-history.json \
             engagement-tracker.json \
-            crawl-results.json \
             recommendations.json \
-            brain1-canon.json || true
+            brain1-canon.json \
+            master-backup-state.json || true
           git diff --cached --quiet || git commit -m "chore: GK BRAIN state update [skip ci]"
           git push
         continue-on-error: true
-      - name: Notify Telegram on failure
-        if: failure()
+
+      # ── Failure notification ─────────────────────────────────────────────
+      - name: 🚨 Notify failure via Telegram
+        if: >
+          steps.crawl_brain.conclusion == 'failure' ||
+          steps.analytics_brain.conclusion == 'failure' ||
+          steps.lore_brain.conclusion == 'failure' ||
+          steps.wiki_brain.conclusion == 'failure'
         run: |
-          python - <<'EOF'
-          import os, requests
-          token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-          chat_ids = [c.strip() for c in os.environ.get("CHANNEL_CHAT_IDS", "").split(",") if c.strip()]
-          if not token or not chat_ids:
-              print("[notify] No Telegram credentials — skipping failure notification.")
-          else:
-              run_id = os.environ.get("GITHUB_RUN_ID", "unknown")
-              run_url = f"https://github.com/HODLKONG64/the-brain/actions/runs/{run_id}"
-              msg = f"🚨 GK BRAIN workflow FAILED\nRun: {run_url}"
-              for chat_id in chat_ids:
-                  try:
-                      requests.post(
-                          f"https://api.telegram.org/bot{token}/sendMessage",
-                          json={"chat_id": chat_id, "text": msg},
-                          timeout=10,
-                      )
-                  except Exception as e:
-                      print(f"[notify] Failed to notify {chat_id}: {e}")
-          EOF
+          FAILED_BRAINS=""
+          [ "${{ steps.crawl_brain.conclusion }}" = "failure" ]    && FAILED_BRAINS="${FAILED_BRAINS} CrawlBrain"
+          [ "${{ steps.analytics_brain.conclusion }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} AnalyticsBrain"
+          [ "${{ steps.lore_brain.conclusion }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} LoreBrain"
+          [ "${{ steps.wiki_brain.conclusion }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} WikiBrain"
+          MESSAGE="⚠️ GK BRAIN alert — brain(s) failed:${FAILED_BRAINS}%0ARun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=$(echo ${CHANNEL_CHAT_IDS} | cut -d',' -f1)" \
+            -d "text=${MESSAGE}" || true
+        continue-on-error: true
+

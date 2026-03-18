@@ -1,0 +1,634 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-03-18T19:22:46Z",
+  "last_updated": "2026-03-18T19:24:04Z",
+  "run_count": 2,
+  "file_registry": {
+    "brain-rules.md": {
+      "sha": "d816806dee414019e70b002c9c9a7be5e5217f1703cb19cb654061ef9d744c13",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 14973,
+      "rule_count": 18,
+      "is_state_file": false
+    },
+    "gk-brain-complete.md": {
+      "sha": "7de66d4c5bebc38fa61940040bb98d63e69f7f41d0cc11aeb8b3583072ae82df",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 10027,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "copilot-rule.md": {
+      "sha": "cc83f5154a3092610bc392ab42135f1fa8fc3c57061fb4c715df85d2ec17d241",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 6108,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "update-integration-rules.md": {
+      "sha": "bb2c1ea85d605528d955ed48f4da04ac3630522db4cd5c116853aeeaaa8c5bb2",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 18833,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "wiki-merge-rules.md": {
+      "sha": "8dbd95e8e7b7ad0cc667ad51fa08ba2f63005bccb891e8201ef122857ee732fe",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 6970,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "TELEGRAM-BOT-API-RULES.md": {
+      "sha": "36f1156821fb96d2164ef0f32f3f3ddd98eb66a42650b9f89bde37f734ac42ea",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 5835,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "cross-platform-consistency.md": {
+      "sha": "12de70829e9ef52f092ebedb3a4a3e96d888271e6167b467fa1b662f8498ceb4",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 1260,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "FANDOM-API-RULES.md": {
+      "sha": "ced672ed7786ba2f7428b7033570b170e6310cadc79c21bd95c8926be2a5196f",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 1829,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "LORE-RULE-DETECTOR-DEEP-LOGIC.md": {
+      "sha": "40818ec0cb9f5fe18df4fe6fde41c14b2b2e5849f8652f0441ef66675ab6959a",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 2465,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "HOW-TO.md": {
+      "sha": "6a568946ed0d11a687f88bdb40229811585987b675a858f16ef4c6aa8196b633",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 2034,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "MASTER-CHARACTER-CANON.md": {
+      "sha": "29db2ae1038cf0b97a8a6174722f1ea2b29ac9c4d41ad21e8f81d0f4a37c5cd8",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 56522,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "character-bible.md": {
+      "sha": "cc25d225f16a61bc24a289c5d3086702d2775d8b2c817d931e050d5abefa6e5a",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 11420,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "genesis-lore.md": {
+      "sha": "ab0b99ffe195c4a17b84e3841405125ac47e399251f574c7d987672a41e58ee1",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 24546,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "lore-planner.md": {
+      "sha": "0534866c849e2dbb3d72d48dada6c8f6d9953275ad9a606d5b3d8293a145135d",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 28012,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "BRAIN-COORDINATOR.md": {
+      "sha": "00583926d001595fcb7087df3801d589269cfa7fcabfdf98fdeed39a83f7e54d",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 3781,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "LLM-ORCHESTRATION-ARCHITECTURE.md": {
+      "sha": "ace1d58edef568af1f452604fb07a428b3abd4c93240d442322aa8ffe1e35b90",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 2138,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "TELEGRAM-NARRATOR-SYSTEM-ARCHITECTURE.md": {
+      "sha": "67fbf53fd6c343d11c34cd2832c170ecddde12d2e4a40c9c8f09be488c9998a8",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 2073,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "gk-brain.py": {
+      "sha": "529c740d558885bbb8a35dd25586e23a195f11f756f5488bb3815171f9ef827b",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 86728,
+      "rule_count": 23,
+      "is_state_file": false
+    },
+    "crawl-brain.py": {
+      "sha": "2987f3fabcecb7e503551ea2e0d89aa92e6383f1120f3565a1ee42d51fe7677c",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 5645,
+      "rule_count": 3,
+      "is_state_file": false
+    },
+    "analytics-brain.py": {
+      "sha": "9e1ac29eb4346862f4a9c6e22b913498e43ae7fc56f4c4f6b090455d7cd7ce32",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 3501,
+      "rule_count": 4,
+      "is_state_file": false
+    },
+    "wiki-brain.py": {
+      "sha": "364e0a68d11d7802462a693dd74903bd40c08a92c93cbaedb3686d7b47a8e3c4",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 2400,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "wiki-updater.py": {
+      "sha": "965fb3cd1ac55d6ee979f060b8db74944bda54b3808b30f5ac12ff3939479e2f",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 10253,
+      "rule_count": 4,
+      "is_state_file": false
+    },
+    "wiki-smart-merger.py": {
+      "sha": "230d6fc85c119f1b37425c7a90a69a1189fc7c217ed76328be512a1a4162763f",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 19966,
+      "rule_count": 8,
+      "is_state_file": false
+    },
+    "wiki-cross-checker.py": {
+      "sha": "1dc72d7de7a2637f134a0ac07423a16c27cb63ada1714adf56a973be2c30065b",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 7319,
+      "rule_count": 8,
+      "is_state_file": false
+    },
+    "update-detector.py": {
+      "sha": "76edabaa65cfae3a71b7a52130743804b6219034f265616172c6361cd2d62b12",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 10222,
+      "rule_count": 8,
+      "is_state_file": false
+    },
+    "fandom_auth.py": {
+      "sha": "da7e97d2faa16d049ae817c74ec152dc97a8cf49bef84f17a1e3298535933187",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 11009,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "execution-reporter.py": {
+      "sha": "720ef48cfae38ab2ec8276c05b83813d871c7b4ab9243bf36517bf5177e918ba",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 19374,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "user-profile.py": {
+      "sha": "f9c2a4953d47e33f9ee332e0f666f25d9498aa42ec5e9097ecd5efeaed629ff1",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 7517,
+      "rule_count": 3,
+      "is_state_file": false
+    },
+    "telegram-narrator-system.py": {
+      "sha": "b8408a0aecf5f8e57f55cd168e0572b5da18a66c4eeabd2cbee14b291bd5fe9d",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 1403,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    ".github/workflows/gk-brain.yml": {
+      "sha": "c8ec4886412456b490725591ee7b1f33e947a4fb290dcbc7d9e2d5d5643e50a4",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 3711,
+      "rule_count": 0,
+      "is_state_file": false
+    },
+    "brain1-canon.json": {
+      "sha": "c3f605274d64cd9c1b372bfef8230574675d46e2c75794d90a7c7e4450a555c4",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 62,
+      "rule_count": 0,
+      "is_state_file": true
+    },
+    "engagement-tracker.json": {
+      "sha": "2215db58d9d15b097b7992f10763e0e926d2f573ae47ef3703535f794944a87b",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 135,
+      "rule_count": 0,
+      "is_state_file": true
+    },
+    "recommendations.json": {
+      "sha": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "last_seen": "2026-03-18T19:22:46Z",
+      "size_bytes": 3,
+      "rule_count": 0,
+      "is_state_file": true
+    }
+  },
+  "rule_snapshot": {
+    "DB-1": {
+      "value": "Wiki Separation",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-2": {
+      "value": "20% Creative Signal Rule",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-3": {
+      "value": "7-Day Signal Vault",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-4": {
+      "value": "Signal Lifecycle",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-5": {
+      "value": "Post 2 Image Cue",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-6": {
+      "value": "Brain Isolation",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-7": {
+      "value": "Wiki Brain Gatekeeper",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-8": {
+      "value": "Crawl Deduplication",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-9": {
+      "value": "Lore History Retention",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-10": {
+      "value": "Env Fast-Fail",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-11": {
+      "value": "Claude Routing",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-12": {
+      "value": "Telegram Rate Guard",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-13": {
+      "value": "Auto-Pin After Message 2",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-14": {
+      "value": "Telegram API Compliance",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-15": {
+      "value": "Master Backup Agent Runs Last",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-16": {
+      "value": "Master Backup Agent Conflict Quarantine",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-17": {
+      "value": "Master Backup Agent Scope",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "DB-18": {
+      "value": "No Agent May Import from Master Backup Agent",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:TELEGRAM_BOT_TOKEN": {
+      "value": "os.environ.get(\"TELEGRAM_BOT_TOKEN\", \"\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:GROK_API_KEY": {
+      "value": "os.environ.get(\"GROK_API_KEY\", \"\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:CHANNEL_CHAT_IDS_RAW": {
+      "value": "os.environ.get(\"CHANNEL_CHAT_IDS\", \"\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:CHANNEL_CHAT_IDS": {
+      "value": "[c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(\",\") if c.strip()]",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:GROK_API_BASE": {
+      "value": "\"https://api.x.ai/v1\"",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:GROK_TEXT_MODEL": {
+      "value": "os.environ.get(\"GROK_TEXT_MODEL\", \"grok-3-latest\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:ANTHROPIC_API_KEY": {
+      "value": "os.environ.get(\"ANTHROPIC_API_KEY\", \"\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:ANTHROPIC_MODEL": {
+      "value": "\"claude-3-5-sonnet-20241022\"",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:GROK_CHAT_TIMEOUT_SEC": {
+      "value": "60",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:GROK_IMAGE_TIMEOUT_SEC": {
+      "value": "90",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:BASE_DIR": {
+      "value": "os.path.dirname(__file__)",
+      "source_file": "user-profile.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:LORE_HISTORY_FILE": {
+      "value": "os.path.join(BASE_DIR, \"lore-history.md\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:BRAIN_RULES_FILE": {
+      "value": "os.path.join(BASE_DIR, \"gk-brain-complete.md\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:CHARACTER_BIBLE_FILE": {
+      "value": "os.path.join(BASE_DIR, \"character-bible.md\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:MASTER_CANON_FILE": {
+      "value": "os.path.join(BASE_DIR, \"MASTER-CHARACTER-CANON.md\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:LORE_PLANNER_FILE": {
+      "value": "os.path.join(BASE_DIR, \"lore-planner.md\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:QUEUE_FILE": {
+      "value": "os.path.join(os.path.dirname(__file__), \"wiki-update-queue.json\")",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:SNAPSHOT_FILE": {
+      "value": "os.path.join(os.path.dirname(__file__), \"crawl-snapshot.json\")",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:GENESIS_LORE_FILE": {
+      "value": "os.path.join(BASE_DIR, \"genesis-lore.md\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_ASSETS_DIR": {
+      "value": "os.path.join(BASE_DIR, \"assets\", \"layers\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:LORE_MAX_FAILS": {
+      "value": "50",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:IMAGE_MAX_FAILS": {
+      "value": "50",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_TELEGRAM_OFFSET_FILE": {
+      "value": "os.path.join(BASE_DIR, \"telegram-offset.json\")",
+      "source_file": "gk-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:RESULTS_FILE": {
+      "value": "os.path.join(BASE_DIR, \"crawl-results.json\")",
+      "source_file": "crawl-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:ENGAGEMENT_FILE": {
+      "value": "os.path.join(BASE_DIR, \"engagement-tracker.json\")",
+      "source_file": "analytics-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:RECOMMENDATIONS_FILE": {
+      "value": "os.path.join(BASE_DIR, \"recommendations.json\")",
+      "source_file": "analytics-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:REPORTS_DIR": {
+      "value": "os.path.join(BASE_DIR, \"reports\")",
+      "source_file": "analytics-brain.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:MAIN_WIKI_PAGE": {
+      "value": "\"GKniftyHEADS_Wiki\"",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:AGENT_LOG_PAGE": {
+      "value": "\"GK_BRAIN_Agent_Log\"",
+      "source_file": "wiki-smart-merger.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:ERROR_LOG_FILE": {
+      "value": "os.path.join(os.path.dirname(__file__), \"wiki-update-errors.json\")",
+      "source_file": "wiki-updater.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:QUEUE_LOCK_FILE": {
+      "value": "QUEUE_FILE + \".lock\"",
+      "source_file": "wiki-smart-merger.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:DEFAULT_SECTION": {
+      "value": "\"Uncategorized Updates\"",
+      "source_file": "wiki-smart-merger.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:FINGERPRINT_CONTENT_LENGTH": {
+      "value": "500   # chars of normalised content used for MD5",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:FINGERPRINT_PREFIX_LENGTH": {
+      "value": "16     # hex chars of MD5 hash stored in wiki comments",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:CONTENT_SNIPPET_LENGTH": {
+      "value": "200       # max chars of content shown in a wiki bullet",
+      "source_file": "wiki-smart-merger.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:WIKI_BASE": {
+      "value": "os.environ.get(\"FANDOM_WIKI_URL\", \"https://gkniftyheads.fandom.com\").rstrip(\"/\")",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:WIKI_API": {
+      "value": "WIKI_BASE + \"/api.php\"",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:FANDOM_USERNAME": {
+      "value": "os.environ.get(\"FANDOM_BOT_USER\", os.environ.get(\"FANDOM_USERNAME\", \"\"))",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:FANDOM_PASSWORD": {
+      "value": "os.environ.get(\"FANDOM_BOT_PASSWORD\", os.environ.get(\"FANDOM_PASSWORD\", \"\"))",
+      "source_file": "wiki-cross-checker.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_RAVE_KEYWORDS": {
+      "value": "re.compile(",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_NEWS_KEYWORDS": {
+      "value": "re.compile(",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:CARP_MIN_WEIGHT_LB": {
+      "value": "40",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:CARP_MAX_HOURS": {
+      "value": "70",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_FISHING_WEIGHT_RE": {
+      "value": "re.compile(",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_FISHING_KEYWORDS": {
+      "value": "re.compile(",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:_NFT_KEYWORDS": {
+      "value": "re.compile(",
+      "source_file": "update-detector.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:PROFILES_FILE": {
+      "value": "os.path.join(BASE_DIR, \"user-profiles.json\")",
+      "source_file": "user-profile.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    },
+    "PY:DAILY_REPLY_LIMIT": {
+      "value": "20",
+      "source_file": "user-profile.py",
+      "absorbed_at": "2026-03-18T19:22:46Z"
+    }
+  },
+  "conflict_log": [],
+  "audit_trail": [
+    {
+      "run_at": "2026-03-18T19:22:46Z",
+      "run_number": 1,
+      "new_files": 33,
+      "changed_files": 0,
+      "unchanged_files": 0,
+      "missing_files": 0,
+      "rules_absorbed": 79,
+      "conflicts_quarantined": 0,
+      "new_file_list": [
+        "brain-rules.md",
+        "gk-brain-complete.md",
+        "copilot-rule.md",
+        "update-integration-rules.md",
+        "wiki-merge-rules.md",
+        "TELEGRAM-BOT-API-RULES.md",
+        "cross-platform-consistency.md",
+        "FANDOM-API-RULES.md",
+        "LORE-RULE-DETECTOR-DEEP-LOGIC.md",
+        "HOW-TO.md",
+        "MASTER-CHARACTER-CANON.md",
+        "character-bible.md",
+        "genesis-lore.md",
+        "lore-planner.md",
+        "BRAIN-COORDINATOR.md",
+        "LLM-ORCHESTRATION-ARCHITECTURE.md",
+        "TELEGRAM-NARRATOR-SYSTEM-ARCHITECTURE.md",
+        "gk-brain.py",
+        "crawl-brain.py",
+        "analytics-brain.py",
+        "wiki-brain.py",
+        "wiki-updater.py",
+        "wiki-smart-merger.py",
+        "wiki-cross-checker.py",
+        "update-detector.py",
+        "fandom_auth.py",
+        "execution-reporter.py",
+        "user-profile.py",
+        "telegram-narrator-system.py",
+        ".github/workflows/gk-brain.yml",
+        "brain1-canon.json",
+        "engagement-tracker.json",
+        "recommendations.json"
+      ],
+      "changed_file_list": [],
+      "missing_file_list": []
+    },
+    {
+      "run_at": "2026-03-18T19:24:04Z",
+      "run_number": 2,
+      "new_files": 0,
+      "changed_files": 0,
+      "unchanged_files": 33,
+      "missing_files": 0,
+      "rules_absorbed": 0,
+      "conflicts_quarantined": 0,
+      "new_file_list": [],
+      "changed_file_list": [],
+      "missing_file_list": []
+    }
+  ]
+}

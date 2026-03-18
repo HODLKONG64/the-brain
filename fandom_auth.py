@@ -130,7 +130,7 @@ def content_hash(text: str) -> str:
 
 
 def get_login_token(session: requests.Session) -> str:
-    """Fetch the ``logintoken`` needed for the ``action=login`` flow."""
+    """Fetch the ``logintoken`` needed for the ``action=login`` call."""
     resp = _api_call_with_retry(
         session.get,
         WIKI_API,
@@ -147,10 +147,10 @@ def get_login_token(session: requests.Session) -> str:
 
 def login(session: requests.Session) -> bool:
     """
-    Perform a two-step Fandom/MediaWiki login using the supported ``action=login`` flow.
+    Perform a two-step Fandom/MediaWiki bot login.
 
     Step 1: GET ``action=query&meta=tokens&type=login`` → ``logintoken``
-    Step 2: POST ``action=login`` with lgname, lgpassword, and lgtoken.
+    Step 2: POST ``action=login`` with ``lgname``, ``lgpassword``, ``lgtoken``.
 
     Returns True on success, False otherwise.
     """
@@ -182,12 +182,12 @@ def login(session: requests.Session) -> bool:
         logger.error("Login POST failed: %s", exc)
         return False
 
-    status = result.get("login", {}).get("result", "")
-    if status == "Success":
+    login_result = result.get("login", {}).get("result", "")
+    if login_result == "Success":
         logger.info("Logged in to Fandom as %s", FANDOM_USERNAME)
         return True
 
-    logger.error("Fandom login failed (result=%s): %s", status, result)
+    logger.error("Fandom login failed: %s", result)
     return False
 
 
