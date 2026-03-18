@@ -67,9 +67,8 @@ jobs:
             telegram-offset.json \
             anomaly-history.json \
             engagement-tracker.json \
-            crawl-results.json \
-            recommendations.json \
-            brain1-canon.json || true
+            brain1-canon.json \
+            brain2-telegram-lore.json || true
           git diff --cached --quiet || git commit -m "chore: GK BRAIN state update [skip ci]"
           git push
         continue-on-error: true

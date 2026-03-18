@@ -201,6 +201,8 @@ _log = logging.getLogger("gk-brain")
 BASE_DIR = os.path.dirname(__file__)
 LORE_HISTORY_FILE = os.path.join(BASE_DIR, "lore-history.md")
 BRAIN_RULES_FILE = os.path.join(BASE_DIR, "gk-brain-complete.md")
+BRAIN1_FILE = os.path.join(BASE_DIR, "brain1-canon.json")
+BRAIN2_FILE = os.path.join(BASE_DIR, "brain2-telegram-lore.json")
 CHARACTER_BIBLE_FILE = os.path.join(BASE_DIR, "character-bible.md")
 MASTER_CANON_FILE = os.path.join(BASE_DIR, "MASTER-CHARACTER-CANON.md")
 LORE_PLANNER_FILE = os.path.join(BASE_DIR, "lore-planner.md")
@@ -341,7 +343,19 @@ def _read_file(path: str, fallback: str = "") -> str:
 
 
 def load_lore_history() -> str:
-    return _read_file(LORE_HISTORY_FILE, "(No previous lore recorded.)")
+    """Load last 7 days of Telegram lore from brain2-telegram-lore.json as a compact context string."""
+    raw = _read_file(BRAIN2_FILE, "")
+    if not raw:
+        return "(No previous lore recorded.)"
+    try:
+        data = json.loads(raw)
+        posts = data.get("posts", [])
+        if not posts:
+            return "(No previous lore recorded.)"
+        lines = [f"[{p.get('slot','')}] {p.get('summary','')}" for p in posts[-14:]]
+        return "RECENT TELEGRAM LORE (last 7 days):\n" + "\n".join(lines)
+    except Exception:
+        return "(No previous lore recorded.)"
 
 
 def load_brain_rules() -> str:
@@ -1216,6 +1230,91 @@ def save_brain1_update(update: dict) -> None:
 # Lore history tracking
 # ---------------------------------------------------------------------------
 
+def check_brain2_sunday_reset() -> bool:
+    """Wipe brain2-telegram-lore.json if it's Sunday midnight UTC (Sunday = weekday 6).
+    Returns True if a reset was performed."""
+    now = datetime.datetime.now(datetime.UTC)
+    if now.weekday() == 6 and now.hour == 0:  # Sunday midnight window
+        data = {"week_start": now.isoformat(), "posts": []}
+        try:
+            with open(BRAIN2_FILE, "w", encoding="utf-8") as fh:
+                fh.write(json.dumps(data, separators=(',', ':')))
+            print("[brain2] Sunday midnight reset — Brain 2 wiped.")
+        except Exception as exc:
+            print(f"[brain2] Sunday reset failed: {exc}")
+        return True
+    return False
+
+
+def save_brain2_lore(post1: str, post2: str) -> None:
+    """Save Telegram lore posts to brain2-telegram-lore.json (compact rolling 7-day log).
+    Brain 2 lore NEVER goes to the Fandom wiki."""
+    now = datetime.datetime.now(datetime.UTC)
+    slot = now.strftime("%a").upper()[:3] + ":" + now.strftime("%H")
+    ts = now.isoformat().replace("+00:00", "Z")
+    combined = (post1 + " " + post2).strip()
+    entry = {"slot": slot, "summary": combined[:300], "ts": ts}
+
+    raw = _read_file(BRAIN2_FILE, "")
+    try:
+        data = json.loads(raw) if raw else {}
+    except Exception:
+        data = {}
+
+    if not isinstance(data.get("posts"), list):
+        data = {"week_start": ts, "posts": []}
+
+    data["posts"].append(entry)
+
+    # Drop entries older than 7 days
+    cutoff = now - datetime.timedelta(days=7)
+    keep = []
+    for p in data["posts"]:
+        try:
+            if datetime.datetime.fromisoformat(p["ts"].replace("Z", "+00:00")) >= cutoff:
+                keep.append(p)
+        except Exception:
+            keep.append(p)
+    data["posts"] = keep
+
+    try:
+        with open(BRAIN2_FILE, "w", encoding="utf-8") as fh:
+            fh.write(json.dumps(data, separators=(',', ':')))
+        print(f"[brain2] Saved lore entry ({len(data['posts'])} total).")
+    except Exception as exc:
+        print(f"[brain2] Failed to save: {exc}")
+
+
+def save_brain1_update(url: str, summary: str) -> None:
+    """Save a web-crawl discovery to brain1-canon.json (rolling 200-entry log)."""
+    now = datetime.datetime.now(datetime.UTC)
+    ts = now.isoformat().replace("+00:00", "Z")
+    entry = {"type": "web-update", "source": url, "summary": summary[:60], "ts": ts}
+
+    raw = _read_file(BRAIN1_FILE, "")
+    try:
+        data = json.loads(raw) if raw else {}
+    except Exception:
+        data = {}
+
+    if not isinstance(data.get("updates"), list):
+        data = {"last_updated": ts, "updates": [], "character_facts": {}, "web_discoveries": []}
+
+    data["updates"].append(entry)
+    data["last_updated"] = ts
+
+    # Keep only the last 200 entries
+    if len(data["updates"]) > 200:
+        data["updates"] = data["updates"][-200:]
+
+    try:
+        with open(BRAIN1_FILE, "w", encoding="utf-8") as fh:
+            fh.write(json.dumps(data, separators=(',', ':')))
+        print(f"[brain1] Saved web update from {url[:60]}.")
+    except Exception as exc:
+        print(f"[brain1] Failed to save: {exc}")
+
+
 def save_lore_history(post1: str, post2: str) -> None:
     """Append today's lore posts to lore-history.md (keeps last 14 days)."""
     now = datetime.datetime.now(datetime.UTC)
@@ -1755,13 +1854,8 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 def main() -> None:
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
-    # -- Fast-fail if required env vars are missing --
-    _REQUIRED_ENV = ["GROK_API_KEY", "TELEGRAM_BOT_TOKEN"]
-    _missing = [v for v in _REQUIRED_ENV if not os.environ.get(v)]
-    if _missing:
-        raise EnvironmentError(
-            f"[gk-brain] Missing required environment variables: {', '.join(_missing)}"
-        )
+    # -- Dual Brain: Sunday reset check --
+    check_brain2_sunday_reset()
 
     # -- Initialise execution reporter --
     reporter = None
@@ -1793,6 +1887,12 @@ def main() -> None:
     if update_result.get("detected"):
         print(f"[gk-brain] {len(updates)} update(s) detected.")
         add_to_queue(updates)
+        # Brain 1: save each web-crawl update to brain1-canon.json
+        for _u in updates:
+            save_brain1_update(
+                url=_u.get("source", ""),
+                summary=(_u.get("title", "") + " " + _u.get("content", ""))[:60],
+            )
     else:
         print("[gk-brain] No new updates detected.")
 
@@ -2010,38 +2110,8 @@ def main() -> None:
         except Exception as _rep_exc:
             print(f"[reporter] log_telegram_posted failed: {_rep_exc}")
 
-    # -- Step 11: Save lore history --
-    save_lore_history(lore1, lore2)
-
-    # Always queue a lore-post wiki entry so the wiki gets updated every cycle
-    _now_dt = datetime.datetime.now(datetime.UTC)
-    _now_iso = _now_dt.isoformat().replace("+00:00", "Z")
-    _date_str = _now_dt.strftime("%d %b %Y")
-    _time_str = _now_dt.strftime("%H:%M")
-
-    lore1_wiki_entry = {
-        "type": "lore-post",
-        "source": "https://github.com/HODLKONG64/the-brain",
-        "title": f"Lore Entry — {_date_str} {_time_str} UTC",
-        "content": lore1,
-        "timestamp": _now_iso,
-        "used": True,
-        "wiki_update": True,
-        "wiki_done": False,
-        "lore_weight": 1.0,
-    }
-    lore2_wiki_entry = {
-        "type": "lore-post",
-        "source": "https://github.com/HODLKONG64/the-brain",
-        "title": f"Lore Entry 2 — {_date_str} {_time_str} UTC",
-        "content": lore2,
-        "timestamp": _now_iso,
-        "used": True,
-        "wiki_update": True,
-        "wiki_done": False,
-        "lore_weight": 1.0,
-    }
-    add_to_queue([lore1_wiki_entry, lore2_wiki_entry])
+    # -- Step 11: Save lore to Brain 2 (Telegram lore only — never goes to wiki) --
+    save_brain2_lore(lore1, lore2)
 
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:
