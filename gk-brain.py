@@ -1800,6 +1800,22 @@ def main() -> None:
     # -- Step 11: Save lore history --
     save_lore_history(lore1, lore2)
 
+    # Always queue a lore-post wiki entry so the wiki gets updated every cycle
+    _now_dt = datetime.datetime.now(datetime.UTC)
+    _now_iso = _now_dt.isoformat().replace("+00:00", "Z")
+    lore_post_update = {
+        "type": "lore-post",
+        "source": "gk-brain-agent",
+        "title": f"GK BRAIN Lore Post — {_now_dt.strftime('%d %b %Y %H:%M')} UTC",
+        "content": (lore1[:400] + "\n\n---\n\n" + lore2[:400]).strip(),
+        "timestamp": _now_iso,
+        "used": True,
+        "wiki_update": True,
+        "wiki_done": False,
+        "lore_weight": 0.0,
+    }
+    add_to_queue([lore_post_update])
+
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:
         u["used"] = True
@@ -1820,7 +1836,14 @@ def main() -> None:
         print("[wiki-check] Using wiki-smart-merger strategy.")
     else:
         print("[wiki-check] wiki-smart-merger NOT available — will use wiki-updater fallback.")
-    wiki_pending = [u for u in updates if u.get("wiki_update") and not u.get("wiki_done")]
+    # Combine current-cycle updates with any backlog in the queue file
+    _queue_backlog = []
+    try:
+        _queue_raw = _read_file(QUEUE_FILE, "[]")
+        _queue_backlog = [u for u in json.loads(_queue_raw) if u.get("wiki_update") and not u.get("wiki_done")]
+    except Exception as _qe:
+        print(f"[gk-brain] Could not load queue backlog: {_qe}")
+    wiki_pending = _queue_backlog  # queue already contains current-cycle entry added above
     if wiki_pending and _cross_check_and_flag_missing is not None:
         print(f"[gk-brain] Cross-checking {len(wiki_pending)} entries against wiki...")
         try:
