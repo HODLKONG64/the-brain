@@ -348,12 +348,51 @@ def _sub_page_title(update: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Stale entry cleanup
+# ---------------------------------------------------------------------------
+
+def flush_stale_entries(max_age_days: int = 7) -> int:
+    """
+    Remove entries from the queue that are older than *max_age_days* days
+    and have already been processed (wiki_done=True) or are orphaned.
+
+    Returns the number of entries removed.
+    """
+    queue = _load_queue()
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=max_age_days)
+    kept = []
+    removed = 0
+    for entry in queue:
+        # Always keep entries not yet wiki_done
+        if not entry.get("wiki_done"):
+            kept.append(entry)
+            continue
+        ts = entry.get("timestamp", "")
+        try:
+            entry_dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            if entry_dt >= cutoff:
+                kept.append(entry)
+            else:
+                removed += 1
+        except Exception:
+            kept.append(entry)  # keep entries with unparseable timestamps
+
+    if removed:
+        _save_queue(kept)
+        logger.info("flush_stale_entries: removed %d stale entries.", removed)
+    return removed
+
+
+# ---------------------------------------------------------------------------
 # Main public function
 # ---------------------------------------------------------------------------
 
-def run_smart_wiki_updates() -> dict:
+def run_smart_wiki_updates(dry_run: bool = False) -> dict:
     """
     Process all pending wiki updates using the hybrid smart-merge + append strategy.
+
+    Args:
+        dry_run: When True, no writes are made to the wiki; actions are logged only.
 
     Returns:
         {"smart_merged": int, "appended": int, "failed": int, "skipped": int}
@@ -367,7 +406,13 @@ def run_smart_wiki_updates() -> dict:
 
     if not pending:
         logger.info("No pending wiki updates.")
+        flush_stale_entries()
         return {"smart_merged": 0, "appended": 0, "failed": 0, "skipped": 0}
+
+    if dry_run:
+        logger.info("[DRY RUN] Would process %d pending wiki updates.", len(pending))
+        flush_stale_entries()
+        return {"smart_merged": 0, "appended": 0, "failed": 0, "skipped": len(pending)}
 
     session = fandom_auth.create_session()
     if session is None:
@@ -472,6 +517,8 @@ def run_smart_wiki_updates() -> dict:
 
     _save_queue(queue)
 
+    flush_stale_entries()
+
     logger.info(
         "Done — smart_merged=%d, appended=%d, failed=%d, skipped=%d",
         smart_count,
@@ -492,5 +539,13 @@ def run_smart_wiki_updates() -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    result = run_smart_wiki_updates()
+    import argparse
+    parser = argparse.ArgumentParser(description="GK BRAIN smart wiki merger")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Log what would be written without making any API write calls.",
+    )
+    args = parser.parse_args()
+    result = run_smart_wiki_updates(dry_run=args.dry_run)
     print(json.dumps(result, indent=2))

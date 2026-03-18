@@ -26,6 +26,7 @@ import logging
 import os
 import re
 import time
+from datetime import timezone
 
 import fandom_auth
 
@@ -46,6 +47,33 @@ logger = logging.getLogger("wiki-updater")
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-queue.json")
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
+ERROR_LOG_FILE = os.path.join(os.path.dirname(__file__), "wiki-update-errors.json")
+
+
+# ---------------------------------------------------------------------------
+# Error logging
+# ---------------------------------------------------------------------------
+
+def _log_error(context: str, error: str) -> None:
+    """Append an error entry to wiki-update-errors.json."""
+    entry = {
+        "timestamp": datetime.datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "context": context,
+        "error": error,
+    }
+    try:
+        existing: list = []
+        if os.path.exists(ERROR_LOG_FILE):
+            try:
+                with open(ERROR_LOG_FILE, "r", encoding="utf-8") as fh:
+                    existing = json.load(fh)
+            except (json.JSONDecodeError, OSError):
+                existing = []
+        existing.append(entry)
+        with open(ERROR_LOG_FILE, "w", encoding="utf-8") as fh:
+            json.dump(existing, fh, indent=2)
+    except OSError as exc:
+        logger.warning("Could not write to error log: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -54,7 +82,7 @@ AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
 
 def _update_to_wikitext(update: dict) -> str:
     """Convert a structured update dict to MediaWiki markup."""
-    ts = update.get("timestamp", datetime.datetime.utcnow().isoformat() + "Z")
+    ts = update.get("timestamp", datetime.datetime.now(timezone.utc).isoformat() + "Z")
     try:
         dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
         display_time = dt.strftime("%d %B %Y, %H:%M UTC")
@@ -192,7 +220,7 @@ def run_wiki_updates() -> dict:
             sub_page = _sub_page_title(update)
 
             # 1. Create a dedicated sub-page for this update.
-            ok = fandom_auth.edit_page(
+            sub_success = fandom_auth.edit_page(
                 session,
                 sub_page,
                 wikitext,
@@ -211,7 +239,7 @@ def run_wiki_updates() -> dict:
                 f"* '''[[{sub_page}|{update.get('title', 'Update')}]]''' "
                 f"— {update.get('type', 'update')} — {display_time}"
             )
-            ok2 = fandom_auth.append_to_page(
+            log_success = fandom_auth.append_to_page(
                 session,
                 AGENT_LOG_PAGE,
                 log_entry,
@@ -225,14 +253,14 @@ def run_wiki_updates() -> dict:
                 f"detected on {display_time}. "
                 f"Type: {update.get('type', 'update')}.\n"
             )
-            ok3 = fandom_auth.append_to_page(
+            main_success = fandom_auth.append_to_page(
                 session,
                 MAIN_WIKI_PAGE,
                 latest_entry,
                 "GK BRAIN: latest update",
             )
 
-            if ok and ok2 and ok3:
+            if sub_success and log_success and main_success:
                 update["wiki_done"] = True
                 success_count += 1
                 logger.info("Updated wiki for: %s", update.get("title"))
@@ -243,6 +271,7 @@ def run_wiki_updates() -> dict:
             logger.error(
                 "Error processing update '%s': %s", update.get("title"), exc
             )
+            _log_error(f"run_wiki_updates: {update.get('title', 'unknown')}", str(exc))
             failed_count += 1
 
         # Polite rate limit between update entries.

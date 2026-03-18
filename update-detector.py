@@ -27,14 +27,12 @@ SNAPSHOT_FILE = os.path.join(os.path.dirname(__file__), "crawl-snapshot.json")
 # ---------------------------------------------------------------------------
 
 _RAVE_KEYWORDS = re.compile(
-    r"\b(drum.?bass|dnb|rave|jungle|techno|dj set|club night|fabric|xoyo|"
-    r"egg london|fold|printworks|ticket|lineup|set time)\b",
+    r"\b(drum.?bass|dnb|rave|jungle|techno|dj.?set|club|lineup|festival|tickets|skiddle|ticketmaster|resident.?advisor)\b",
     re.IGNORECASE,
 )
 
 _NEWS_KEYWORDS = re.compile(
-    r"\b(bitcoin|crypto|nft|blockchain|moonboys|graffpunks|web3|"
-    r"eth|solana|token|mint|drop|floor price)\b",
+    r"\b(bitcoin|crypto|nft|blockchain|moonboys|graffpunks|hodl|defi|token|altcoin|eth|solana)\b",
     re.IGNORECASE,
 )
 

@@ -162,7 +162,17 @@ CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
 GROK_API_BASE = "https://api.x.ai/v1"
+
+# ── Model config ──
 GROK_TEXT_MODEL = os.environ.get("GROK_TEXT_MODEL", "grok-3-latest")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
+
+# ── Retry / timeout config ──
+GROK_CHAT_MAX_ATTEMPTS = 3
+GROK_CHAT_TIMEOUT_SEC  = 60
+GROK_CHAT_BACKOFF_BASE = 2
+GROK_IMAGE_TIMEOUT_SEC = 90
 
 # Minimum delay (seconds) between consecutive Fandom/MediaWiki API write calls.
 # Configurable via WIKI_API_DELAY env var (default 1.0).
@@ -188,6 +198,8 @@ LORE_PLANNER_FILE = os.path.join(BASE_DIR, "lore-planner.md")
 QUEUE_FILE = os.path.join(BASE_DIR, "wiki-update-queue.json")
 SNAPSHOT_FILE = os.path.join(BASE_DIR, "crawl-snapshot.json")
 GENESIS_LORE_FILE = os.path.join(BASE_DIR, "genesis-lore.md")
+BRAIN1_CANON_FILE = os.path.join(BASE_DIR, "brain1-canon.json")
+BRAIN2_LORE_FILE  = os.path.join(BASE_DIR, "brain2-lore-history.json")
 
 # Reference art images (2 boys sets + 2 girls sets)
 _ASSETS_DIR = os.path.join(BASE_DIR, "assets", "layers")
@@ -629,7 +641,35 @@ def _grok_chat(messages: list, model: str = GROK_TEXT_MODEL) -> str:
     raise last_exc
 
 
-def _detect_character_gender(lore_text: str) -> str:
+def _llm_chat(messages: list) -> str:
+    """
+    Route text generation to Claude 3.5 Sonnet when ANTHROPIC_API_KEY is set;
+    falls back to Grok otherwise.
+    """
+    if ANTHROPIC_API_KEY:
+        try:
+            import anthropic as _anthropic
+            client = _anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            # Convert OpenAI-style messages to Anthropic format
+            system_parts = [m["content"] for m in messages if m.get("role") == "system"]
+            user_messages = [m for m in messages if m.get("role") != "system"]
+            system_text = "\n\n".join(system_parts) if system_parts else None
+            anthropic_msgs = [
+                {"role": m["role"], "content": m["content"]}
+                for m in user_messages
+            ]
+            kwargs: dict = {
+                "model": ANTHROPIC_MODEL,
+                "max_tokens": 4000,
+                "messages": anthropic_msgs,
+            }
+            if system_text:
+                kwargs["system"] = system_text
+            response = client.messages.create(**kwargs)
+            return response.content[0].text.strip()
+        except Exception as exc:
+            print(f"[llm-chat] Claude failed ({exc}), falling back to Grok.")
+    return _grok_chat(messages)
     """
     Inspect lore text and return 'female' when a female character is clearly the
     focus; otherwise return 'male'.
@@ -896,6 +936,7 @@ def generate_lore_pair(
     weather: str,
     substack_context: str,
     godlike_context: str = "",
+    brain1_signal: list | None = None,
 ) -> tuple:
     """
     Generate two lore posts (text + image prompt) using Grok.
@@ -1009,6 +1050,17 @@ def generate_lore_pair(
         + (f"GODLIKE SYSTEM CONTEXT:\n{godlike_context[:2000]}\n\n" if godlike_context else "")
         + (f"UPDATE CONTEXT:\n{update_context}\n\n" if update_context else "")
         + (f"RADIO ALERT TO USE:\n{radio_alert}\n\n" if radio_alert else "")
+        + (
+            "BRAIN1 CREATIVE SIGNAL (inject ~20% creative influence — weave one of these "
+            "into Post 1 or Post 2 as a subtle narrative thread):\n"
+            + "\n".join(
+                f"- {s.get('title', '')}: {s.get('content', '')[:200]}"
+                for s in (brain1_signal or [])[:3]
+            )
+            + "\n\n"
+            if brain1_signal
+            else ""
+        )
         + "INSTRUCTIONS:\n"
         "Generate TWO lore posts (Post 1 and Post 2) as a continuous narrative "
         "that will be split across 2 Telegram messages.\n"
@@ -1045,7 +1097,7 @@ def generate_lore_pair(
         {"role": "user", "content": user_prompt},
     ]
 
-    raw = _grok_chat(messages)
+    raw = _llm_chat(messages)
 
     # Parse the four sections
     def _extract(label, text):
@@ -1082,6 +1134,63 @@ def generate_lore_pair(
 
 
 # ---------------------------------------------------------------------------
+# Brain1 canon signal helpers
+# ---------------------------------------------------------------------------
+
+def load_brain1_signal() -> list:
+    """Load unused Brain1 updates from brain1-canon.json."""
+    try:
+        with open(BRAIN1_CANON_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        return [u for u in data.get("updates", []) if not u.get("b2_used")]
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def mark_brain1_updates_used(updates: list) -> None:
+    """Mark a list of Brain1 updates as used and persist."""
+    if not updates:
+        return
+    try:
+        with open(BRAIN1_CANON_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        data = {"updates": [], "character_facts": {}, "web_discoveries": []}
+
+    used_ids = {id(u) for u in updates}
+    for existing in data.get("updates", []):
+        for u in updates:
+            if (
+                existing.get("title") == u.get("title")
+                and existing.get("timestamp") == u.get("timestamp")
+            ):
+                existing["b2_used"] = True
+
+    try:
+        with open(BRAIN1_CANON_FILE, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=2)
+    except OSError as exc:
+        print(f"[brain1] Failed to persist used flags: {exc}")
+
+
+def save_brain1_update(update: dict) -> None:
+    """Append a new update to brain1-canon.json."""
+    try:
+        with open(BRAIN1_CANON_FILE, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        data = {"updates": [], "character_facts": {}, "web_discoveries": []}
+
+    data.setdefault("updates", []).append(update)
+
+    try:
+        with open(BRAIN1_CANON_FILE, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=2)
+    except OSError as exc:
+        print(f"[brain1] Failed to save update: {exc}")
+
+
+# ---------------------------------------------------------------------------
 # Lore history tracking
 # ---------------------------------------------------------------------------
 
@@ -1094,8 +1203,8 @@ def save_lore_history(post1: str, post2: str) -> None:
 
     new_entry = separator + post1 + "\n\n" + post2
 
-    # Keep last ~20,000 characters (roughly 7 days of history)
-    combined = (existing + new_entry)[-20000:]
+    # Keep last ~40,000 characters (roughly 14 days of history)
+    combined = (existing + new_entry)[-40000:]
 
     try:
         with open(LORE_HISTORY_FILE, "w", encoding="utf-8") as fh:
@@ -1582,6 +1691,14 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 def main() -> None:
     print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
 
+    # -- Fast-fail if required env vars are missing --
+    _REQUIRED_ENV = ["GROK_API_KEY", "TELEGRAM_BOT_TOKEN"]
+    _missing = [v for v in _REQUIRED_ENV if not os.environ.get(v)]
+    if _missing:
+        raise EnvironmentError(
+            f"[gk-brain] Missing required environment variables: {', '.join(_missing)}"
+        )
+
     # -- Initialise execution reporter --
     reporter = None
     if ExecutionReporter is not None:
@@ -1649,6 +1766,11 @@ def main() -> None:
     # -- Godlike: Run all 55 systems to enrich the prompt context --
     godlike_context = _run_godlike_systems(unused_updates, rule_ctx, lore_history)
 
+    # -- Load Brain1 creative signal --
+    brain1_signal = load_brain1_signal()
+    if brain1_signal:
+        print(f"[gk-brain] Brain1 signal loaded: {len(brain1_signal)} unused update(s).")
+
     # -- Step 8: Generate lore (50-fail graceful degradation) --
     print("[gk-brain] Generating lore pair...")
     lore_fail_counter = 0
@@ -1666,6 +1788,7 @@ def main() -> None:
                 weather=weather,
                 substack_context=substack_context,
                 godlike_context=godlike_context,
+                brain1_signal=brain1_signal,
             )
             best_lore_data = (lore1, image_prompt1, lore2, image_prompt2)
             break
@@ -1809,21 +1932,9 @@ def main() -> None:
     # -- Step 11: Save lore history --
     save_lore_history(lore1, lore2)
 
-    # Always queue a lore-post wiki entry so the wiki gets updated every cycle
-    _now_dt = datetime.datetime.now(datetime.UTC)
-    _now_iso = _now_dt.isoformat().replace("+00:00", "Z")
-    lore_post_update = {
-        "type": "lore-post",
-        "source": "gk-brain-agent",
-        "title": f"GK BRAIN Lore Post — {_now_dt.strftime('%d %b %Y %H:%M')} UTC",
-        "content": (lore1[:400] + "\n\n---\n\n" + lore2[:400]).strip(),
-        "timestamp": _now_iso,
-        "used": True,
-        "wiki_update": True,
-        "wiki_done": False,
-        "lore_weight": 0.0,
-    }
-    add_to_queue([lore_post_update])
+    # Mark Brain1 signal updates as used after successful post
+    if brain1_signal and telegram_info.get("msg1_status") == "success":
+        mark_brain1_updates_used(brain1_signal)
 
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:
