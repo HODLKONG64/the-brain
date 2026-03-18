@@ -130,7 +130,7 @@ def content_hash(text: str) -> str:
 
 
 def get_login_token(session: requests.Session) -> str:
-    """Fetch the ``logintoken`` needed for the first step of clientlogin."""
+    """Fetch the ``logintoken`` needed for the ``action=login`` call."""
     resp = _api_call_with_retry(
         session.get,
         WIKI_API,
@@ -147,10 +147,10 @@ def get_login_token(session: requests.Session) -> str:
 
 def login(session: requests.Session) -> bool:
     """
-    Perform a two-step Fandom/MediaWiki clientlogin.
+    Perform a two-step Fandom/MediaWiki bot login.
 
     Step 1: GET ``action=query&meta=tokens&type=login`` → ``logintoken``
-    Step 2: POST ``action=clientlogin`` with the token and credentials.
+    Step 2: POST ``action=login`` with ``lgname``, ``lgpassword``, ``lgtoken``.
 
     Returns True on success, False otherwise.
     """
@@ -169,13 +169,10 @@ def login(session: requests.Session) -> bool:
             session.post,
             WIKI_API,
             data={
-                "action": "clientlogin",
-                "loginmessageformat": "none",
-                "username": FANDOM_USERNAME,
-                "password": FANDOM_PASSWORD,
-                "logintoken": lgtoken,
-                "loginreturnurl": WIKI_BASE,
-                "rememberMe": "1",
+                "action": "login",
+                "lgname": FANDOM_USERNAME,
+                "lgpassword": FANDOM_PASSWORD,
+                "lgtoken": lgtoken,
                 "format": "json",
             },
         )
@@ -185,12 +182,12 @@ def login(session: requests.Session) -> bool:
         logger.error("Login POST failed: %s", exc)
         return False
 
-    status = result.get("clientlogin", {}).get("status", "")
-    if status == "PASS":
+    login_result = result.get("login", {}).get("result", "")
+    if login_result == "Success":
         logger.info("Logged in to Fandom as %s", FANDOM_USERNAME)
         return True
 
-    logger.error("Fandom login failed (status=%s): %s", status, result)
+    logger.error("Fandom login failed: %s", result)
     return False
 
 
