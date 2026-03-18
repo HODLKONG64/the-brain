@@ -14,7 +14,7 @@ concurrency:
 jobs:
   gk-brain:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 35
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
