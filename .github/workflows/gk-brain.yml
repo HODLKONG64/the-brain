@@ -14,11 +14,11 @@ concurrency:
 jobs:
   gk-brain:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+      GROK_TEXT_MODEL: ${{ secrets.GROK_TEXT_MODEL || 'grok-3-latest' }}
       CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
       MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
       FANDOM_BOT_USER: ${{ secrets.FANDOM_BOT_USER }}
