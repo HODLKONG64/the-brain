@@ -29,6 +29,8 @@ import re
 import time
 from datetime import timezone
 
+import requests
+
 import fandom_auth
 
 # ---------------------------------------------------------------------------
