@@ -16,6 +16,8 @@ Required secrets (env vars):
 
 import argparse
 import json
+import os
+import sys
 
 import importlib.util as _ilu
 import pathlib as _pl
