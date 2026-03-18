@@ -153,46 +153,50 @@ These rules define the foundational lore the agent must know when generating pos
 
 ---
 
-## DUAL BRAIN ARCHITECTURE RULES (DB-1 — DB-13)
+## DUAL BRAIN RULES
 
-### DB-1 — Wiki Separation
-Brain 3 (gk-brain.py) MUST NOT queue its own Telegram lore posts to the wiki queue. Only real-world updates detected by crawl-brain or analytics-brain belong in the wiki. The wiki reflects external facts, not internal lore posts.
+DB-1: BRAIN 1 is the Online Canon Brain. It crawls the web every 2 hours,
+      learns from all website updates, and is the ONLY brain permitted to
+      push data to the Fandom wiki. It stores knowledge in brain1-canon.json
+      (rolling 200-entry log, crunched compact).
 
-### DB-2 — 20% Creative Signal Rule
-Brain1 canon signals (brain1-canon.json) may influence at most 20% of any lore post. The remaining 80% must come from calendar rules, character continuity, and the time block. A brain1 signal is a seed, not a script.
+DB-2: BRAIN 2 is the Telegram Lore Brain. It is a creative storyteller that
+      uses Brain 1 knowledge as inspiration. It NEVER touches the wiki — not
+      a single word. It stores only the last 7 days of lore posts in
+      brain2-telegram-lore.json for continuity, then forgets the rest.
 
-### DB-3 — 7-Day Signal Vault
-Brain1 canon signals older than 7 days MUST be treated as stale and ignored by the lore generator. Stale signals must not be marked used — they remain in the vault for potential archival review.
+DB-3: BRAIN 2 reads new updates from BRAIN 1 (entries where b2_used=False)
+      every 2-hour cycle. It crunches each update to a 60-char signal. It
+      uses this signal at 20% influence in the Telegram lore — creatively,
+      never as a direct announcement. After posting, BRAIN 1 entries are
+      marked b2_used=True. BRAIN 2 never stores the raw update data itself.
 
-### DB-4 — Signal Lifecycle
-A brain1 signal progresses through three states:
-1. **Unread** — `b2_used: false`, available for injection
-2. **Used** — `b2_used: true`, set only after a confirmed successful Telegram post
-3. **Stale** — older than 7 days, silently skipped without marking as used
+DB-4: BRAIN 2 lore NEVER goes to the wiki. Not a word. Only BRAIN 1 → wiki.
 
-### DB-5 — Post 2 Image Cue
-Post 2 is always sent WITH an image. The image prompt for Post 2 must visually reference at least one concrete scene element from the Post 2 lore text (not a generic GraffPunks fallback). If image generation fails, Post 2 falls back to plain text — but the image prompt must still be generated.
+DB-5: BRAIN 2 resets every Sunday at midnight UTC (7-day lore vault wipes).
 
-### DB-6 — Brain Isolation
-Each of the 4 brains (crawl, analytics, gk, wiki) runs as an independent process. They communicate ONLY via the inter-brain JSON files listed in BRAIN-COORDINATOR.md. No brain may import functions from another brain's primary module.
+DB-6: The 20% Rule: When a Brain 1 signal is present, maximum 20% of the
+      Telegram lore may reflect it. 80% must be pure calendar-driven
+      storytelling. The community FEELS the update woven into the world —
+      they are NOT told about it like a press release.
 
-### DB-7 — Wiki Brain Gatekeeper
-wiki-brain.py MUST run a credential health check (`wiki_brain_health_check()`) before making any write calls. If credentials are missing or login fails, all wiki writes for that cycle are skipped — never retried in the same run.
+DB-7: Both brains save all data crunched as small as possible (compact JSON,
+      no whitespace, summaries capped at 60 chars).
 
-### DB-8 — Crawl Deduplication
-crawl-brain.py MUST use content fingerprinting (MD5 of title + snippet) to deduplicate new crawl results before writing to crawl-results.json. A result with an existing fingerprint MUST be silently discarded.
+DB-8: Brain 1 rolling log is capped at 200 entries. Oldest entries are
+      dropped first when the cap is reached.
 
-### DB-9 — Lore History Retention
-The lore-history.md buffer retains the last 40,000 characters (~14 days of posts). Older content is trimmed automatically by save_lore_history(). This ensures the lore generator always has 2 weeks of continuity context.
+DB-9: Brain 2's 7-day lore vault (brain2-telegram-lore.json) stores only
+      the lore posts themselves — not the source update data from Brain 1.
 
-### DB-10 — Env Fast-Fail
-gk-brain.py MUST raise EnvironmentError immediately at the start of main() if GROK_API_KEY or TELEGRAM_BOT_TOKEN are not set. No partial execution is allowed without these two credentials.
+DB-10: The raw Brain 1 signal data is used live in lore generation and then
+       forgotten by Brain 2. The fact that it was consumed is recorded in
+       Brain 1 via b2_used=True. Brain 2 learns about it only through the
+       lore it created — visible in the 7-day vault for continuity.
 
-### DB-11 — Claude Routing
-When ANTHROPIC_API_KEY is set, all primary lore text generation routes through Claude 3.5 Sonnet via _llm_chat(). Grok is used as the fallback. Image generation always uses Grok regardless of ANTHROPIC_API_KEY.
+DB-11: The image for Post 2 (Telegram image) must subtly reflect the Brain 1
+       signal when one is present — as a background detail, colour shift, or
+       symbolic object. Not the main focus.
 
-### DB-12 — Telegram Rate Guard
-A mandatory time.sleep(2) MUST be called between posting Message 1 and Message 2 in every Telegram posting loop. This guards against Telegram's per-bot rate limits for rapid sequential messages to the same chat.
-
-### DB-13 — Image Memory-Only Policy
-Generated images MUST NEVER be written to disk. Images are produced in memory as bytes, streamed directly to Telegram via multipart upload (_telegram_send_photo()), and then discarded. No image file (PNG, JPG, or any binary) may be persisted to the repository, local filesystem, or any storage layer. Execution reports may log image metadata (size in KB, prompt text, status) but MUST NOT store raw image bytes.
+DB-12: If there are no new Brain 1 updates (all b2_used=True), the lore is
+       100% calendar-driven. No signal block is included in the prompt.
