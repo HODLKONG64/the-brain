@@ -200,6 +200,7 @@ SNAPSHOT_FILE = os.path.join(BASE_DIR, "crawl-snapshot.json")
 GENESIS_LORE_FILE = os.path.join(BASE_DIR, "genesis-lore.md")
 BRAIN1_CANON_FILE = os.path.join(BASE_DIR, "brain1-canon.json")
 BRAIN2_LORE_FILE  = os.path.join(BASE_DIR, "brain2-lore-history.json")
+RECOVERY_STATE_FILE = os.path.join(BASE_DIR, "post-recovery-state.json")
 
 # Reference art images (2 boys sets + 2 girls sets)
 _ASSETS_DIR = os.path.join(BASE_DIR, "assets", "layers")
@@ -670,6 +671,9 @@ def _llm_chat(messages: list) -> str:
         except Exception as exc:
             print(f"[llm-chat] Claude failed ({exc}), falling back to Grok.")
     return _grok_chat(messages)
+
+
+def _detect_character_gender(lore_text: str) -> str:
     """
     Inspect lore text and return 'female' when a female character is clearly the
     focus; otherwise return 'male'.
@@ -1263,6 +1267,48 @@ def _calculate_telegram_split(total_lore: str) -> tuple:
     part2 = part2[:_TG_MSG2_MAX]
 
     return part1, part2
+
+
+def _write_recovery_state(
+    cycle_block: dict,
+    rule_ctx: dict,
+    lore1: str,
+    image_prompt1: str,
+    lore2: str,
+    image_prompt2: str,
+    post1_sent: bool,
+    post2_sent: bool,
+    recovery_attempted: bool = False,
+) -> None:
+    """Write a recovery state file so the recovery agent can complete unsent posts."""
+    state = {
+        "failed_at": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
+        "cycle_block": cycle_block,
+        "rule_ctx": rule_ctx,
+        "lore1": lore1,
+        "image_prompt1": image_prompt1,
+        "lore2": lore2,
+        "image_prompt2": image_prompt2,
+        "post1_sent": post1_sent,
+        "post2_sent": post2_sent,
+        "recovery_attempted": recovery_attempted,
+    }
+    try:
+        with open(RECOVERY_STATE_FILE, "w", encoding="utf-8") as fh:
+            json.dump(state, fh, indent=2)
+        print(f"[recovery] Wrote recovery state to {RECOVERY_STATE_FILE}")
+    except Exception as exc:
+        print(f"[recovery] Failed to write recovery state: {exc}")
+
+
+def _delete_recovery_state() -> None:
+    """Remove the recovery state file after both posts have been sent successfully."""
+    try:
+        if os.path.exists(RECOVERY_STATE_FILE):
+            os.remove(RECOVERY_STATE_FILE)
+            print("[recovery] Deleted post-recovery-state.json (both posts succeeded).")
+    except Exception as exc:
+        print(f"[recovery] Failed to delete recovery state: {exc}")
 
 
 def post_to_telegram(lore1, image1, lore2, image2) -> dict:
@@ -1897,6 +1943,23 @@ def main() -> None:
     # -- Step 10: Post to Telegram --
     print("[gk-brain] Posting to Telegram...")
     telegram_info = post_to_telegram(lore1, image1, lore2, image2)
+
+    # Check if both posts succeeded; write or delete recovery state accordingly
+    _post1_ok = telegram_info.get("msg1_status") == "success"
+    _post2_ok = telegram_info.get("msg2_status") == "success"
+    if _post1_ok and _post2_ok:
+        _delete_recovery_state()
+    else:
+        _write_recovery_state(
+            cycle_block=block,
+            rule_ctx=rule_ctx,
+            lore1=lore1,
+            image_prompt1=image_prompt1,
+            lore2=lore2,
+            image_prompt2=image_prompt2,
+            post1_sent=_post1_ok,
+            post2_sent=_post2_ok,
+        )
 
     # Log Telegram posting to reporter
     if reporter is not None and telegram_info:

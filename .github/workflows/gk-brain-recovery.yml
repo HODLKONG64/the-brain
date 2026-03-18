@@ -1,0 +1,47 @@
+name: GK BRAIN - Recovery Agent
+
+on:
+  schedule:
+    - cron: '30 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gk-brain-recovery
+  cancel-in-progress: false
+
+jobs:
+  gk-brain-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+      GROK_TEXT_MODEL: ${{ secrets.GROK_TEXT_MODEL || 'grok-3-latest' }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || '' }}
+      CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
+      MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+      GROK_API_BASE: "https://api.x.ai/v1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run recovery agent
+        run: python gk-brain-recovery.py
+      - name: Commit state changes
+        run: |
+          git config user.name "GK BRAIN Recovery Agent"
+          git config user.email "gk-brain-recovery@users.noreply.github.com"
+          git add -f \
+            post-recovery-state.json \
+            lore-history.md || true
+          git diff --cached --quiet || git commit -m "chore: GK BRAIN recovery state update [skip ci]"
+          git push
+        continue-on-error: true
