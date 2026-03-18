@@ -1,27 +1,32 @@
 name: GK BRAIN - 2 Hour Lore + Replies
 on:
-  schedule:
-    - cron: '0 */2 * * *'
   workflow_dispatch:
+
+concurrency:
+  group: gk-brain
+  cancel-in-progress: false
 
 jobs:
   gk-brain:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+      CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
+      FANDOM_USERNAME: ${{ secrets.FANDOM_USERNAME }}
+      FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
+      FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
+      GROK_API_BASE: "https://api.x.ai/v1"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: pip install -r requirements.txt
       - name: Run GK BRAIN
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
-          CHANNEL_CHAT_IDS: ${{ secrets.CHANNEL_CHAT_IDS }}
-          FANDOM_USERNAME: ${{ secrets.FANDOM_USERNAME }}
-          FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
         run: python gk-brain.py

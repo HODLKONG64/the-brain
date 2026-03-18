@@ -50,9 +50,9 @@ def _check_module(module_filename: str) -> dict:
         ast.parse(source)
         return {"status": "healthy", "error": None}
     except SyntaxError as e:
-        return {"status": "syntax_error", "error": str(e)}
+        return {"status": "syntax_error", "error": f"SyntaxError: {e}"}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": f"{type(e).__name__}: {e}"}
 
 
 def run_health_check(modules: list) -> dict:

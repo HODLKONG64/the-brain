@@ -2,6 +2,8 @@
 crawl-snapshot.json
 crawl-data/
 wiki-update-queue.json
+user-profiles.json
+telegram-offset.json
 
 # Python
 __pycache__/
@@ -37,3 +39,10 @@ Thumbs.db
 
 # Logs
 *.log
+used-updates-registry.json
+anomaly-history.json
+sentiment-history.json
+knowledge-graph.json
+priority-queue.json
+tension-state.json
+universe-state.json
