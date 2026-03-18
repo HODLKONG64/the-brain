@@ -1,127 +1,380 @@
-# THE BRAIN — GK BRAIN AGENT (Full Documentation)
+# GK BRAIN — System Documentation
 
-This repository runs the **GK BRAIN** — an autonomous Telegram posting agent that generates the infinite Crypto Moonboys lore saga 24/7.
+---
 
-> 📖 **Want the full in-depth explanation?** Read **[AGENT-EXPLAINER.md](./AGENT-EXPLAINER.md)** — a complete technical and conceptual deep-dive into exactly what this bot does and how every part of it works (infrastructure, AI prompting, art rules, variation system, commands, memory, and more).
+## 1. What is GK BRAIN
 
-## AGENT KEY ROLES
-- Live 24/7 mind-log narrator of a real-feeling UK graffiti artist/DJ/parkour climber/fisherman/entrepreneur.
-- Maintains perfect 7-day awake continuity using lore-history.md.
-- Crawls Substack first every run for official canon updates and overrides anything conflicting.
-- Generates exactly 2 back-to-back lore posts every 2 hours (on the hour) with images.
-- Handles Telegram user replies (max 20 per user per 24h, only on relevant Moonboys/GK topics).
-- Enforces perfect character consistency using Layer 1 + Layer 2 + future layers.
-- Updates its own memory (Crypto Moonboys bank/brain) instantly when new official data appears.
+**GK BRAIN** is a fully autonomous AI agent system for the **Crypto Moonboys / GKniftyHEADS NFT universe**. It wakes up every 2 hours via GitHub Actions, generates two consecutive lore posts in the first-person voice of GK (a UK graffiti artist, DJ, parkour runner, carp fisherman, and web3 entrepreneur), posts them to Telegram channels, and pushes real-world canon updates to the [GKniftyHEADS Fandom wiki](https://gkniftyheads.fandom.com). It is entirely self-hosted on GitHub Actions with no external servers — once deployed it runs forever with zero human input.
 
-## EVERY ACTION THE AGENT TAKES EVERY 2 HOURS (exact sequence)
-1. Crawls https://substack.com/@graffpunks/posts FIRST for new content/images.
-2. Checks all locked links for updates.
-3. Loads gk-brain-complete.md + character-bible.md + MASTER-CHARACTER-CANON.md + lore-history.md.
-4. Generates 2 back-to-back lore posts (maximum length + image prompts).
-5. Appends new posts to lore-history.md for 7-day continuity.
-6. Posts both to the Telegram channel.
-7. Saves reply-tracker.json.
-8. Logs run summary.
+---
 
-## ALL BRAIN LORE DETAILS (100% from final files — key backup)
-- **Core Identity**: Live 24/7 thoughts of one UK graffiti artist/DJ/parkour/solo climber/carp fisherman/entrepreneur building Crypto Moonboys NFT project. Every post starts with exact UTC time and log entry number.
-- **Posting Schedule**: 2 posts every 2 hours (back-to-back pair on the hour). Post 1 = max-length text + 1 image. Post 2 = direct continuation + 1 image.
-- **Weekly Routine**: Monday 6am repeating dream, Tuesday 10pm VX T4 van tour, Wednesday return, Thursday heavy writing, Friday rave/DJ set, **Sat/Sun mix of painting + raving + fishing + early sleep**. 12pm UTC daily character fame switch.
-- **Dream Rules**: Thursday night = unique Lady-INK world train painting adventure (MR-D2). All other nights = unique Crypto Moonboys dreams (1-2 characters rotating, no repeat pairings — MR-D3/MR-D4). Monday 6am = repeating unfinished mural chase wake-up (MR-D5). 80% dreams unique fantasy (MR-D6). Wakes directly into 7-day awake continuity (MR-A5).
-- **Crypto Moonboys 3 Meanings** (locked): 1. Real-world saga project. 2. Bald-headed moonboys from Blocktopia (any bonnet, Hardfork winners → HODL X Warriors with Crowned Royal Moongirl). 3. Every character in the whole NFT web3 lore saga.
-- **Blocktopia & Factions**: Pre-war = no factions, just workers needed for city to run. Post-war = 40 GK Factions (outside rebellion) unify into Hash-Guilds. Inside = older Bitcoin Kids born with freedom.
-- **Hardfork Games**: 3 stages (Parkour Gauntlet, Spray Cipher, Final Hardfork). Winners = HODL X Warriors, collect as many bonnets as wanted (unique powers), marry Crowned Royal Moongirl.
-- **Bitcoin X Kids**: 3 paths (Space Programme, City Worker, Escape). Most escapees regret it.
-- **OG Bitcoin Kids**: First generation who escaped — many now regret it.
-- **Bald-headed Moonboys**: Inside (older Bitcoin Kids born in city) = wear any bonnet from birth. Outside (40 wannabe faction members) = forced to wear one clan bonnet until they win.
-- **Lady-INK Rules**: Only appears when artist is going out to spray (meets hours before). All 25 detailed storylines locked + expanded.
-- **Random Daily Moments**: Full expanded list (burnt toast, parkour slips, fishing bites, Greggs runs, London delays, seasonal/holiday variations) mixed every day.
-- **Awake vs Dream Modes**: The agent always determines the current post mode from the real UTC time/day before generating. AWAKE = real-time daily life, news, weather, feelings (MR-A1 to MR-A5). DREAM = night-time only, type depends on day (MR-D1 to MR-D6). Mode is injected into every prompt via `get_post_mode()` in `gk-brain.py`.
-- **7-Day Awake Continuity**: Agent always continues directly from last 7 days of awake events stored in lore-history.md.
-- **Telegram Rules**: Max 20 replies per user per 24h. Only replies on Moonboys/GK narrative topics or requests to extend lore. Hidden keyword trigger system — first fail = "sorry please say the magic words", second fail = 💩 emoji. After 2 keyword fails per day, silence until midnight reset. Text-only replies, links allowed, no images.
-- **Art Creation Rule (AC-1–AC-14 + BF-1–BF-5 + UF-0–UF-12)**: Before every image, the agent crawls official links for a page solely dedicated to the current character. Locks in head + bonnet as one visual unit with **96% shape fidelity** (4% creative zone for minor details only). All 3D bonnet elements named explicitly in prompt. Clothing always the main faction uniform unless a Uniform Exception Trigger (UF-1–UF-8) is active in the lore. Adds a random face expression matching the lore mood. If no dedicated page exists, uses Layer 1 + Layer 2 base templates. No-bonnet fallback (BF-3) creates a unique bonnet from existing character inspirations. Every image prompt starts with the mandatory prefix. New dedicated pages logged in `lore-history.md`.
-- **6-Hour Fame Cycle (FC-1–FC-6)**: Every 6 hours (UTC), 1–3 characters get a fame run in 3 consecutive posts. Only inside 2 daily lore windows: WINDOW 1 = awake at home writing; WINDOW 2 = asleep dreaming. All characters rotate fairly; tracked in lore-history.md.
-- **25 Lady-INK Thursday Dream Library**: 25 unique Thursday night train-painting adventures — Orient Express, Trans-Siberian, Shinkansen, etc. After all 25 used, new dreams are inspired by the last 25.
-- **Day Randomisation**: Each day randomly assigned: STRICT ROUTINE, MULTI-RANDOM, or SINGLE-FOCUS. Weekly anchors never overridden.
-- **Sensory Details (MR-A6)**: Every awake post includes at least one raw sensory detail (paint smell, cold van, burnt toast, river mud).
-- **Live GraffPunks Alerts (MR-A7)**: Regular alert interruptions in awake posts (new drops, Substack, NFT news).
-- **30% Out-of-Home Thought Moments (MR-A8)**: 30% of out-of-home posts include a flash thought or conversation about the Moonboys project.
-- **Character Art Training (Layers)**: Layer 1 = upper body base (rounded yellow head/torso). Layer 2 = GraffPUNKS bonnet (exact eagle beak centre, eagle birds each side, white feathers above eyes, green hair pulled through, yellow leather, ears out sides). All future layers added on top. 100% shape fidelity enforced.
-- **Adaptive Rule**: Any new official Substack data = scrap old agent-made content instantly.
-- **Image Generation**: Every post includes detailed Grok Imagine prompt using Substack style + uploaded layers + exact bonnet/head shape.
+## 2. System Architecture
 
-## FILE STRUCTURE & PURPOSE
-- `gk-brain-complete.md` → All core rules, routines, dreams, continuity, 3 meanings, etc. (merged complete brain rules file loaded by the agent).
-- `character-bible.md` → Character consistency, art layers, image prompt template.
-- `MASTER-CHARACTER-CANON.md` → Complete Crypto Moonboys universe character index (all tiers, factions, timeline). Loaded every run — agent auto-uses any updated canon data going forward.
-- `DEEP-DIVE-AUDIT-REPORT.md` → **Comprehensive 10-section audit** of all GitHub files + all linked platforms (GKniftyHEADS Wiki, GraffPunks Substack, Medium, GraffPunks.live, collaborator sites). Last updated: March 18, 2026.
-- `genesis-lore.md` → 3,700+ word Block Topia genesis seed narrative (all 55 AI systems initialise from this foundation).
-- `gk-brain.py` → The actual agent code (loads files, generates posts, posts to Telegram).
-- `.github/workflows/gk-brain.yml` → GitHub Actions workflow (runs every 2 hours + manual trigger).
-- `lore-history.md` → Stores every post ever made for 7-day continuity.
-- `lore-planner.md` → 7-day repeating calendar with 2-hour UTC slot breakdown. Agent uses matching slot as context seed each run.
-- `reply-tracker.json` → Tracks Telegram reply limits per user (count, date, failed_attempts).
-- `bot-state.json` → Persists the last processed Telegram update_id so commands are never replayed.
-- `AGENT-EXPLAINER.md` → Full in-depth technical and conceptual explanation of the entire system (20 sections, ~50KB).
+### 4-Brain Pipeline
 
-## TELEGRAM COMMANDS
-All commands are registered with BotFather on every run and processed at the start of each 2-hour run.
-Slash commands bypass the keyword trigger gate and do NOT count against the 20/day reply limit.
+```
+Every 2 hours (cron: '0 */2 * * *')
+──────────────────────────────────────────────────────────────────
+ Brain 1  crawl-brain.py          Web crawl & content detection
+              │ writes: crawl-results.json, crawl-fingerprints.json
+              ▼
+ Brain 2  analytics-brain.py      Analytics & recommendations
+              │ writes: recommendations.json
+              │         reports/analytics-report-YYYY-MM-DD.json
+              ▼
+ Brain 3  gk-brain.py             Lore generation + Telegram posts
+              │ reads:  crawl-results.json, recommendations.json
+              │ writes: wiki-update-queue.json, lore-history.md,
+              │         bot-state.json, reply-tracker.json,
+              │         brain1-canon.json, engagement-tracker.json
+              ▼
+ Brain 4  wiki-brain.py           Fandom wiki push
+              │ reads:  wiki-update-queue.json
+              │ pushes: gkniftyheads.fandom.com via MediaWiki API
+              ▼
+         master-backup-agent.py   SHA-256 snapshots + rule-conflict check
+──────────────────────────────────────────────────────────────────
+ Then: commit all state files back to main  [skip ci]
+       upload execution report artifact (14 day retention)
+       Telegram failure alert if any brain failed
+```
 
-| Command | What it does |
+### Workflow Schedule
+
+| Field | Value |
 |---|---|
-| `/start` | Welcome message + quick-start guide |
-| `/help` | Full list of all commands |
-| `/lore` | Show the latest lore post |
-| `/status` | Brain status: active fame slot, awake/dream mode, UTC time |
-| `/whosnext` | Characters starring in the next 6-hour fame slot |
-| `/characters` | Full character list from the Eternal Codex |
-| `/factions` | All factions with brief descriptions |
-| `/hardfork` | The Hardfork Games: 3 stages, rules, prize |
-| `/links` | All official GraffPunks links |
-| `/expand` | Continue the last lore post (200–300 words, AI-generated) |
-| `/about [name]` | Eternal Codex bio for any character — e.g. `/about LadyINK` |
-| `/artrule` | The locked art creation rule + mandatory image prompt prefix |
+| File | `.github/workflows/gk-brain.yml` |
+| Cron | `0 */2 * * *` (every 2 hours on the hour) |
+| Manual trigger | `workflow_dispatch` |
+| Max runtime | 35 minutes |
+| All brain steps | `continue-on-error: true` |
 
-## HOW TO RUN / TEST
-1. Commit all files.
-2. Go to Actions tab → “GK BRAIN - 2 Hour Lore + Replies” → Run workflow.
-3. First run creates lore-history.md automatically.
-4. Posts appear in your Telegram channel within 30 seconds.
+---
 
-## BACKUP NOTES (everything from final files)
-- Substack crawl is priority #1.
-- All 25 Lady-INK storylines + full random moments + 7-day continuity + dream rotation locked.
-- Bonnet shape 100% fixed (Layer 2) — no changes allowed.
-- Agent automatically updates memory on any new official data.
-- This README contains every key detail from all final files as permanent backup.
+## 3. Quick Start
 
-**The GK BRAIN is now fully operational and self-updating.**
+### Required Secrets (GitHub → Settings → Secrets → Actions)
 
-## OFFICIAL LINKS — EXTERNAL CANON SOURCES
+| Secret | Purpose |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | Bot token from BotFather |
+| `GROK_API_KEY` | xAI API key (image generation + text fallback) |
+| `ANTHROPIC_API_KEY` | Claude 3.5 Sonnet key (primary text generation) |
+| `CHANNEL_CHAT_IDS` | Comma-separated Telegram chat IDs to post to |
+| `MESSAGE_THREAD_ID` | Optional: Telegram topic thread ID |
+| `FANDOM_BOT_USER` | Fandom bot account username |
+| `FANDOM_BOT_PASSWORD` | Fandom bot account password |
+| `FANDOM_WIKI_URL` | Wiki base URL, no trailing slash (e.g. `https://gkniftyheads.fandom.com`) |
+| `OPENAI_API_KEY` | Optional fallback |
+| `GROK_TEXT_MODEL` | Optional: Grok model override (default: `grok-3-latest`) |
 
-The agent checks these sources every 2 hours. They are the **official sources of truth** for all lore updates.
+### How to Trigger Manually
 
-### GraffPunks & Crypto Moonboys
-- **Substack (primary canon):** https://substack.com/@graffpunks/posts
-- **GraffPunks Live:** https://graffpunks.live/
-- **GKniftyHEADS Website:** https://gkniftyheads.com/
-- **GKniftyHEADS Wiki (character canon):** https://gkniftyheads.fandom.com/
-- **Graffiti Kings:** https://graffitikings.co.uk/
-- **YouTube:** https://www.youtube.com/@GKniftyHEADS
-- **Medium (@GKniftyHEADS):** https://medium.com/@GKniftyHEADS
-- **X/Twitter:** https://x.com/GraffPunks
+1. Go to **Actions → GK BRAIN - 4 Brain System (2 Hour Cycle)**
+2. Click **Run workflow → Run workflow**
+3. Watch the 5 brain steps complete in ~30–45 minutes
+4. Posts appear in your Telegram channel within the first few minutes
 
-### MASTER CHARACTER CANON
-> 📋 **Complete universe character index:** See **[MASTER-CHARACTER-CANON.md](./MASTER-CHARACTER-CANON.md)** — all tiers, all 40 factions, full timeline (1980s–Year 3030), real-world collaborators, publication roadmap, and cross-reference matrix. **Loaded every run — agent auto-uses any updated canon data going forward.**
+### LLM Routing
 
-### Character Groups Wiki Pages (GKniftyHEADS Fandom)
-- GraffPUNKS: https://gkniftyheads.fandom.com/wiki/GraffPUNKS
-- HODL Warriors: https://gkniftyheads.fandom.com/wiki/HODL_WARRIORS
-- Crypto Moonboys: https://gkniftyheads.fandom.com/wiki/CRYPTO_MOONBOYS
-- Gasless Ghosts & NULL The Prophet: https://gkniftyheads.fandom.com/wiki/Gasless_Ghosts_%26_NULL_The_Prophet
-- Block Topia: https://gkniftyheads.fandom.com/wiki/Block_Topia
-- Sacred Chain: https://gkniftyheads.fandom.com/wiki/Sacred_Chain
-- Aether Chain: https://gkniftyheads.fandom.com/wiki/Aether_Chain
+| Task | Primary | Fallback |
+|---|---|---|
+| Lore text generation | Claude 3.5 Sonnet (`ANTHROPIC_API_KEY`) | Grok (`GROK_API_KEY`) |
+| Image generation | Grok (`GROK_API_KEY`) | None |
 
-Last updated: March 18, 2026
+---
+
+## 4. File Map
+
+### Python Scripts
+
+| File | Role |
+|---|---|
+| `crawl-brain.py` | Brain 1 — HTTP crawls all URLs in `gkandcryptomoonboywebsitestosave.md`; MD5 deduplicates results |
+| `analytics-brain.py` | Brain 2 — Analyses post engagement, writes `recommendations.json` and analytics reports |
+| `gk-brain.py` | Brain 3 — Core lore engine: loads rules, generates lore, posts to Telegram, queues wiki updates |
+| `wiki-brain.py` | Brain 4 — Reads `wiki-update-queue.json`, authenticates with Fandom, pushes MediaWiki edits |
+| `master-backup-agent.py` | Final step — SHA-256 manifest of all files, rule-conflict detection |
+| `fandom_auth.py` | Fandom MediaWiki `clientlogin` auth helper (used by wiki-brain.py) |
+| `update-detector.py` | Detects new content from crawled URLs using `URLS_BY_CATEGORY` |
+| `execution-reporter.py` | Generates `execution-report-YYYY-MM-DD-HHMMSS.json` after lore runs |
+| `data-validator.py` | Validates JSON state files |
+| `wiki-smart-merger.py` | Merges incoming wiki content with existing pages |
+| `wiki-cross-checker.py` | Cross-checks wiki content for consistency |
+| `wiki-updater.py` | Low-level MediaWiki page writer |
+| `wiki-formatter.py` | Formats lore content into MediaWiki markup |
+| `wiki-page-builder.py` | Assembles full wiki pages from sections |
+| `wiki-citation-checker.py` | Validates source citations on wiki pages |
+| `dialogue-generator.py` | Generates character dialogue for lore posts |
+| `sentiment-analyzer.py` | Analyses sentiment of lore posts |
+| `web-lore-agent.py` | Fetches and processes web lore sources |
+| `gk-brain-recovery.py` | Recovery/debug runner for Brain 3 |
+| `performance-metrics-system.py` | Tracks performance metrics |
+| `predictive-trend-engine.py` | Predicts trending topics for lore injection |
+| `quality-gate.py` | QA gate before Telegram posting |
+| `debug-report-generator.py` | Generates debug reports on failures |
+| `system-health-monitor.py` | System-wide health checks |
+| `user-profile.py` | Manages Telegram user profiles for reply system |
+| `update-priority-queue.py` | Priority queue for content updates |
+
+### Stub Files (Empty — Do Not Add Logic Without Explicit Instruction)
+
+| File | Status |
+|---|---|
+| `learning-feedback-loop.py` | Stub — loaded via `_safe_load()`, missing is expected |
+| `reinforcement-learning-optimizer.py` | Stub — same |
+| `deduplication-engine.py` | Stub — same |
+| `source-attribution-system.py` | Stub — same |
+
+### Key Markdown Rule / Canon Files (Do Not Modify Logic Without Explicit Instruction)
+
+| File | Contents |
+|---|---|
+| `brain-rules.md` | DB-1 through DB-18 locked dual-brain architecture rules |
+| `gk-brain-complete.md` | MB-1 through MB-5 master brain config (loaded by `gk-brain.py`) |
+| `TELEGRAM-BOT-API-RULES.md` | Official Telegram rate-limit and error-handling rules |
+| `OFFICIAL-SOURCE-AUTHORITY-RULES.md` | Source priority and canon authority hierarchy |
+| `MASTER-CHARACTER-CANON.md` | ⛔ READ-ONLY — complete character index, 40 factions, full timeline |
+| `genesis-lore.md` | ⛔ READ-ONLY — Block Topia genesis seed narrative (~3,700 words) |
+| `character-bible.md` | ⛔ READ-ONLY — character consistency, art layers, image prompt templates |
+| `WEBLORERULES.md` | Web lore extraction rules |
+| `wiki-merge-rules.md` | Wiki merge rules |
+| `wiki-image-rules.md` | Wiki image rules |
+| `update-integration-rules.md` | Rules for integrating content updates |
+| `copilot-rule.md` | Root-level Copilot agent rules |
+| `FANDOM-API-RULES.md` | Fandom API rules |
+| `FANDOM-OAUTH-TECHNICAL-BREAKDOWN.md` | OAuth technical details for Fandom |
+| `gkandcryptomoonboywebsitestosave.md` | All URLs crawled by Brain 1 |
+| `lore-planner.md` | 7-day repeating calendar with 2-hour UTC slot breakdown |
+
+### State JSON Files (Committed Back to `main` Every Run)
+
+| File | What It Tracks |
+|---|---|
+| `lore-history.md` | Rolling ~14-day buffer of all lore posts (last 40,000 characters) |
+| `bot-state.json` | Last processed Telegram `update_id` (prevents update replay) |
+| `reply-tracker.json` | Per-user reply count, date, failed keyword attempts |
+| `crawl-snapshot.json` | Snapshot of last crawl state |
+| `crawl-results.json` | Latest web crawl discoveries from Brain 1 |
+| `crawl-fingerprints.json` | MD5 dedup fingerprints for crawl results |
+| `wiki-update-queue.json` | Pending Fandom wiki updates queued by Brain 3 |
+| `master-backup-state.json` | SHA-256 manifest from last master-backup run |
+| `brain1-canon.json` | Canon signals from crawl brain (max 20% lore influence per DB-2) |
+| `engagement-tracker.json` | Per-post Telegram engagement data |
+| `recommendations.json` | Analytics brain output for Brain 3 |
+
+### Reports Folder
+
+`reports/analytics-report-YYYY-MM-DD.json` — daily analytics reports from Brain 2.
+
+---
+
+## 5. Brain Rules Summary (DB-1 — DB-14)
+
+| Rule | Summary |
+|---|---|
+| **DB-1** | Wiki separation — Brain 3 lore posts must NOT be queued to the wiki. Only real-world crawl/analytics facts belong there. |
+| **DB-2** | Brain 1 canon signals may influence at most **20%** of any lore post. The other 80% comes from calendar rules, character continuity, and time block. |
+| **DB-3** | Brain 1 signals older than 7 days are stale and must be ignored by the lore generator (but not deleted — kept for archival). |
+| **DB-4** | Signal lifecycle: `unread` → `used` (only after a confirmed successful Telegram post). |
+| **DB-5** | Post 2 is always sent with an image. The image prompt must reference a concrete scene from the Post 2 lore text — not a generic fallback. |
+| **DB-6** | The 4 brains communicate **only** via inter-brain JSON files. No brain may import functions from another brain's primary module. |
+| **DB-7** | Wiki Brain must run `wiki_brain_health_check()` before any write. If credentials fail, all writes for that cycle are skipped — no retry in same run. |
+| **DB-8** | Crawl Brain must MD5-fingerprint all results (title + snippet) to deduplicate before writing to `crawl-results.json`. |
+| **DB-9** | `lore-history.md` retains the last **40,000 characters** (~14 days). Older content is trimmed automatically by `save_lore_history()`. |
+| **DB-10** | `gk-brain.py` must raise `EnvironmentError` at the start of `main()` if `GROK_API_KEY` or `TELEGRAM_BOT_TOKEN` are not set. |
+| **DB-11** | When `ANTHROPIC_API_KEY` is set, all lore text routes through Claude 3.5 Sonnet. Grok is fallback for text. Image generation always uses Grok. |
+| **DB-12** | `time.sleep(2)` MUST be called between Message 1 and Message 2 in every Telegram posting loop. |
+| **DB-13** | Generated images must NEVER be written to disk. They are produced in memory, streamed to Telegram via multipart upload, then discarded. |
+| **DB-14** | After Message 2, call `pinChatMessage` with `disable_notification=True`. Pin failure must NOT block or interrupt the posting loop. |
+
+---
+
+## 6. Telegram Integration
+
+### Rate Limits (from `TELEGRAM-BOT-API-RULES.md`)
+
+| Limit | Value |
+|---|---|
+| Global rate | 30 messages/second across all chats |
+| Per-chat rate | 1 message/second |
+| Between Msg 1 and Msg 2 (same chat) | `time.sleep(2)` — mandatory (DB-12) |
+
+### Message Size Limits
+
+| Type | Limit |
+|---|---|
+| Text message (`sendMessage`) | 4,096 UTF-8 characters |
+| Caption (photo/video) | 1,024 UTF-8 characters |
+
+### Error Handling
+
+| Code | Action |
+|---|---|
+| `400 Bad Request` | Log and skip — **never retry without a code fix** |
+| `401 Unauthorized` | Raise `EnvironmentError`; halt the run |
+| `403 Forbidden` | Log chat_id; skip that chat for this run |
+| `409 Conflict` | Only one `getUpdates` poller allowed at a time |
+| `429 Too Many Requests` | Sleep `retry_after` seconds exactly; retry once |
+| `5xx` | Exponential backoff; max 3 retries |
+
+### Key Rules
+
+- `bot-state.json` stores the last processed `update_id` — must be read at start and written at end of every reply cycle.
+- Never run `getUpdates` and a webhook simultaneously.
+- All slash commands bypass the keyword trigger gate and do NOT count against the 20/day reply limit.
+- Max 20 replies per user per 24h (non-slash-command replies).
+
+---
+
+## 7. Fandom Wiki Integration
+
+### Auth Method
+
+`fandom_auth.py` uses the MediaWiki `clientlogin` API with `FANDOM_BOT_USER` and `FANDOM_BOT_PASSWORD`.
+Wiki base URL is `FANDOM_WIKI_URL`; API endpoint is `FANDOM_WIKI_URL + '/api.php'`.
+
+### Queue System
+
+1. Brain 3 (`gk-brain.py`) detects real-world canon updates from `crawl-results.json`.
+2. It appends them to `wiki-update-queue.json` (never Telegram lore posts — DB-1).
+3. Brain 4 (`wiki-brain.py`) reads the queue, authenticates, and pushes MediaWiki edits.
+4. After successful push, the queue entries are marked consumed.
+
+### Key Files
+
+| File | Purpose |
+|---|---|
+| `fandom_auth.py` | Auth helper |
+| `wiki-brain.py` | Queue consumer + MediaWiki writer |
+| `wiki-update-queue.json` | Pending edits |
+| `wiki-smart-merger.py` | Merges new content with existing wiki pages |
+| `FANDOM-API-RULES.md` | Official API rules |
+| `wiki-merge-rules.md` | Merge strategy rules |
+
+---
+
+## 8. State Files
+
+| File | What It Tracks | Brain |
+|---|---|---|
+| `lore-history.md` | Last 40,000 chars of lore posts for continuity | Brain 3 |
+| `bot-state.json` | Last Telegram `update_id` to prevent replay | Brain 3 |
+| `reply-tracker.json` | Per-user reply limits (count, date, failed attempts) | Brain 3 |
+| `crawl-snapshot.json` | Last crawl state snapshot | Brain 1 |
+| `crawl-results.json` | Latest crawl discoveries | Brain 1 |
+| `crawl-fingerprints.json` | MD5 dedup fingerprints | Brain 1 |
+| `wiki-update-queue.json` | Pending wiki edits | Brain 3 / Brain 4 |
+| `master-backup-state.json` | SHA-256 file manifest | master-backup |
+| `brain1-canon.json` | Canon signals with `b2_used` lifecycle flag | Brain 1 / Brain 3 |
+| `engagement-tracker.json` | Per-post engagement data | Brain 3 |
+| `recommendations.json` | Analytics recommendations | Brain 2 |
+
+All state files are committed back to `main` after every run with `[skip ci]` to avoid re-triggering the workflow.
+
+---
+
+## 9. Adding New Rules
+
+To add a new DB-N rule to `brain-rules.md`:
+
+1. Open `brain-rules.md`.
+2. Find the `## DUAL BRAIN ARCHITECTURE RULES (DB-1 — DB-N)` section.
+3. Add a new `### DB-N+1 — Short Title` subsection following the same format as existing rules.
+4. Update the section header number range (e.g. `DB-1 — DB-15`).
+5. If the rule affects code behaviour in `gk-brain.py`, `crawl-brain.py`, `analytics-brain.py`, or `wiki-brain.py`, implement the corresponding code change immediately.
+6. Update the Brain Rules Summary table in this README.
+
+---
+
+## 10. Troubleshooting
+
+### `requests` import error in brain scripts
+
+**Symptom:** `ModuleNotFoundError: No module named 'requests'` at runtime.
+
+**Fix:** Ensure `import requests` is at the top of the file AND `requests` is in `requirements.txt`. The `requests` package must be an explicit top-level import — do not rely on transitive imports from other libraries.
+
+### Missing stub files (`learning-feedback-loop.py`, etc.)
+
+**Symptom:** `[analytics-brain] Could not load learning-feedback-loop.py: No such file or directory`
+
+**Status:** This is **expected behaviour**. These are intentional stubs. `analytics-brain.py` uses `_safe_load()` and continues without them. Do not create these files with logic unless explicitly instructed.
+
+### Telegram `429 Too Many Requests`
+
+**Fix:** Read the `retry_after` value from the error response. Sleep exactly that many seconds. Retry once. Never retry before sleeping.
+
+### Telegram `400` or `403`
+
+**Fix:** Do not retry. Log the error and skip that message/chat. A `400` means a malformed request (fix the code); a `403` means the bot was blocked or kicked from that chat.
+
+### Wiki login fails
+
+**Symptom:** Brain 4 skips all wiki writes; `wiki_brain_health_check()` fails.
+
+**Fix:** Verify `FANDOM_BOT_USER` and `FANDOM_BOT_PASSWORD` secrets are set correctly. Check that the Fandom bot account has not been locked. Brain 4 will retry on the next scheduled run automatically.
+
+### `EnvironmentError` at start of `gk-brain.py`
+
+**Symptom:** `EnvironmentError: GROK_API_KEY is required` or similar.
+
+**Fix:** Ensure `GROK_API_KEY` and `TELEGRAM_BOT_TOKEN` are both set as GitHub Actions secrets with non-empty values. This is an intentional fast-fail (DB-10).
+
+### Workflow runs but produces no Telegram posts
+
+**Check:**
+1. Is `TELEGRAM_BOT_TOKEN` set?
+2. Is `CHANNEL_CHAT_IDS` set (comma-separated, no spaces)?
+3. Has the bot been added as admin to each target chat?
+4. Check the `🧠 Run Lore Brain` step logs in GitHub Actions.
+
+### Analytics report file missing
+
+**Symptom:** `reports/analytics-report-YYYY-MM-DD.json` not found.
+
+**Fix:** Brain 2 writes this file. If Brain 1 (crawl) fails, Brain 2 still runs due to `continue-on-error: true`. Check the `📊 Run Analytics Brain` step logs.
+
+---
+
+## 11. Official Links — External Canon Sources
+
+The agent checks these sources every 2 hours. They are the official sources of truth for all lore updates.
+
+| Source | URL |
+|---|---|
+| Substack (primary canon) | https://substack.com/@graffpunks/posts |
+| GraffPunks Live | https://graffpunks.live/ |
+| GKniftyHEADS Website | https://gkniftyheads.com/ |
+| GKniftyHEADS Wiki | https://gkniftyheads.fandom.com/ |
+| Graffiti Kings | https://graffitikings.co.uk/ |
+| YouTube | https://www.youtube.com/@GKniftyHEADS |
+| Medium | https://medium.com/@GKniftyHEADS |
+| X/Twitter | https://x.com/GraffPunks |
+
+---
+
+## 12. Archived Docs
+
+The following individual documentation files have been consolidated into this README. They have been replaced with redirect notes:
+
+- `READMENOWBOT.md` → see README.md
+- `HOW-TO.md` → see README.md (Section 3: Quick Start + Section 7: Fandom Wiki Integration)
+- `EXECUTION-SUMMARY.md` → see README.md
+- `BRAIN-COORDINATOR.md` → see README.md (Section 2: System Architecture)
+- `FANDOM-REFERENCE-CARD.md` → see README.md (Section 7: Fandom Wiki Integration)
+- `FANDOM-QUICK-DEBUG-GUIDE.md` → see README.md (Section 10: Troubleshooting)
+- `GK-WIKI-COMPLETE-ANALYSIS.md` → see README.md
+- `GK-WIKI-URL-API-DIAGNOSTICS.md` → see README.md
+- `cross-platform-consistency.md` → see README.md
+- `AGENT-EXPLAINER.md` → consolidated into README.md
+- `LLM-ORCHESTRATION-ARCHITECTURE.md` → consolidated into README.md (Section 3: Quick Start, LLM Routing)
+- `FANDOM-WIKI-INTEGRATION-GUIDE.md` → consolidated into README.md (Section 7)
+- `TELEGRAM-NARRATOR-SYSTEM-ARCHITECTURE.md` → consolidated into README.md (Section 6)
+- `LORE-RULE-DETECTOR-DEEP-LOGIC.md` → consolidated into README.md (Section 5: Brain Rules)
+
+**Active rule files kept untouched:** `brain-rules.md`, `gk-brain-complete.md`, `TELEGRAM-BOT-API-RULES.md`, `OFFICIAL-SOURCE-AUTHORITY-RULES.md`, `MASTER-CHARACTER-CANON.md`, `genesis-lore.md`, `character-bible.md`, `WEBLORERULES.md`, `wiki-merge-rules.md`, `wiki-image-rules.md`, `update-integration-rules.md`, `copilot-rule.md`, `FANDOM-API-RULES.md`, `FANDOM-OAUTH-TECHNICAL-BREAKDOWN.md`
+
+---
+
+*Last updated: 2026-03-18. GK BRAIN is fully operational and self-updating.*
