@@ -156,21 +156,29 @@ def _extract_title(url: str, content: str) -> str:
 
 
 def _classify_url(url: str) -> str:
-    """Classify a URL into a content category."""
-    url_lower = url.lower()
-    if "substack.com" in url_lower:
+    """Classify a URL into a content category using proper domain matching."""
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        # Use netloc (e.g. 'substack.com' or 'www.substack.com') for comparison.
+        # Strip 'www.' prefix and lower-case for consistent matching.
+        host = parsed.netloc.lower().lstrip("www.")
+    except Exception:
+        return "website"
+
+    if host == "substack.com" or host.endswith(".substack.com"):
         return "substack"
-    if "medium.com" in url_lower:
+    if host == "medium.com" or host.endswith(".medium.com"):
         return "medium"
-    if "x.com" in url_lower or "twitter.com" in url_lower:
+    if host in ("x.com", "twitter.com"):
         return "twitter"
-    if "youtube.com" in url_lower:
+    if host == "youtube.com" or host.endswith(".youtube.com"):
         return "youtube"
-    if "neftyblocks.com" in url_lower or "atomichub.io" in url_lower:
+    if host == "neftyblocks.com" or host == "atomichub.io":
         return "nft-marketplace"
-    if "dappradar.com" in url_lower:
+    if host == "dappradar.com":
         return "nft-analytics"
-    if "reddit.com" in url_lower:
+    if host == "reddit.com" or host.endswith(".reddit.com"):
         return "reddit"
     return "website"
 

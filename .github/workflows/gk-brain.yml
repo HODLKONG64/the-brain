@@ -98,16 +98,16 @@ jobs:
       # ── Failure notification ─────────────────────────────────────────────
       - name: 🚨 Notify failure via Telegram
         if: >
-          steps.crawl_brain.outcome == 'failure' ||
-          steps.analytics_brain.outcome == 'failure' ||
-          steps.lore_brain.outcome == 'failure' ||
-          steps.wiki_brain.outcome == 'failure'
+          steps.crawl_brain.conclusion == 'failure' ||
+          steps.analytics_brain.conclusion == 'failure' ||
+          steps.lore_brain.conclusion == 'failure' ||
+          steps.wiki_brain.conclusion == 'failure'
         run: |
           FAILED_BRAINS=""
-          [ "${{ steps.crawl_brain.outcome }}" = "failure" ]    && FAILED_BRAINS="${FAILED_BRAINS} CrawlBrain"
-          [ "${{ steps.analytics_brain.outcome }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} AnalyticsBrain"
-          [ "${{ steps.lore_brain.outcome }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} LoreBrain"
-          [ "${{ steps.wiki_brain.outcome }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} WikiBrain"
+          [ "${{ steps.crawl_brain.conclusion }}" = "failure" ]    && FAILED_BRAINS="${FAILED_BRAINS} CrawlBrain"
+          [ "${{ steps.analytics_brain.conclusion }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} AnalyticsBrain"
+          [ "${{ steps.lore_brain.conclusion }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} LoreBrain"
+          [ "${{ steps.wiki_brain.conclusion }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} WikiBrain"
           MESSAGE="⚠️ GK BRAIN alert — brain(s) failed:${FAILED_BRAINS}%0ARun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=$(echo ${CHANNEL_CHAT_IDS} | cut -d',' -f1)" \
