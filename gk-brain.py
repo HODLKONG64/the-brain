@@ -207,6 +207,46 @@ _TG_MSG1_RATIO = 0.8
 # Two hits reduces false positives from incidental pronoun use.
 _FEMALE_DETECTION_THRESHOLD = 2
 
+# Minimum number of token appearances on a page to qualify it as a "dedicated" page.
+_DEDICATED_PAGE_TOKEN_THRESHOLD = 3
+
+
+_FACE_EXPRESSIONS = [
+    "surprised with wide eyes",
+    "grinning wide",
+    "squinting focused",
+    "jaw dropped",
+    "smirking sly",
+    "eyes wide in awe",
+    "brow furrowed serious",
+    "cackling",
+    "winking",
+    "thousand yard stare",
+    "tongue out cocky",
+    "grimacing",
+    "gleaming smile",
+    "nostril flared furious",
+    "dreamy half-closed",
+    "teeth gritted",
+    "soft nostalgic half-smile",
+    "manic wide grin",
+    "tears streaming but smiling",
+    "hollow exhausted thousand-stare",
+]
+
+# AC-1 through AC-4 — Official GraffPUNKS/Crypto Moonboys crawl URLs
+_OFFICIAL_CRAWL_URLS = [
+    "https://substack.com/@graffpunks/posts",
+    "https://graffpunks.substack.com/",
+    "https://graffpunks.live/",
+    "https://graffitikings.co.uk/",
+    "https://gkniftyheads.com/",
+    "https://medium.com/@GKniftyHEADS",
+    "https://medium.com/@graffpunksuk",
+    "https://neftyblocks.com/collection/gkstonedboys",
+    "https://www.youtube.com/@GKniftyHEADS",
+]
+
 
 # ---------------------------------------------------------------------------
 # Timeout / stuck-agent handling
@@ -684,6 +724,162 @@ def _build_update_context_text(updates: list) -> str:
     return "\n".join(lines)
 
 
+def _search_dedicated_art_page(character_tokens: list) -> str:
+    """AC-1 through AC-4 — Search official GraffPUNKS pages for a dedicated
+    character/theme page.
+
+    1. Check lore-history.md for a previously cached URL.
+    2. If not cached, crawl each URL in ``_OFFICIAL_CRAWL_URLS`` (10s timeout).
+    3. A page is "dedicated" if any token appears 3+ times in the page text.
+    4. On a hit: extract up to 6 ``<img>`` src URLs, log to lore-history.md,
+       and return a formatted reference string.
+    5. On failure (no page found / all errors): return the Layer 1 + Layer 2
+       fallback description.
+
+    All network errors are caught and treated as non-fatal.
+    """
+    fallback = (
+        "Layer 1 upper body base + Layer 2 GraffPUNKS bonnet shape "
+        "(rounded yellow head/torso, exact eagle beak centre, eagle birds each side, "
+        "white feathers above eyes, green hair pulled through, yellow leather, ears out sides)"
+    )
+    if not character_tokens:
+        return fallback
+
+    # Step 1 — check lore-history.md cache
+    try:
+        history_text = _read_file(LORE_HISTORY_FILE, "")
+        if "DEDICATED ART PAGES FOUND" in history_text:
+            section_match = re.search(
+                r"DEDICATED ART PAGES FOUND(.*?)(?=\n##|\Z)", history_text, re.DOTALL
+            )
+            if section_match:
+                section = section_match.group(1)
+                for token in character_tokens:
+                    token_lower = token.lower()
+                    for line in section.splitlines():
+                        if token_lower in line.lower() and "http" in line:
+                            url_match = re.search(r"(https?://\S+)", line)
+                            if url_match:
+                                return (
+                                    f"{url_match.group(1)} "
+                                    "(previously cached dedicated art page)"
+                                )
+    except Exception:
+        pass
+
+    # Step 2 — crawl official URLs
+    for url in _OFFICIAL_CRAWL_URLS:
+        try:
+            resp = requests.get(
+                url,
+                timeout=10,
+                headers={"User-Agent": "GKBrainBot/1.0"},
+            )
+            resp.raise_for_status()
+            page_text = resp.text.lower()
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            # Count how many times any character token appears on this page
+            hit_count = sum(
+                page_text.count(tok.lower()) for tok in character_tokens
+            )
+            if hit_count < _DEDICATED_PAGE_TOKEN_THRESHOLD:
+                continue
+
+            # Step 3 — extract up to 6 image URLs from <img> tags
+            img_urls = []
+            for img in soup.find_all("img", src=True):
+                src = img["src"]
+                if src.startswith("http") and src not in img_urls:
+                    img_urls.append(src)
+                if len(img_urls) >= 6:
+                    break
+
+            # Step 4 — build result string and cache in lore-history.md
+            img_part = (
+                " | Images: " + ", ".join(img_urls) if img_urls else ""
+            )
+            result = f"{url}{img_part}"
+
+            try:
+                existing = _read_file(LORE_HISTORY_FILE, "")
+                new_line = f"- {character_tokens[0]}: {result}\n"
+                if "DEDICATED ART PAGES FOUND" in existing:
+                    # Append the new line inside the existing section
+                    updated = existing.replace(
+                        "## DEDICATED ART PAGES FOUND\n",
+                        f"## DEDICATED ART PAGES FOUND\n{new_line}",
+                        1,
+                    )
+                    with open(LORE_HISTORY_FILE, "w", encoding="utf-8") as fh:
+                        fh.write(updated)
+                else:
+                    with open(LORE_HISTORY_FILE, "a", encoding="utf-8") as fh:
+                        fh.write(f"\n\n## DEDICATED ART PAGES FOUND\n{new_line}")
+            except Exception:
+                pass
+
+            return result
+        except Exception:
+            continue
+
+    return fallback
+
+
+def build_image_prompt_prefix(lore_text: str, time_theme: str) -> str:
+    """AC-7, AC-8, AC-9 — Build the mandatory image prompt prefix.
+
+    - Detects likely character tokens from the lore text.
+    - Searches for a dedicated art page (AC-1 through AC-4).
+    - Picks a random face expression from ``_FACE_EXPRESSIONS`` (AC-8).
+    - Returns the full mandatory prefix string (AC-7) that starts with the
+      black charcoal pencil instruction (AC-9).
+
+    All exceptions are caught; a safe default is returned on any error.
+    """
+    try:
+        # Detect character tokens from lore text
+        candidate_names = [
+            "lady ink", "lady-ink",
+            "jodie", "jodie zoom",
+            "moonboys", "crypto moonboys",
+            "graffpunks", "graff punks",
+            "diamond",
+            "gk", "gkniftyheads",
+        ]
+        tokens = [n for n in candidate_names if n.lower() in lore_text.lower()]
+        if not tokens:
+            tokens = ["graffpunks", "crypto moonboys"]
+
+        ref_source = _search_dedicated_art_page(tokens)
+        expression = random.choice(_FACE_EXPRESSIONS)
+
+        prefix = (
+            "BLACK CHARCOAL PENCIL ON WHITE PAPER STYLE ONLY. "
+            "No colour. Drawn with a black charcoal pencil.\n"
+            f"Use 100% {ref_source}. Head + bonnet as one inseparable unit.\n"
+            f"Face expression: {expression} (matching lore mood: {time_theme}).\n"
+            "96% shape fidelity to reference — 4% creative zone for minor surface details only.\n"
+            "Clothing: main faction uniform.\n"
+            "Bonnet 3D elements (all locked at 96%): eagle beak dead centre, "
+            "eagle birds each side, white feathers above eyes, green hair pulled through, "
+            "yellow leather material, ears visible out the sides.\n"
+            "At least 1 person MUST be featured. "
+            "Character must have rounded yellow head/torso with GraffPUNKS bonnet.\n"
+            "Scene details:\n"
+        )
+        return prefix
+    except Exception as exc:
+        print(f"[image-prefix] build_image_prompt_prefix failed ({exc}) — using safe default.")
+        return (
+            "BLACK CHARCOAL PENCIL ON WHITE PAPER STYLE ONLY. No colour. "
+            "Drawn with a black charcoal pencil. "
+            "At least 1 person MUST be featured with rounded yellow head/torso "
+            "and GraffPUNKS bonnet. Scene details:\n"
+        )
+
+
 def generate_lore_pair(
     rule_ctx: dict,
     updates: list,
@@ -869,15 +1065,11 @@ def generate_lore_pair(
     if not image2:
         image2 = image1
 
-    # Prepend character bible style instruction
-    style_prefix = (
-        "Generate a high-detail GraffPunks style scene in the artist's universe. "
-        "Never change hair, face, clothing, colours, or style from established refs. "
-        "Match the scene to the lore text perfectly, including time of day, weather, "
-        "lighting, and season. "
-    )
-    image1 = style_prefix + image1
-    image2 = style_prefix + image2
+    # AC-7/AC-8/AC-9 — Build mandatory image prompt prefix for each post
+    prefix1 = build_image_prompt_prefix(lore1, rule_ctx.get("time_theme", "day"))
+    prefix2 = build_image_prompt_prefix(lore2, rule_ctx.get("time_theme", "day"))
+    image1 = prefix1 + image1
+    image2 = prefix2 + image2
 
     return lore1, image1, lore2, image2
 
@@ -1431,7 +1623,13 @@ def main() -> None:
 
     # -- Step 10: Post to Telegram --
     print("[gk-brain] Posting to Telegram...")
-    telegram_info = post_to_telegram(lore1, image1, lore2, image2)
+    # AC-13 — Append full image prompt to lore2 so users can generate it themselves
+    prompt_footer = (
+        "\n\n---\n🎨 IMAGE PROMPT (generate yourself with any AI):\n"
+        + image_prompt2
+    )
+    lore2_with_prompt = lore2 + prompt_footer
+    telegram_info = post_to_telegram(lore1, image1, lore2_with_prompt, image2)
 
     # Log Telegram posting to reporter
     if reporter is not None and telegram_info:
