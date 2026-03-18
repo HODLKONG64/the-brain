@@ -1324,26 +1324,32 @@ def generate_lore_pair(
 # ---------------------------------------------------------------------------
 
 def load_brain1_signal() -> list:
-    """Load unused Brain1 updates from brain1-canon.json, excluding stale entries (> 7 days old)."""
+    """Load unused, non-stale Brain1 updates from brain1-canon.json.
+
+    Per Brain1 rules, signals older than 7 days are treated as stale and ignored.
+    Entries whose timestamp cannot be parsed are kept (treated as non-stale).
+    """
     try:
         with open(BRAIN1_CANON_FILE, "r", encoding="utf-8") as fh:
             data = json.load(fh)
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
-        result = []
-        for u in data.get("updates", []):
-            if u.get("b2_used"):
-                continue
-            ts = u.get("timestamp", "")
-            try:
-                entry_dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                if entry_dt < cutoff:
-                    continue  # stale — do NOT mark as used
-            except Exception:
-                pass  # if timestamp unparseable, include the entry
-            result.append(u)
-        return result
     except (OSError, json.JSONDecodeError):
         return []
+
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
+    fresh: list = []
+    for u in data.get("updates", []):
+        if u.get("b2_used"):
+            continue
+        ts_str = u.get("timestamp")
+        if ts_str:
+            try:
+                ts = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                if ts < cutoff:
+                    continue
+            except (ValueError, TypeError):
+                pass  # unparseable timestamp — treat as non-stale, keep the entry
+        fresh.append(u)
+    return fresh
 
 
 def mark_brain1_updates_used(updates: list) -> None:
@@ -1475,7 +1481,7 @@ def save_brain1_update(url: str, summary: str) -> None:
 
 
 def save_lore_history(post1: str, post2: str) -> None:
-    """Append today's lore posts to lore-history.md (keeps last 14 days)."""
+    """Append today's lore posts to lore-history.md (keeps last ~40,000 characters, roughly 14 days of history)."""
     now = datetime.datetime.now(datetime.UTC)
     separator = f"\n\n---\n## {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
 
@@ -2281,9 +2287,16 @@ def main() -> None:
     # -- Step 11: Save lore history --
     save_lore_history(lore1, lore2)
 
-    # Mark Brain 1 updates as used by Brain 2 (after successful post)
-    if b1_ids_to_mark:
-        mark_brain1_updates_used(b1_ids_to_mark)
+    # Mark Brain1 signal updates as used after successful post.
+    # Only mark the subset actually injected into the prompt (up to 3),
+    # and only if both Telegram messages were successfully posted.
+    brain1_injected = brain1_signal[:3] if brain1_signal else []
+    if (
+        brain1_injected
+        and telegram_info.get("msg1_status") == "success"
+        and telegram_info.get("msg2_status") == "success"
+    ):
+        mark_brain1_updates_used(brain1_injected)
 
     # Mark updates as used and persist the change to the queue
     for u in unused_updates:
