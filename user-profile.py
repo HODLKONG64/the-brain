@@ -51,7 +51,7 @@ def update_user(user_id: int | str, username: str = "", first_name: str = "") ->
     """
     profiles = _load_profiles()
     uid = str(user_id)
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     today = now.strftime("%Y-%m-%d")
 
     if uid not in profiles:
@@ -93,7 +93,7 @@ def record_reply(user_id: int | str, topic: str = "") -> bool:
     """
     profiles = _load_profiles()
     uid = str(user_id)
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     today = now.strftime("%Y-%m-%d")
 
     if uid not in profiles:
@@ -135,7 +135,7 @@ def check_reply_limit(user_id: int | str) -> bool:
     """
     profiles = _load_profiles()
     uid = str(user_id)
-    today = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
+    today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
     if uid not in profiles:
         return True  # No profile yet → not capped
@@ -169,7 +169,7 @@ def format_profile_card(user_id: int | str) -> str:
             "Interact with the GK BRAIN channel to build your Moonboys record."
         )
 
-    today = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
+    today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
     uid = profile.get("user_id", "?")
     username = profile.get("username", "")
