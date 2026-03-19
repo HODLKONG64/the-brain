@@ -103,6 +103,11 @@ REJECTED_DRAFTS_FILE = os.path.join(os.path.dirname(__file__), "wiki-rejected-dr
 MAIN_WIKI_PAGE = "GKniftyHEADS_Wiki"
 AGENT_LOG_PAGE = "GK_BRAIN_Agent_Log"
 
+FANDOM_USERNAME = os.environ.get("FANDOM_BOT_USER", os.environ.get("FANDOM_USERNAME", ""))
+FANDOM_PASSWORD = os.environ.get("FANDOM_BOT_PASSWORD", os.environ.get("FANDOM_PASSWORD", ""))
+WIKI_BASE = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fandom.com").rstrip("/")
+WIKI_API  = WIKI_BASE + "/api.php"
+
 # Mapping: update type → wiki section heading (title-case, no '==' markers)
 SECTION_MAP: dict[str, str] = {
     # Lore Posts
