@@ -87,12 +87,18 @@ persist_queue_updates = _wiki_updater.persist_queue_updates
 # ── 55-System Godlike Module Loader ───────────────────────────────────────
 
 def _safe_load(name: str, filepath: str):
-    """Load a module, returning None on failure (non-fatal)."""
+    """Load a module from root, falling back to legacy/ subdirectory on failure."""
     try:
         return _load_module(name, filepath)
     except Exception as exc:
-        print(f"[godlike] Could not load {filepath}: {exc}")
-        return None
+        legacy_fallback_path = _pl.Path("legacy") / filepath
+        try:
+            mod = _load_module(name, str(legacy_fallback_path))
+            print(f"[godlike] Loaded {filepath} from legacy/ fallback.")
+            return mod
+        except Exception:
+            print(f"[godlike] Could not load {filepath}: {exc}")
+            return None
 
 # Tier 1 — Data Layer
 _data_validator        = _safe_load("data_validator",         "data-validator.py")
