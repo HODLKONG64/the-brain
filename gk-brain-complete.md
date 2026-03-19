@@ -7,9 +7,8 @@ Every agent run MUST execute the following cycle IN FULL, in this exact order, w
 1. Run the full webcrawl (all URLs in the LINKS section below).
 2. Detect all new updates since the last run.
 3. Post lore + images to Telegram.
-4. Run wiki-smart-merger to push detected updates to the Fandom wiki.
-5. Run wiki-page-builder for every newly discovered or updated Crypto Moonboys entity (character, lore event, NFT collection, weapon/key, location, toy, game). Each entity page must be fully structured (infobox, sections, See Also, External Links, References, categories).
-6. Run wiki-cross-checker to verify all saves are reflected on the wiki.
+4. Run wiki-brain.py — this single step internally orchestrates wiki-smart-merger, wiki-page-builder, and wiki-cross-checker for all newly discovered or updated entities.
+5. Run master-backup-agent.py LAST — fingerprints all tracked files, absorbs rules, checks for conflicts, and appends snapshot to master-backup-state.json.
 This cycle is mandatory every 2 hours, triggered by the GitHub Actions cron. Under no circumstances may any step be omitted or deferred.
 
 ## WIKI PAGE CREATION RULES (locked)
@@ -104,7 +103,7 @@ The entire infinite lore is the live 24/7 thoughts/mini-stories of ONE real-feel
 Monday: 6am repeating dream wake-up + normal day. Tuesday: Normal day + 10pm departure for 2-day VX T4 graffiti tour. Wednesday: Tour day 2 + return home. Thursday: Normal home day + heavy Moonboys writing. Friday: Normal day + 10pm–4am London rave (DJ set at midnight). Saturday/Sunday: Mix of painting nights + 2 random early-sleep nights. Every day at 12pm UTC: New character 24h fame switch (planned ahead).
 
 ## DREAM RULES (locked from all previous versions)
-Thursday night: 1 post about him and Lady-INK travelling the world painting graffiti on trains (new unique story every Thursday). All other nights: Dreams ONLY about unique Crypto Moonboys lores (1 or 2 main characters as headliners, rotating through all characters without repeating pairings). Monday 6am: Repeating unfinished mural chase + “what the hell? why?” wake-up. 80% of dreams are completely unique fantasy. When he wakes, the main lore continues directly from the last 7 days of awake life.
+Thursday night: 1 post about him and Lady-INK travelling the world painting graffiti on trains (new unique story every Thursday). All other nights: Dreams ONLY about unique Crypto Moonboys lores (1 or 2 main characters as headliners, rotating through all characters without repeating pairings). Monday 6am: Repeating unfinished mural chase + "what the hell? why?" wake-up. 80% of dreams are completely unique fantasy. When he wakes, the main lore continues directly from the last 7 days of awake life.
 
 ## ETERNAL CODEX FILE STORED ON THE WORLD CHAIN (28-section template locked from all previous versions)
 Every character uses the full 28-section Eternal Codex template (persona, appearance, habits, relationships, Hardfork role, Blocktopia status, artist connection, storyline library, dream variations, holiday/seasonal variations, random daily moments, etc.). New characters auto-generate full codex based on existing style until official online data appears.
@@ -140,26 +139,6 @@ Use the Character Bible + Substack art style for all characters. The agent appen
 - Lady-INK, Charlie Buster, Bone Idol Ink, Delicious Again Peter, AI-Chunks, Treef Project, Crowned Royal Moongirls (group), HODL X Warriors (group), Bitcoin X Kids (3 paths), OG Bitcoin Kids (group), Bald-headed wannabe Moonboys (40 faction members from outside), Bald-headed moonboys inside Block Topia (older Bitcoin Kids born inside), Jodie Zoom and all GraffPunks crew.
 
 ## IMAGE PROMPT TEMPLATE
-"Generate a high-detail GraffPunks style scene in the artist's universe. Use these reference images for exact character consistency: [all reference links]. Never change hair, face, clothing, colors, or style from these refs. Match the scene to the lore text perfectly, including time of day, weather, lighting, and season."
+"Generate a high-detail GraffPunks style scene in the artist's universe. Use these reference images for exact character consistency: [all reference links]. Never change hair, face, clothing, colors, or style from these refs. Match the scene to the lore text perfectly, including time of day, weather, lighting, and season.",
 
-This master file now contains **100% of every brain-rules.md and character-bible.md version** ever created in this chat. All rules, storylines, characters, and details are here in one place.
-
-The agent loads this file every run.
-
-## DB-14: AUTO-PIN MESSAGE 2 (locked)
-After both lore posts are successfully sent to Telegram, the bot must call `pinChatMessage` on the Message 2 message ID. Pinning failure is non-fatal — log the error to stdout and continue.
-
-## MB-1: MASTER BACKUP PURPOSE (locked)
-`master-backup-agent.py` is the single passive observer for the entire GK BRAIN system. It maintains an append-only snapshot (`master-backup-state.json`) of every rule, constant, and logic value across all tracked files. It has zero runtime authority — it cannot start, stop, or modify any other agent.
-
-## MB-2: BACKUP ABSORPTION PROTOCOL (locked)
-On every run, the backup agent: (1) SHA-256 fingerprints all tracked files, (2) for any changed or new file, extracts DB-N/MB-N rules from `.md` files and module-level constants from `.py` files, (3) conflict-checks against locked rule files, (4) merges safe updates into `rule_snapshot`, (5) quarantines conflicts in `conflict_log`, (6) appends an audit entry, (7) writes atomically via `tmp + os.replace`. Always exits 0.
-
-## MB-3: CONFLICT RESOLUTION PROTOCOL (locked)
-Conflicts in `conflict_log` are resolved by the repo owner manually. Resolution steps: (1) read both `existing_value` and `incoming_value` in the conflict entry, (2) determine which is correct by checking the authoritative source file, (3) update the rule in the correct source file, (4) clear the conflict entry by setting `"resolution": "accepted"` or `"resolution": "rejected"`. The backup agent will re-absorb the correct value on the next run.
-
-## MB-4: DISASTER RECOVERY (locked)
-If any agent file is corrupted or accidentally deleted, `master-backup-state.json` provides the last known-good snapshot of all rules and constants. Recovery procedure: (1) read `rule_snapshot` section, (2) find all entries with `"source_file": "<lost file>"`, (3) reconstruct the file from those entries. The `audit_trail` section provides a timestamped history of every change.
-
-## MB-5: NEW FILE ONBOARDING (locked)
-When a new agent, rule file, workflow, or canon file is added to the repo, it MUST be added to `TRACKED_FILES` in `master-backup-agent.py` in the same PR. If the new file contains locked rules, it must also be added to `LOCKED_RULE_FILES`. The backup agent will automatically absorb and fingerprint the new file on its next run.
+Commit message: "fix: resolve gk-brain-complete.md conflict — reconcile main and PR versions, add DB-15 to DB-19 and MB-1 to MB-5"
