@@ -1923,7 +1923,7 @@ def _run_godlike_systems(updates: list, rule_ctx: dict, lore_history: str) -> st
     skill_levels   = _safe_call_timed(_skill_progression,  "get_skill_levels",    10)                           or {}
     relationships  = _safe_call_timed(_relationship_model, "get_relationship_context", 10)                      or ""
     active_arcs    = _safe_call_timed(_arc_tracker,        "get_active_arcs",     10)                           or []
-    _safe_call_timed(_narrative_interp, "interpolate_gap", 10, "", "", rule_ctx)
+    _safe_call_timed(_narrative_interp_eng, "interpolate_gap", 10, "", "", rule_ctx)
     personality_h  = _safe_call_timed(_personality_amp,    "get_personality_hints", 10, rule_ctx, emotional_st) or ""
     _safe_call_timed(_world_bible,      "update_world_bible", 10, lore_history)
     arc_direction  = _safe_call_timed(_arc_planner,        "get_arc_direction",  10, rule_ctx, active_arcs)     or ""
