@@ -33,6 +33,12 @@ import requests
 
 import fandom_auth
 
+# Pull shared credentials and API config from fandom_auth
+FANDOM_USERNAME = fandom_auth.FANDOM_USERNAME
+FANDOM_PASSWORD = fandom_auth.FANDOM_PASSWORD
+WIKI_BASE = fandom_auth.WIKI_BASE
+WIKI_API  = fandom_auth.WIKI_API
+
 # ---------------------------------------------------------------------------
 # Logging setup
 # ---------------------------------------------------------------------------
