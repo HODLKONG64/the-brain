@@ -192,7 +192,7 @@ def crawl_all() -> dict:
     Crawl all URLs, detect new content, return structured results.
     Skips content already seen (via fingerprint).
     """
-    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     fingerprints = _load_fingerprints()
     new_results = []
     checked = 0
@@ -252,7 +252,7 @@ def run() -> int:
         try:
             print("[crawl-brain] Using update-detector module…")
             detector_result = _update_detector.detect_updates()
-            now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
             results = {
                 "last_crawl": now,
                 "checked_urls": len(URLS_TO_CHECK),
