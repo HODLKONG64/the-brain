@@ -452,7 +452,7 @@ def main() -> None:
     if recovery_ok and post1_sent and post2_sent:
         # Success — clean up
         _delete_state()
-        timestamp = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+        timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
         try:
             with open(LORE_HISTORY_FILE, "a", encoding="utf-8") as fh:
                 fh.write(f"\n[RECOVERY] Cycle completed by recovery agent at {timestamp}\n")

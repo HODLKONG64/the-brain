@@ -103,7 +103,7 @@ def _analyse(engagement: dict) -> dict:
     """
     Analyse engagement data and return a structured report dict.
     """
-    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     posts = engagement.get("posts", [])
     if not posts:
         posts = []
