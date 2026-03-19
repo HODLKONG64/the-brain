@@ -2044,7 +2044,7 @@ def _run_godlike_qa(lore1: str, lore2: str, updates: list, rule_ctx: dict, lore_
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    _REQUIRED_ENV = ["GROK_API_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"]
+    _REQUIRED_ENV = ["GROK_API_KEY", "TELEGRAM_BOT_TOKEN", "CHANNEL_CHAT_IDS"]
     _missing = [v for v in _REQUIRED_ENV if not os.environ.get(v)]
     if _missing:
         raise EnvironmentError(
