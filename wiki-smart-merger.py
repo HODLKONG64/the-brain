@@ -47,6 +47,7 @@ import re
 import time
 from urllib.parse import urlparse
 
+import requests
 import filelock
 
 import fandom_auth
