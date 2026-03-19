@@ -8,6 +8,10 @@ gk-brain.py reads crawl-results.json at startup instead of doing crawls inline.
 
 Includes dedup fingerprinting so the same content is never flagged twice.
 
+# TELEGRAM CONTENT EXCLUSION: Content from Telegram bot output is NEVER used as a crawl source.
+# All sources must be from the official source list in gkandcryptomoonboywebsitestosave.md.
+# wiki-citation-checker.py is a health tool only — it does NOT gate new wiki content.
+
 Usage:
     python crawl-brain.py
 
@@ -60,36 +64,105 @@ FINGERPRINT_FILE  = os.path.join(BASE_DIR, "crawl-fingerprints.json")
 
 # All official links to check
 URLS_TO_CHECK = [
-    # Official GK & Moonboys
+    # Official GK, GraffPUNKS & Crypto Moonboys — Primary Websites
     "https://graffitikings.co.uk/",
     "https://graffpunks.live/",
     "https://gkniftyheads.com/",
+    # Medium & Substack (official creator content)
     "https://graffpunks.substack.com/",
     "https://substack.com/@graffpunks/posts",
-    "https://www.youtube.com/@GKniftyHEADS",
-    "https://www.facebook.com/GraffPUNKS.Network/",
+    "https://noballgames.substack.com/",
+    "https://treefproject.substack.com/",
+    "https://substack.com/@treefproject/posts",
+    "https://substack.com/@noballgames/posts",
     "https://medium.com/@GKniftyHEADS",
+    "https://medium.com/@iamcharliebuster",
+    "https://medium.com/@noballgamesnfts",
     "https://medium.com/@games4punks",
     "https://medium.com/@HODLWARRIORS",
     "https://medium.com/@graffpunksuk",
     "https://medium.com/@GRAFFITIKINGS",
-    "https://x.com/GraffPunks",
-    "https://x.com/GKNiFTYHEADS",
+    "https://medium.com/@treefproject",
+    "https://medium.com/@boneidolink",
+    # YouTube
+    "https://www.youtube.com/@GKniftyHEADS/videos",
+    "https://www.youtube.com/@A.IChunks",
+    # X (formerly Twitter)
     "https://x.com/GraffitiKings",
+    "https://x.com/GKNiFTYHEADS",
+    "https://x.com/HODLWARRIORS",
+    "https://x.com/GraffPunks",
+    "https://x.com/nftbuster",
+    # Instagram
+    "https://www.instagram.com/graffitikings/",
+    "https://www.instagram.com/gkniftyheads/",
+    "https://www.instagram.com/hodlwarriors/",
+    "https://www.instagram.com/graffpunks/",
+    "https://www.instagram.com/nftbuster/",
+    "https://www.instagram.com/iamcharliebuster/",
+    # Facebook
+    "https://www.facebook.com/GraffPUNKS.Network/",
+    "https://www.facebook.com/boneidolink/",
+    "https://www.facebook.com/people/AI-Chunks/61587528591225/",
+    # Community & aggregators
+    "https://linktr.ee/gkniftyheads",
+    "https://www.reddit.com/user/graffpunks/",
+    # NFT Platforms
     "https://neftyblocks.com/collection/gkstonedboys",
     "https://neftyblocks.com/collection/noballgamess",
     "https://nfthive.io/collection/noballgamess",
     "https://dappradar.com/nft-collection/crypto-moonboys",
-    # Charlie Buster & Treef
-    "https://medium.com/@iamcharliebuster",
-    "https://medium.com/@treefproject",
-    "https://substack.com/@treefproject/posts",
-    "https://substack.com/@noballgames/posts",
-    "https://x.com/nftbuster",
-    # Real-people & extra canon
-    "https://medium.com/@boneidolink",
+    # Other official sources
     "https://deliciousagainpeter.com/",
-    "https://www.reddit.com/user/graffpunks/",
+]
+
+# ---------------------------------------------------------------------------
+# Search keywords for content detection on crawled pages
+# Mirrors the search query expansions in GK-UNIVERSE-KEYWORD-MASTER.md
+# ---------------------------------------------------------------------------
+
+SEARCH_KEYWORDS = [
+    "GKniftyHEADS",
+    "GraffPUNKS",
+    "Graffiti Kings NFT",
+    "HODL Warriors WAX",
+    "Crypto Moonboys",
+    "GK GRID lore",
+    "Triple Fork Event",
+    "GK BRAIN wiki",
+    "Datapocalypse 2789",
+    "Zero-Block Event",
+    "MiDEViL HERO ARENA",
+    "BitcoinKid Army",
+    "WAX NFT GraffPUNKS",
+    "graffpunks.live",
+    "graffitikings.co.uk lore",
+    "GKniftyHEADS fandom",
+    "Sacred Chain lore",
+    "Phygital graffiti NFT",
+    "StikFamWars",
+    "School Riot NFT",
+    "HODL KONG NFT",
+    "NoBallGames WAX",
+    "Treef Project NFT",
+    "Charlie Buster NFT",
+    "GraffPUNKS Network Radio",
+    "Graffiti Queens NFT",
+    "Nomad Bears lore",
+    "Digital Wraiths NFT",
+    "Forkborn lore",
+    "Genesis Kernel blockchain",
+    "Block Topia NFT",
+    "Crypto Moonboys Multiverse",
+    "GK Incubator Hub",
+    "Chat2Earn",
+    "Play2Earn",
+    "1M free NFTs",
+    "Phygital art",
+    "WAX blockchain",
+    "$WAXP",
+    "MART NFTs",
+    "$MArT",
 ]
 
 REQUEST_TIMEOUT = 15

@@ -116,6 +116,20 @@ SOURCES = [
         "https://noballgames.substack.com/feed",
         "news-real",
     ),
+    # NoBallGames — Substack direct URL
+    (
+        "noballgames-substack-direct",
+        "https://noballgames.substack.com/",
+        "https://noballgames.substack.com/feed",
+        "news-real",
+    ),
+    # Treef — Substack direct URL
+    (
+        "treef-substack-direct",
+        "https://treefproject.substack.com/",
+        "https://treefproject.substack.com/feed",
+        "news-real",
+    ),
     # Medium authors — Medium has RSS at medium.com/feed/@author
     (
         "medium-gkniftyheads",
@@ -151,6 +165,12 @@ SOURCES = [
         "medium-charliebuster",
         "https://medium.com/@iamcharliebuster",
         "https://medium.com/feed/@iamcharliebuster",
+        "news-real",
+    ),
+    (
+        "medium-noballgames",
+        "https://medium.com/@noballgamesnfts",
+        "https://medium.com/feed/@noballgamesnfts",
         "news-real",
     ),
     (
@@ -190,6 +210,13 @@ SOURCES = [
         None,
         "news-real",
     ),
+    # Linktree — aggregates all official doors
+    (
+        "linktree-gkniftyheads",
+        "https://linktr.ee/gkniftyheads",
+        None,
+        "gkdata-real",
+    ),
     # Reddit — HTML scraping
     (
         "reddit-graffpunks",
@@ -222,6 +249,61 @@ SOURCES = [
         None,
         "gkdata-real",
     ),
+]
+
+# ---------------------------------------------------------------------------
+# Atomic wiki page stubs expected to exist on the Fandom wiki.
+# Sourced from GK-UNIVERSE-KEYWORD-MASTER.md — "WIKI PAGE STUBS NEEDED" section.
+# wiki-gap-detector checks these against the live wiki to flag missing pages.
+# ---------------------------------------------------------------------------
+
+EXPECTED_WIKI_STUBS = [
+    # Factions
+    "GKniftyHEADS",
+    "GraffPUNKS",
+    "HODL Warriors",
+    "Nomad Bears",
+    "Crypto Moonboys",
+    "BitcoinKid Army",
+    "Graffiti Queens",
+    "NoBallGames",
+    "TreefProject",
+    "Digital Wraiths",
+    "The Immortal Architects",
+    # Lore Events
+    "The Great Datapocalypse",
+    "Triple Fork Event",
+    "Zero-Block Event",
+    "The Great Reset",
+    "School Riot",
+    "StikFamWars",
+    # Locations & Concepts
+    "GK GRID",
+    "The Citadel",
+    "Sacred Chain",
+    "Genesis Kernel",
+    "The Blockchain Portal",
+    "Phygital World",
+    "Crypto Moonboys Multiverse",
+    "MiDEViL HERO ARENA",
+    "Block Topia",
+    "Forkborn",
+    # Real People
+    "HODL KONG",
+    "Charlie Buster",
+    "NoBallGames creator",
+    "Treef Project",
+    "BoneIdoLink",
+    "Delicious Again Peter",
+    # Platforms & Projects
+    "GraffPUNKS Radio Station",
+    "GK Incubator Hub",
+    "WAX NFT Drops",
+    # Technology & Mechanics
+    "Play2Earn",
+    "Chat2Earn",
+    "MART NFTs",
+    "Phygital Art",
 ]
 
 # ---------------------------------------------------------------------------
@@ -677,6 +759,57 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
     # --- Queue gaps ---
     queued = _queue_gaps(all_gaps, dry_run=dry_run)
 
+    # --- Check expected wiki page stubs (GK-UNIVERSE-KEYWORD-MASTER.md) ---
+    # Flag any atomic wiki page that hasn't been created yet.
+    stub_gaps: list = []
+    ts_now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for stub_name in EXPECTED_WIKI_STUBS:
+        norm = _normalise(stub_name)
+        if wiki_text_lower and norm not in wiki_text_lower:
+            stub_entry = {
+                "title": stub_name,
+                "url": "",
+                "source": "GK-UNIVERSE-KEYWORD-MASTER.md",
+                "source_label": "expected-wiki-stub",
+                "type": "gkdata-real",
+                "content": (
+                    f"Expected wiki page stub '{stub_name}' not found in wiki. "
+                    "Create a dedicated page for this topic."
+                ),
+                "timestamp": ts_now,
+                "wiki_update": True,
+                "wiki_done": False,
+                "detected_by": "wiki-gap-detector-stub-check",
+            }
+            stub_gaps.append(stub_entry)
+            logger.info("[STUB-GAP] Missing wiki page: %s", stub_name)
+        elif not wiki_text_lower:
+            # Wiki unavailable — flag all stubs as potential gaps
+            stub_entry = {
+                "title": stub_name,
+                "url": "",
+                "source": "GK-UNIVERSE-KEYWORD-MASTER.md",
+                "source_label": "expected-wiki-stub",
+                "type": "gkdata-real",
+                "content": (
+                    f"Expected wiki page stub '{stub_name}' — wiki unavailable for comparison."
+                ),
+                "timestamp": ts_now,
+                "wiki_update": True,
+                "wiki_done": False,
+                "detected_by": "wiki-gap-detector-stub-check",
+            }
+            stub_gaps.append(stub_entry)
+
+    if stub_gaps:
+        stub_queued = _queue_gaps(stub_gaps, dry_run=dry_run)
+        queued += stub_queued
+        all_gaps.extend(stub_gaps)
+        print(
+            f"[wiki-gap-detector] Stub check: {len(stub_gaps)} expected wiki page(s) missing, "
+            f"{stub_queued} queued."
+        )
+
     # --- Summary ---
     result = {
         "run_timestamp": run_ts,
@@ -687,6 +820,7 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
         "gaps_queued": queued,
         "gap_details": all_gaps,
         "source_reports": source_reports,
+        "stub_gaps": len(stub_gaps),
     }
 
     _save_gap_report(result)
