@@ -7,7 +7,8 @@ any wiki write is performed.
 
 Dead-link repair strategy:
     1. Try the Wayback Machine (archive.org) for a cached copy of the page.
-    2. If no archive snapshot is found, delete the citation paragraph/bullet.
+    2. If no archive snapshot is found, log the dead URL for human review.
+       Content lines are never auto-deleted to protect wiki content.
 
 All findings are logged to wiki-citation-log.json.
 
