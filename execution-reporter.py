@@ -17,7 +17,7 @@ class ExecutionReporter:
     """Collect and report on a single GK BRAIN execution run."""
 
     def __init__(self, workflow_run_id: str | None = None):
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(datetime.timezone.utc)
         self._start_time = time.monotonic()
         self._execution_id = now.strftime("%Y%m%d-%H%M%S")
         self._timestamp = now.isoformat().replace("+00:00", "Z")
@@ -171,7 +171,7 @@ class ExecutionReporter:
             "max_allowed": max_allowed,
             "status": status,
             "message_ids": message_ids or [],
-            "posted_at": posted_at or datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
+            "posted_at": posted_at or datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
         }
         if has_image:
             entry["image_file_size_kb"] = image_size_kb
