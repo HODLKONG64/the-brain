@@ -410,7 +410,7 @@ def seed_genesis_lore() -> None:
         print("[genesis] genesis-lore.md not found or empty — skipping seed.")
         return
 
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     header = (
         f"# Block Topia Genesis Lore — Seeded {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
         "<!-- This file was auto-seeded from genesis-lore.md on first run. -->\n\n"
@@ -440,7 +440,7 @@ def get_current_block() -> dict:
             "rules": list[str],     # e.g. ["(morning)", "(fishing)", "(outside)"]
         }
     """
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     # ISO weekday: 1=Monday … 7=Sunday
     iso_day = now.isoweekday()
     day_names = {1: "MONDAY", 2: "TUESDAY", 3: "WEDNESDAY",
@@ -1044,7 +1044,7 @@ def generate_lore_pair(
 
     Returns: (lore_text_1, image_prompt_1, lore_text_2, image_prompt_2)
     """
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
 
@@ -1319,7 +1319,7 @@ def save_brain1_update(update: dict) -> None:
 def check_brain2_sunday_reset() -> bool:
     """Wipe brain2-telegram-lore.json if it's Sunday midnight UTC (Sunday = weekday 6).
     Returns True if a reset was performed."""
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     if now.weekday() == 6 and now.hour == 0:  # Sunday midnight window
         data = {"week_start": now.isoformat(), "posts": []}
         try:
@@ -1335,7 +1335,7 @@ def check_brain2_sunday_reset() -> bool:
 def save_brain2_lore(post1: str, post2: str) -> None:
     """Save Telegram lore posts to brain2-telegram-lore.json (compact rolling 7-day log).
     Brain 2 lore NEVER goes to the Fandom wiki."""
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     slot = now.strftime("%a").upper()[:3] + ":" + now.strftime("%H")
     ts = now.isoformat().replace("+00:00", "Z")
     combined = (post1 + " " + post2).strip()
@@ -1373,7 +1373,7 @@ def save_brain2_lore(post1: str, post2: str) -> None:
 
 def save_brain1_update(url: str, summary: str) -> None:
     """Save a web-crawl discovery to brain1-canon.json (rolling 200-entry log)."""
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     ts = now.isoformat().replace("+00:00", "Z")
     entry = {"type": "web-update", "source": url, "summary": summary[:60], "ts": ts}
 
@@ -1403,7 +1403,7 @@ def save_brain1_update(url: str, summary: str) -> None:
 
 def save_lore_history(post1: str, post2: str) -> None:
     """Append today's lore posts to lore-history.md (keeps last ~40,000 characters, roughly 14 days of history)."""
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     separator = f"\n\n---\n## {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
 
     existing = _read_file(LORE_HISTORY_FILE, "")
@@ -1489,7 +1489,7 @@ def _write_recovery_state(
 ) -> None:
     """Write a recovery state file so the recovery agent can complete unsent posts."""
     state = {
-        "failed_at": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
+        "failed_at": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
         "cycle_block": cycle_block,
         "rule_ctx": rule_ctx,
         "lore1": lore1,
@@ -1953,7 +1953,7 @@ def main() -> None:
             f"[gk-brain] Missing required environment variables: {', '.join(_missing)}"
         )
 
-    print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
+    print(f"[gk-brain] Starting at {datetime.datetime.now(datetime.timezone.utc).isoformat()} UTC")
 
     # -- Dual Brain: Sunday reset check --
     check_brain2_sunday_reset()
@@ -2066,7 +2066,7 @@ def main() -> None:
             print(f"[lore-gen] Attempt {lore_fail_counter}/{LORE_MAX_FAILS} failed: {exc}")
             if not best_lore_data:
                 # Build a minimal fallback from collected context
-                now_str = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M UTC")
+                now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
                 fallback_text = (
                     f"{now_str} — GraffPunks Network Log Entry\n\n"
                     f"[{block['weekday']} {block['start_hour']:02d}:00 UTC — "
@@ -2191,7 +2191,7 @@ def main() -> None:
     # Log Telegram posting to reporter
     if reporter is not None and telegram_info:
         try:
-            _now_iso = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+            _now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
             reporter.log_telegram_posted(
                 message_num=1,
                 msg_type="text_only",
@@ -2296,7 +2296,7 @@ def main() -> None:
                         "status": "smart_merged" if smart_merge_succeeded else (
                             "appended" if wiki_append_count > 0 else "failed"
                         ),
-                        "timestamp": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
+                        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                     }
                     for u in wiki_pending
                 ]
@@ -2361,7 +2361,7 @@ def main() -> None:
     # -- Step 13: Cleanup snapshot --
     cleanup_snapshot()
 
-    print(f"[gk-brain] Cycle complete at {datetime.datetime.now(datetime.UTC).isoformat()} UTC")
+    print(f"[gk-brain] Cycle complete at {datetime.datetime.now(datetime.timezone.utc).isoformat()} UTC")
 
     # -- Step 14: Generate and save execution report --
     if reporter is not None:
