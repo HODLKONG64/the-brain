@@ -55,6 +55,17 @@ jobs:
         run: python gk-brain.py
         continue-on-error: true
 
+      # ── Wiki Gap Detector ────────────────────────────────────────────────
+      - name: Run wiki gap detector
+        run: python wiki-gap-detector.py
+        env:
+          FANDOM_BOT_USER: ${{ secrets.FANDOM_BOT_USER }}
+          FANDOM_BOT_PASSWORD: ${{ secrets.FANDOM_BOT_PASSWORD }}
+          FANDOM_USERNAME: ${{ secrets.FANDOM_USERNAME }}
+          FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
+          FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
+        continue-on-error: true
+
       # ── Brain 4: Wiki Brain ──────────────────────────────────────────────
       - name: 📖 Run Wiki Brain
         id: wiki_brain

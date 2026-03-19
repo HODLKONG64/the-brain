@@ -46,3 +46,6 @@ knowledge-graph.json
 priority-queue.json
 tension-state.json
 universe-state.json
+
+# Wiki gap detector output (ephemeral, not committed)
+wiki-gap-report.json
