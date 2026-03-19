@@ -324,6 +324,16 @@ def _load_queue() -> list:
     return []
 
 
+def _save_queue(queue: list) -> None:
+    """Persist the queue file under an exclusive file lock (atomic write)."""
+    lock = filelock.FileLock(QUEUE_LOCK_FILE, timeout=30)
+    tmp_path = QUEUE_FILE + ".tmp"
+    with lock:
+        with open(tmp_path, "w", encoding="utf-8") as fh:
+            json.dump(queue, fh, indent=2)
+        os.replace(tmp_path, QUEUE_FILE)
+
+
 def _login(session: requests.Session) -> bool:
     """Log in to Fandom with bot credentials. Returns True on success.
 
