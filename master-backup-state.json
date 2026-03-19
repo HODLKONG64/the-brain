@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "created_at": "2026-03-18T19:22:46Z",
-  "last_updated": "2026-03-19T12:58:32Z",
-  "run_count": 4,
+  "last_updated": "2026-03-19T18:55:18Z",
+  "run_count": 5,
   "file_registry": {
     "brain-rules.md": {
       "sha": "2dd59a3486779f7be5cbc7cdaf91dbe87b84d8435bb97d745124eb1b21e917ae",
@@ -159,9 +159,9 @@
       "is_state_file": false
     },
     "wiki-smart-merger.py": {
-      "sha": "0586cb572e7e12c8dcbb2cc31d99639378bfa3ca2c64e207eb0d866a1e97843d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 37094,
+      "sha": "c80f2ea30b7e1dae57af14794d56d6570075e48dd3e6cafdb6d6a3d9d18aa4e5",
+      "last_seen": "2026-03-19T18:55:18Z",
+      "size_bytes": 37670,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -264,9 +264,9 @@
       "is_state_file": false
     },
     "wiki-citation-checker.py": {
-      "sha": "89466030bc8dfbccc499ec99fa6c71aa6bd49b8c056680c6c1fb1ded5943a169",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 16092,
+      "sha": "3b636d58294001a8297ebb20dd4b1ad098e13bd221e1d037437dd798af1c9bb0",
+      "last_seen": "2026-03-19T18:55:18Z",
+      "size_bytes": 17174,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -862,6 +862,22 @@
       "conflicts_quarantined": 0,
       "new_file_list": [],
       "changed_file_list": [],
+      "missing_file_list": []
+    },
+    {
+      "run_at": "2026-03-19T18:55:18Z",
+      "run_number": 5,
+      "new_files": 0,
+      "changed_files": 2,
+      "unchanged_files": 41,
+      "missing_files": 0,
+      "rules_absorbed": 0,
+      "conflicts_quarantined": 0,
+      "new_file_list": [],
+      "changed_file_list": [
+        "wiki-smart-merger.py",
+        "wiki-citation-checker.py"
+      ],
       "missing_file_list": []
     }
   ]
