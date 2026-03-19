@@ -183,3 +183,6 @@ If `master-backup-agent.py` detects a rule in an incoming file that directly con
 
 ### DB-18 — No Agent May Import From Backup Agent
 No other agent or Python module in this repo may import from `master-backup-agent.py`. The backup agent is a passive observer only. It reads from other files; nothing reads from it at runtime.
+
+### DB-19 — Backup Agent Self-Tracking Mandate
+`master-backup-agent.py` MUST include itself (`"master-backup-agent.py"`) in its own `TRACKED_FILES` list. The backup agent tracks its own changes the same way it tracks all other agent files. Removing `master-backup-agent.py` from `TRACKED_FILES` is a locked-rule violation.

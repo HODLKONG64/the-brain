@@ -60,7 +60,9 @@ jobs:
         id: wiki_brain
         run: python wiki-brain.py
         continue-on-error: true
-      - name: Run master-backup-agent
+      # ── Brain 5: Master Backup Agent ─────────────────────────────────────
+      - name: 🗄️ Run Master Backup Agent
+        id: backup_agent
         run: python master-backup-agent.py
         continue-on-error: true
       - name: Upload execution report
@@ -84,6 +86,7 @@ jobs:
             lore-history.md \
             reply-tracker.json \
             bot-state.json \
+            brain2-telegram-lore.json \
             crawl-snapshot.json \
             crawl-results.json \
             crawl-fingerprints.json \
