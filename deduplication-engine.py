@@ -6,7 +6,7 @@ import hashlib, json, os
 BASE_DIR = os.path.dirname(__file__)
 REGISTRY_FILE = os.path.join(BASE_DIR, "used-updates-registry.json")
 
-def _hash(u): return hashlib.md5(((u.get("url","") or u.get("source","")) + (u.get("title","") or "") + (u.get("content","") or "")[:100]).encode()).hexdigest()
+def _hash(u): return hashlib.sha256(((u.get("url","") or u.get("source","")) + (u.get("title","") or "") + (u.get("content","") or "")[:100]).encode()).hexdigest()
 def _load():
     if os.path.exists(REGISTRY_FILE):
         try:

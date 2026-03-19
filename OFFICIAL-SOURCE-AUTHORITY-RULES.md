@@ -112,6 +112,27 @@ official sources. Content from these URLs may be used freely for wiki updates an
 
 ---
 
+## Approved Domains (must stay in sync with `_OFFICIAL_SOURCE_KEYWORDS` in `wiki-smart-merger.py`)
+
+The following domains are approved official sources for wiki updates. Any update whose
+`source` field contains one of these strings will pass the `_is_valid_wiki_source()` guard.
+**Whenever a new domain is added here, it MUST also be added to `_OFFICIAL_SOURCE_KEYWORDS`
+in `wiki-smart-merger.py`, and vice versa.**
+
+| Domain keyword | Example URL |
+|---|---|
+| `substack` | https://graffpunks.substack.com/ |
+| `medium` | https://medium.com/@GKniftyHEADS |
+| `graffpunks.live` | https://graffpunks.live/ |
+| `graffitikings.co.uk` | https://graffitikings.co.uk/ |
+| `gkniftyheads.com` | https://gkniftyheads.com/ |
+| `youtube` / `youtu.be` | https://www.youtube.com/@GKniftyHEADS/videos |
+| `twitter.com` / `x.com` | https://x.com/GKNiFTYHEADS |
+| `instagram.com` | https://www.instagram.com/gkniftyheads/ |
+| `facebook.com` | https://www.facebook.com/GraffPUNKS.Network/ |
+| `linktr.ee` | https://linktr.ee/gkniftyheads |
+| `fandom.com` / `fandom.wiki` | https://gkniftyheads.fandom.com/ |
+
 ## Rule 2 — Canon Verification Required Before Any Name Use
 Any proper noun (person, place, faction, item, event name) found on ANY website — including
 fan sites, social media, third-party blogs — must be verified against the official sources

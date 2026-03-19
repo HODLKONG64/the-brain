@@ -161,16 +161,21 @@ CONTENT_SNIPPET_LENGTH = 200       # max chars of content shown in a wiki bullet
 # Update types that must never be pushed to the wiki (Brain 2 / Telegram lore)
 _BLOCKED_UPDATE_TYPES = {"lore-post", "telegram-lore", "brain-lore"}
 
-# Official online source keywords allowed to trigger wiki updates
+# Official online source keywords allowed to trigger wiki updates.
+# Keep this list in sync with OFFICIAL-SOURCE-AUTHORITY-RULES.md § Approved Domains.
 _OFFICIAL_SOURCE_KEYWORDS = (
     "substack",
     "medium",
     "graffpunks.live",
     "graffitikings.co.uk",
+    "gkniftyheads.com",
     "youtube",
     "youtu.be",
     "twitter.com",
     "x.com",
+    "instagram.com",
+    "facebook.com",
+    "linktr.ee",
     "fandom.com",
     "fandom.wiki",
 )
