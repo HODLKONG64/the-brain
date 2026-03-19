@@ -1,3 +1,4 @@
+wiki-gap-report.json
 # Crawl snapshots and temp data (never commit these)
 crawl-snapshot.json
 crawl-data/
