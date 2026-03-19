@@ -321,13 +321,32 @@ def _check_and_repair_page(
                 modified = _replace_url_in_wikitext(modified, url, replacement)
             summary["replaced"] += 1
         else:
-            # --- Repair strategy 2: Remove the citation line ---
-            logger.info("  REMOVE  citation for %s", url)
-            if not dry_run:
-                modified = _remove_lines_containing_url(modified, url)
-            summary["removed"] += 1
+            # --- Repair strategy 2: LOG ONLY — never auto-delete content ---
+            # Removing lines containing dead URLs deletes the surrounding
+            # wiki content (bullet text, lore entries, etc.), not just the URL.
+            # Dead links with no Wayback snapshot are logged for human review only.
+            logger.warning(
+                "  DEAD (no archive) — logged for review, NOT removed: %s (page: %s)",
+                url, page_title
+            )
+            summary["removed"] += 1  # counter kept for reporting, but no edit made
 
-        changed = True
+        if replacement:
+            changed = True
+
+    # Safety guard: never write if modified content is less than 80% of original.
+    # This prevents accidental mass-deletion from wiping pages.
+    if changed and not dry_run and modified != wikitext:
+        original_len = len(wikitext.strip())
+        modified_len = len(modified.strip())
+        if original_len > 500 and modified_len < original_len * 0.80:
+            logger.error(
+                "SAFETY ABORT: citation-checker would reduce '%s' from %d to %d chars "
+                "(>20%% reduction). Skipping edit to protect content.",
+                page_title, original_len, modified_len,
+            )
+            summary["errors"] += 1
+            return summary
 
     if changed and not dry_run and modified != wikitext:
         try:

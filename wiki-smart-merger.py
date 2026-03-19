@@ -812,6 +812,17 @@ def run_smart_wiki_updates(dry_run: bool = False) -> dict:
     # Fetch the main wiki page once; update in-memory for each entry.
     main_page_content = fandom_auth.get_page_content(session, MAIN_WIKI_PAGE)
 
+    # Safety guard: if the fetched page content is suspiciously short, abort.
+    # An empty or near-empty fetch followed by a full replace would wipe the page.
+    if len(main_page_content.strip()) < 200:
+        logger.error(
+            "SAFETY ABORT: fetched content for '%s' is only %d chars — "
+            "refusing to write as this would risk wiping the page. "
+            "Check Fandom API connectivity.",
+            MAIN_WIKI_PAGE, len(main_page_content.strip())
+        )
+        return {"smart_merged": 0, "appended": 0, "failed": len(pending), "skipped": 0}
+
     for update in pending:
         try:
             # --- Source validation guard (must pass before any wiki write) ---
