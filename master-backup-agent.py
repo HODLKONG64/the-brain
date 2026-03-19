@@ -49,7 +49,10 @@ TRACKED_FILES = [
     "copilot-rule.md",
     "update-integration-rules.md",
     "wiki-merge-rules.md",
+    "wiki-image-rules.md",
     "TELEGRAM-BOT-API-RULES.md",
+    "OFFICIAL-SOURCE-AUTHORITY-RULES.md",
+    "WEBLORERULES.md",
     "cross-platform-consistency.md",
     "FANDOM-API-RULES.md",
     "LORE-RULE-DETECTOR-DEEP-LOGIC.md",
@@ -66,25 +69,32 @@ TRACKED_FILES = [
 
     # Agent code
     "gk-brain.py",
+    "gk-brain-recovery.py",
     "crawl-brain.py",
     "analytics-brain.py",
     "wiki-brain.py",
     "wiki-updater.py",
     "wiki-smart-merger.py",
     "wiki-cross-checker.py",
+    "wiki-citation-checker.py",
+    "wiki-formatter.py",
+    "wiki-page-builder.py",
+    "web-lore-agent.py",
     "update-detector.py",
     "fandom_auth.py",
     "execution-reporter.py",
     "user-profile.py",
-    "telegram-narrator-system.py",
+    "master-backup-agent.py",
 
-    # Workflow
+    # Workflows
     ".github/workflows/gk-brain.yml",
+    ".github/workflows/web-lore-agent.yml",
 
     # State files (tracked but not merged into rule snapshot)
     "brain1-canon.json",
     "engagement-tracker.json",
     "recommendations.json",
+    "crawl-results.json",
 ]
 
 # These files contain LOCKED rules that cannot be overridden by later updates.
@@ -93,8 +103,10 @@ LOCKED_RULE_FILES = {
     "brain-rules.md",
     "gk-brain-complete.md",
     "TELEGRAM-BOT-API-RULES.md",
+    "OFFICIAL-SOURCE-AUTHORITY-RULES.md",
     "MASTER-CHARACTER-CANON.md",
     "BRAIN-COORDINATOR.md",
+    "copilot-rule.md",
 }
 
 # Files that are state/runtime data — changes are always accepted, never conflict-checked
@@ -155,7 +167,6 @@ def _save_state(state: dict) -> None:
 def _now() -> str:
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-
 # ---------------------------------------------------------------------------
 # Rule extraction (lightweight — extracts DB-xx rules and key constants)
 # ---------------------------------------------------------------------------
@@ -167,7 +178,7 @@ _DB_RULE_RE = re.compile(r"^#{2,4}\s+(DB-\d+)\s+[—–-]+\s+(.+)$", re.MULTILIN
 
 # Matches Python constants like: SOME_CONSTANT = 42
 # Minimum 3 chars to capture short but meaningful names (e.g. MAX, URL, API).
-_PY_CONST_RE = re.compile(r"^([A-Z_]{3,})\s*=\s*(.+)$", re.MULTILINE)
+_PY_CONST_RE = re.compile(r"^([A-Z_]{{3,}})\s*=\s*(.+)$", re.MULTILINE)
 
 
 def _extract_rules(filename: str, content: str) -> dict:
@@ -230,10 +241,8 @@ def _detect_conflicts(
 # ---------------------------------------------------------------------------
 # Main sync logic
 # ---------------------------------------------------------------------------
-
 def run_backup_sync() -> dict:
-    """
-    Full sync cycle:
+    """Full sync cycle:
     1. Load existing state.
     2. Scan all tracked files for SHA changes.
     3. For changed/new files: extract rules, detect conflicts, update registry.
