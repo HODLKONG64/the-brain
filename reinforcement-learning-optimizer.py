@@ -27,6 +27,7 @@ def _load_memory() -> dict:
             pass
     return {"outcomes": [], "pattern_scores": {}}
 
+
 def _save_memory(memory: dict) -> None:
     try:
         memory["outcomes"] = memory["outcomes"][-MAX_HISTORY:]
@@ -71,9 +72,9 @@ def get_strategy_hints(rule_ctx: dict) -> str:
 
         lines = ["=== STRATEGY HINTS (learned from past posts) ==="]
         for pattern, score in top:
-            lines.append(f"✓ HIGH SCORE ({score:.1f}/10): {pattern}")
+            lines.append(f"✓ HIGH SCORE ({{score:.1f}}/10): {{pattern}}")
         for pattern, score in bottom:
-            lines.append(f"✗ LOW SCORE ({score:.1f}/10): {pattern} — avoid this pattern")
+            lines.append(f"✗ LOW SCORE ({{score:.1f}}/10): {{pattern}} — avoid this pattern")
 
         current_pattern = _get_pattern_for_context(rule_ctx)
         if current_pattern in pattern_scores:
