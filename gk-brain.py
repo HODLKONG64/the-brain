@@ -201,6 +201,7 @@ SNAPSHOT_FILE = os.path.join(BASE_DIR, "crawl-snapshot.json")
 GENESIS_LORE_FILE = os.path.join(BASE_DIR, "genesis-lore.md")
 BRAIN1_CANON_FILE = os.path.join(BASE_DIR, "brain1-canon.json")
 BRAIN2_LORE_FILE = os.path.join(BASE_DIR, "brain2-telegram-lore.json")
+RECOVERY_STATE_FILE = os.path.join(BASE_DIR, "post-recovery-state.json")
 
 # Reference art images (2 boys sets + 2 girls sets)
 _ASSETS_DIR = os.path.join(BASE_DIR, "assets", "layers")
