@@ -81,6 +81,9 @@ jobs:
         id: backup_agent
         run: python master-backup-agent.py
         continue-on-error: true
+      - name: Propagate Reinforcement Learning Updates from Brain 3
+        run: python gk-brain.py --propagate-rl-updates
+        continue-on-error: true
       - name: Upload execution report
         if: always()
         uses: actions/upload-artifact@v4

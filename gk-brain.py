@@ -21,6 +21,7 @@ import logging
 import os
 import random
 import re
+import sys
 import json
 import time
 import datetime
@@ -227,6 +228,11 @@ GROK_CHAT_BACKOFF_BASE   = 2          # seconds; doubles each retry
 GROK_IMAGE_TIMEOUT_SEC   = 90
 IMAGE_MAX_FAILS          = 50         # keep existing value
 LORE_MAX_FAILS           = 50         # keep existing value
+
+# DB-25: Brain 3 is the SINGLE reinforcement learning brain.
+# Loads reinforcement-learning-optimizer.py on every 2-hour wake-up.
+# Learns from 4 art files in assets/layers/, Telegram engagement, lore performance.
+# rl_state.json is written here and propagated by master-backup-agent.py to all brains.
 
 # Telegram character limits and split configuration.
 # MSG1 is a plain-text message (no image); MSG2 is an image caption.
@@ -1051,6 +1057,17 @@ def generate_lore_pair(
 
     Returns: (lore_text_1, image_prompt_1, lore_text_2, image_prompt_2)
     """
+    # DB-25 REINFORCEMENT LEARNING CONSOLIDATION (Brain 3 ONLY)
+    updated_prompts = None  # default: no RL refinement this cycle
+    try:
+        if _rl_optimizer is not None and hasattr(_rl_optimizer, "ReinforcementLearningOptimizer"):
+            _rl_inst = _rl_optimizer.ReinforcementLearningOptimizer()
+            _rl_inst.load_art_feedback("assets/layers/")  # learn from 4 sacred PNG files every wake-up
+            _rl_inst.analyze_previous_telegram_engagement("lore-history.md")  # infinite learning loop
+            updated_prompts = _rl_inst.improve_image_lore_style()  # auto-update prompts & style
+    except Exception as _rl_exc:
+        print(f"[db25-rl] Reinforcement learning step skipped: {_rl_exc}")
+
     now = datetime.datetime.now(datetime.timezone.utc)
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
@@ -2380,4 +2397,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if "--propagate-rl-updates" in sys.argv:
+        _rl_state_path = os.path.join(BASE_DIR, "rl_state.json")
+        if os.path.exists(_rl_state_path):
+            print("[db25-rl] RL propagation triggered — rl_state.json found, propagating to all brains.")
+        else:
+            print("[db25-rl] RL propagation triggered — rl_state.json not yet created, no-op this cycle.")
+    else:
+        main()

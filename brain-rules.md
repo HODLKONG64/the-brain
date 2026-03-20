@@ -210,3 +210,6 @@ No other agent or Python module in this repo may import from `master-backup-agen
 
 **DB-24**: All wiki edits must include a short audit trail comment at the bottom of each edited section.
 Format: `<!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->`
+
+### DB-25 — Brain 3 Reinforcement Learning Consolidation
+`gk-brain.py` is the SINGLE reinforcement learning brain. On EVERY Telegram ping/wake-up (every 2-hour workflow run), it loads `reinforcement-learning-optimizer.py` to continuously learn from the 4 art files in `assets/layers/`, previous Telegram engagement metrics, and lore performance. `master-backup-agent.py` then propagates the new learned parameters (via `rl_state.json`) to `analytics-brain.py`, `wiki-brain.py` and all other brains for the next cycle. Creates infinite self-improvement without conflicting any existing rules.
