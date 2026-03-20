@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "created_at": "2026-03-18T19:22:46Z",
-  "last_updated": "2026-03-20T01:51:11Z",
-  "run_count": 6,
+  "last_updated": "2026-03-20T06:51:55Z",
+  "run_count": 7,
   "file_registry": {
     "brain-rules.md": {
-      "sha": "2dd59a3486779f7be5cbc7cdaf91dbe87b84d8435bb97d745124eb1b21e917ae",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 14906,
-      "rule_count": 14,
+      "sha": "0146496ac308ac5310634511d4506ac6d603a317018a16e8fe902afa6106e12a",
+      "last_seen": "2026-03-20T06:51:55Z",
+      "size_bytes": 23064,
+      "rule_count": 17,
       "is_state_file": false
     },
     "gk-brain-complete.md": {
@@ -124,9 +124,9 @@
       "is_state_file": false
     },
     "gk-brain.py": {
-      "sha": "55dcce3f88a07b42da50edeccfe5de9e6b7a0ae8fe6421c1790b6cf84843e54d",
-      "last_seen": "2026-03-20T01:51:11Z",
-      "size_bytes": 101173,
+      "sha": "13a2d1876a173d5818a17e01a7f19a06401e21e7053f911fa9333ae246d600d6",
+      "last_seen": "2026-03-20T06:51:55Z",
+      "size_bytes": 103767,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -145,9 +145,9 @@
       "is_state_file": false
     },
     "wiki-brain.py": {
-      "sha": "e3f64bc2733888e7bb88cdd0924b882eb80492eb8be03ec3f3093cc0540de722",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 5939,
+      "sha": "3494f369b2740eee8f97539266de3047ebc9aa153f726b2dd832a9f2d69838d0",
+      "last_seen": "2026-03-20T06:51:55Z",
+      "size_bytes": 8993,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -208,9 +208,9 @@
       "is_state_file": false
     },
     ".github/workflows/gk-brain.yml": {
-      "sha": "3a4912c04f0137a4d768355edfc601a88f67b60ce589f8f7c3d2ec4696b2ba4f",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 6006,
+      "sha": "2553ca2132d350ceec3917c5c4dcf8a929f30489dbea7433e057d5d77bb111aa",
+      "last_seen": "2026-03-20T06:51:55Z",
+      "size_bytes": 8189,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -292,9 +292,9 @@
       "is_state_file": false
     },
     "master-backup-agent.py": {
-      "sha": "bb6ac7521023508c0874e3306dbca135cbdfbcec4c07ab7db96684612e810a4a",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 13168,
+      "sha": "d309d6f4a5b643fe0fce3f95beefe36a6f6fc50965941d03454b7ca85ef81eca",
+      "last_seen": "2026-03-20T06:51:55Z",
+      "size_bytes": 13310,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -317,62 +317,62 @@
     "DB-1": {
       "value": "Wiki Separation",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-2": {
       "value": "20% Creative Signal Rule",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-3": {
       "value": "7-Day Signal Vault",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-4": {
       "value": "Signal Lifecycle",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-5": {
       "value": "Post 2 Image Cue",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-6": {
       "value": "Brain Isolation",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-7": {
       "value": "Wiki Brain Gatekeeper",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-8": {
       "value": "Crawl Deduplication",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-9": {
       "value": "Lore History Retention",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-10": {
       "value": "Env Fast-Fail",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-11": {
       "value": "Claude Routing",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-12": {
       "value": "Telegram Rate Guard",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-13": {
       "value": "Auto-Pin After Message 2",
@@ -387,7 +387,7 @@
     "DB-15": {
       "value": "Master Backup Agent Runs Last",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
     },
     "DB-16": {
       "value": "Master Backup Agent Conflict Quarantine",
@@ -647,7 +647,22 @@
     "DB-19": {
       "value": "Backup Agent Self-Tracking Mandate",
       "source_file": "brain-rules.md",
-      "absorbed_at": "2026-03-19T06:56:58Z"
+      "absorbed_at": "2026-03-20T06:51:55Z"
+    },
+    "DB-25": {
+      "value": "Brain 3 Reinforcement Learning Consolidation",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-20T06:51:55Z"
+    },
+    "DB-26": {
+      "value": "All Websites from Chat Locked Eternal as Permanent Official Crawl Sources",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-20T06:51:55Z"
+    },
+    "DB-27": {
+      "value": "Micro-Gaps Acknowledged as Not-Yet-Public",
+      "source_file": "brain-rules.md",
+      "absorbed_at": "2026-03-20T06:51:55Z"
     }
   },
   "conflict_log": [
@@ -738,6 +753,51 @@
       "rule_id": "DB-18",
       "existing_value": "No Agent May Import from Master Backup Agent",
       "incoming_value": "No Agent May Import From Backup Agent (locked)",
+      "status": "quarantined",
+      "resolution": null
+    },
+    {
+      "detected_at": "2026-03-20T06:51:55Z",
+      "file": "brain-rules.md",
+      "rule_id": "DB-13",
+      "existing_value": "Auto-Pin After Message 2",
+      "incoming_value": "Image Memory-Only Policy",
+      "status": "quarantined",
+      "resolution": null
+    },
+    {
+      "detected_at": "2026-03-20T06:51:55Z",
+      "file": "brain-rules.md",
+      "rule_id": "DB-14",
+      "existing_value": "Telegram API Compliance",
+      "incoming_value": "Auto-Pin After Post 2",
+      "status": "quarantined",
+      "resolution": null
+    },
+    {
+      "detected_at": "2026-03-20T06:51:55Z",
+      "file": "brain-rules.md",
+      "rule_id": "DB-16",
+      "existing_value": "Master Backup Agent Conflict Quarantine",
+      "incoming_value": "Conflict Quarantine",
+      "status": "quarantined",
+      "resolution": null
+    },
+    {
+      "detected_at": "2026-03-20T06:51:55Z",
+      "file": "brain-rules.md",
+      "rule_id": "DB-17",
+      "existing_value": "Master Backup Agent Scope",
+      "incoming_value": "Backup Scope",
+      "status": "quarantined",
+      "resolution": null
+    },
+    {
+      "detected_at": "2026-03-20T06:51:55Z",
+      "file": "brain-rules.md",
+      "rule_id": "DB-18",
+      "existing_value": "No Agent May Import from Master Backup Agent",
+      "incoming_value": "No Agent May Import From Backup Agent",
       "status": "quarantined",
       "resolution": null
     }
@@ -901,6 +961,25 @@
         "gk-brain.py",
         "crawl-brain.py",
         "wiki-smart-merger.py"
+      ],
+      "missing_file_list": []
+    },
+    {
+      "run_at": "2026-03-20T06:51:55Z",
+      "run_number": 7,
+      "new_files": 0,
+      "changed_files": 5,
+      "unchanged_files": 38,
+      "missing_files": 0,
+      "rules_absorbed": 17,
+      "conflicts_quarantined": 5,
+      "new_file_list": [],
+      "changed_file_list": [
+        "brain-rules.md",
+        "gk-brain.py",
+        "wiki-brain.py",
+        "master-backup-agent.py",
+        ".github/workflows/gk-brain.yml"
       ],
       "missing_file_list": []
     }
