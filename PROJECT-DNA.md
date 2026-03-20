@@ -123,3 +123,103 @@ graffpunks.live (7 subpages), gkniftyheads.com, graffpunks.substack.com, medium.
 
 **DB-32 Creativity Boost:** Confirmed active in gk-brain.py generate_lore_pair() — Guardian creative boost injected into every Brain 3 cycle.
 **DB-34 Rate-Limit Fix:** Confirmed active in error-guardian-agent.py catch_and_fix() — 160s + growth_score×30 sleep, 3 retries.
+
+---
+
+## EXTENDED DB RULES (DB-13 through DB-36) — Moved from brain-rules.md per DB-37
+
+### DB-13 — Image Memory-Only Policy
+Generated images MUST NEVER be written to disk. Images are produced in memory as bytes, streamed directly to Telegram via multipart upload (_telegram_send_photo()), and then discarded. No image file (PNG, JPG, or any binary) may be persisted to the repository, local filesystem, or any storage layer. Execution reports may log image metadata (size in KB, prompt text, status) but MUST NOT store raw image bytes.
+
+### DB-14 — Auto-Pin After Post 2
+After Message 2 is successfully sent to each Telegram chat, the agent MUST call `pinChatMessage` with `disable_notification=True` to pin that message silently. Pinning is best-effort — a pin failure MUST be printed to stdout but MUST NOT prevent the rest of the posting loop from continuing.
+
+### DB-15 — Master Backup Agent Runs Last
+`master-backup-agent.py` MUST be the final step in every GitHub Actions workflow cycle. It runs after all other agents have completed. It MUST NOT be called from within any other agent. It always exits with code 0 regardless of internal errors.
+
+### DB-16 — Conflict Quarantine
+If `master-backup-agent.py` detects a rule in an incoming file that directly contradicts an existing locked rule (DB-1 through DB-18, MB-1 through MB-5), it MUST log the conflict to `master-backup-state.json` under a `conflicts` key and skip absorbing that rule. It MUST NOT overwrite the locked rule.
+
+### DB-17 — Backup Scope
+`master-backup-agent.py` MUST fingerprint (SHA-256) all 34 tracked repo files on every run. It extracts DB-N and MB-N rules from `.md` files and module-level constants from `.py` files. All extracted data is written append-only to `master-backup-state.json`. Atomic writes via `tmp + os.replace` are mandatory.
+
+### DB-18 — No Agent May Import From Backup Agent
+No other agent or Python module in this repo may import from `master-backup-agent.py`. The backup agent is a passive observer only. It reads from other files; nothing reads from it at runtime.
+
+### DB-19 — Backup Agent Self-Tracking Mandate
+`master-backup-agent.py` MUST include itself (`"master-backup-agent.py"`) in its own `TRACKED_FILES` list. The backup agent tracks its own changes the same way it tracks all other agent files. Removing `master-backup-agent.py` from `TRACKED_FILES` is a locked-rule violation.
+
+### DB-20 — Wiki Brain Telegram Blindness
+Wiki brain 100% blind to all Telegram output. Telegram data must never influence wiki content.
+
+### DB-21 — Wiki Crawl Targets (7 graffpunks.live subpages)
+Scan ONLY these 7 official graffpunks.live subpages first every run. Summarise new sections neutrally, add `<ref>https://graffpunks.live/[subpage]/ [accessed YYYY-MM-DD]</ref>`, create missing headings/tables:
+- https://graffpunks.live/the-lore/
+- https://graffpunks.live/gk-factions/
+- https://graffpunks.live/graffiti-kings-nfts/
+- https://graffpunks.live/free-nfts/
+- https://graffpunks.live/graffiti-nfts/
+- https://graffpunks.live/the-vision/
+- https://graffpunks.live/xrp-kids/
+
+### DB-22 — Wiki Cross-Reference Mandate
+After every crawl, automatically cross-reference new content against full PROJECT-DNA.md and force creation of missing subsections/tables even if gap-detector previously skipped them.
+
+### DB-23 — Wiki Teacher Cycle Mandate
+Teacher agent must run every single 2-hour cycle (not just once) and dynamically append any newly discovered graffpunks.live subpages to the 7-URL list while still enforcing the read-once bible lock and zero code conflicts.
+
+### DB-24 — Wiki Audit Trail Signature
+All wiki edits must include a short audit trail comment at the bottom of each edited section.
+Format: `<!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->`
+
+### DB-25 — Brain 3 Reinforcement Learning Consolidation
+`gk-brain.py` is the SINGLE reinforcement learning brain. On EVERY Telegram ping/wake-up (every 2-hour workflow run), it loads `reinforcement-learning-optimizer.py` to continuously learn from the 4 art files in `assets/layers/`, previous Telegram engagement metrics, and lore performance. `master-backup-agent.py` then propagates the new learned parameters (via `rl_state.json`) to `analytics-brain.py`, `wiki-brain.py` and all other brains for the next cycle.
+
+### DB-26 — All Websites Locked Eternal as Permanent Official Crawl Sources
+ALL WEBSITES FROM CHAT LOCKED ETERNAL as permanent official crawl sources:
+graffpunks.live (7 subpages), gkniftyheads.com, graffpunks.substack.com, medium.com/@GKniftyHEADS, medium.com/@HODLWARRIORS, graffitikings.co.uk, linktr.ee/gkniftyheads, deliciousagainpeter.com, boneidolink socials, waxonedge.app, discord.gg/mMsaXpfdGm (awareness only), gkniftyheads.fandom.com (target only).
+
+### DB-27 — Micro-Gaps Acknowledged as Not-Yet-Public
+Micro-gaps (2026 dates + Delicious Again Peter toys) acknowledged as not-yet-public. No crawl required. Final canon status. When these details go public, they will be added to PROJECT-DNA.md and crawled automatically via DB-26.
+
+### DB-28 — Error Guardian Agent: Almighty Doctor + Supreme Overlord
+`error-guardian-agent.py` is the ALMIGHTY DOCTOR and SUPREME OVERLORD of the entire GK Brain system. Catches ALL stack traces and rate limits in real-time. Auto-sleeps 90 seconds on any rate-limit detection, then resumes. Diagnoses all errors, applies auto-patches. Runs after EVERY brain step in `.github/workflows/gk-brain.yml` with `if: always()` and `continue-on-error: true`.
+
+### DB-29 — Reserved (future use)
+
+### DB-30 — Reserved (future use)
+
+### DB-31 — CrewAI Multi-Agent Orchestration in Error Guardian
+CrewAI fully integrated into Error Guardian Agent. Guardian now spawns multi-agent CrewAI crews (Diagnoser + Fix Strategist + Lesson Recorder) for complex errors. Works seamlessly with LangGraph reflection. `error-guardian-agent.py` directly imports and requires `crewai` and `langgraph` (no graceful fallback). Zero human input required at any point.
+
+### DB-32 — Brain 3 Creativity Learning from All Open-Source LLMs
+`gk-brain.py` now actively learns creativity from ALL open-source LLMs — CrewAI, LangGraph, Crawl4AI, Grok, Claude — on every 2-hour cycle via `error-guardian-agent.py`. Guardian's `get_creative_patterns_from_all_llms()` is called inside `generate_lore_pair()` with the latest crawl data and lore history. The resulting creative boost string is injected directly into Brain 3's system prompt before all Claude and Grok generation calls.
+
+### DB-33 — New Canon: Locked People, Sites & Characters
+The following real people are PERMANENTLY LOCKED as official canon:
+- Jonny Nelson — DJ / S.U.M. Sessions co-host (with Danny Young); GraffPUNKS Network Radio.
+- Laurence Nelson — Support DJ, GraffPUNKS Network Radio appearances.
+- Trevor Fung — Godfather DJ, GraffPUNKS Network Radio anchor.
+- Bone Idol Ink (@boneidolink) — Co-founder Crypto Moonboys; Graffiti Kings illustrator & merch designer.
+- Delicious Again Peter — Co-founder Crypto Moonboys; limited-edition fine-art vinyl toy designer; runs deliciousagainpeter.com.
+- Pete — GK community member / narrator voice (locked canon name).
+- Charlie Buster — Core Graffiti Kings artist, No Ball Games founder, official GK voice/narrator in HODL WARS lore, son of Darren Cullen (SER).
+- Momo Dunne — Official GK/GraffPUNKS community figure; locked canon.
+- imkhaleesii — Official GKniftyHEADS community figure; locked canon.
+
+### DB-34 — Guardian Rate-Limit Fix
+`error-guardian-agent.py` `catch_and_fix()` MUST detect the exact string "you have exceeded your rate limit" (case-insensitive) in addition to "ratelimited" and "rate limit". Sleep for **160 seconds + (growth_score × 30)** seconds. Retry up to 3 times. Log: `[guardian-db34] Rate limit sleep {N}s — retry {attempt}/3`. This supersedes the 90-second sleep in DB-28.
+
+### DB-35 — Rule Bloat Fix (superseded by DB-37)
+`brain-rules.md` limited to core operational rules only. All extended rules, lore, faction data, and real-people canon stored in `PROJECT-DNA.md` and `gk-brain-complete.md`. `BRAIN_RULES_FILE` in `gk-brain.py` points to `gk-brain-complete.md` for the full config. (DB-37 tightened this to exactly 12 core rules.)
+
+### DB-36 — Reserved (future use)
+
+### DB-37 — Lean 4-Brain Mandate (No Bloat Allowed)
+**Implemented: 2026-03-20**
+
+The GK BRAIN system runs on exactly 4 active brains + 2 support agents. No other Python files may be active in root. All other `.py` files archived to `archive/` with one-line root stubs. `brain-rules.md` limited to exactly 12 core DB rules (DB-1 through DB-12) plus DB-37. This makes the system fast, stable, and infinitely creative with zero conflicts and all canon locked forever.
+
+**Active root Python files (permanent, never archive):**
+- `crawl-brain.py`, `analytics-brain.py`, `gk-brain.py`, `wiki-brain.py`
+- `error-guardian-agent.py`, `master-backup-agent.py`
