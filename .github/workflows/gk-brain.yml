@@ -66,6 +66,10 @@ jobs:
         id: lore_brain
         run: python gk-brain.py
         continue-on-error: true
+      - name: 🎨 Brain 3 Creativity Boost via Guardian (DB-32)
+        id: creativity_boost
+        run: python gk-brain.py --creativity-boost
+        continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"

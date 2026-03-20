@@ -247,3 +247,16 @@ CrewAI fully integrated into Error Guardian Agent. Guardian now spawns multi-age
 ## DB-31 (Hard-Wire Update): CrewAI Fully Integrated — No Fallbacks
 
 `error-guardian-agent.py` now directly imports and requires `crewai` and `langgraph` (no graceful fallback). Guardian spawns multi-agent CrewAI crews (Diagnoser + Fix Strategist + Lesson Recorder) for complex errors. Works seamlessly with LangGraph reflection and Brain 3 for instant review of ALL outputs (CrewAI teacher, wiki, RL, etc.). Zero human input required at any point. Guardian is the connected, self-reflecting, multi-agent, almighty doctor and supreme overlord of the entire GK BRAIN system.
+
+---
+
+## DB-32: Brain 3 Creativity Learning from All Open-Source LLMs
+
+`gk-brain.py` now actively learns creativity from ALL open-source LLMs — CrewAI, LangGraph, Crawl4AI, Grok, Claude — on every 2-hour cycle via `error-guardian-agent.py`.
+
+- On every cycle, Guardian's `get_creative_patterns_from_all_llms()` is called inside `generate_lore_pair()` with the latest crawl data and lore history.
+- Guardian spawns a CrewAI crew (Creative Pattern Extractor agent) that fuses multi-agent thinking, LangGraph reflection, Crawl4AI patterns, Grok imagination, and Claude depth.
+- The resulting creative boost string is injected directly into Brain 3's system prompt before all Claude and Grok generation calls.
+- Guardian reviews and fixes every output instantly — zero human input required at any point.
+- Brain 3 + Guardian together make the entire system infinitely creative and self-evolving while staying true to all Crypto Moonboys canon.
+- This rule does NOT conflict with DB-1 through DB-31. It extends the RL pipeline (DB-25) with cross-LLM creative intelligence.
