@@ -80,6 +80,29 @@ _HEADERS = {
     )
 }
 
+# ===========================================================================
+# DB-19: Wiki target is ONLY https://gkniftyheads.fandom.com
+#         Zero Wikipedia influence ever.
+# DB-20: Wiki brain is 100% blind to all Telegram output.
+#         Never read, reference, or process any Telegram data.
+# DB-21: Scan these 7 graffpunks.live subpages FIRST every run.
+#         Summarise new sections neutrally, add <ref> citations,
+#         create missing headings/tables.
+# ===========================================================================
+
+FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"  # DB-19: ONLY target
+
+# DB-21: 7 priority crawl targets — scanned FIRST every run
+GRAFFPUNKS_PRIORITY_URLS = [
+    "https://graffpunks.live/the-lore/",
+    "https://graffpunks.live/gk-factions/",
+    "https://graffpunks.live/graffiti-kings-nfts/",
+    "https://graffpunks.live/free-nfts/",
+    "https://graffpunks.live/graffiti-nfts/",
+    "https://graffpunks.live/the-vision/",
+    "https://graffpunks.live/xrp-kids/",
+]
+
 # ---------------------------------------------------------------------------
 # Source definitions
 # Tuple: (label, homepage_url, rss_url_or_None, update_type)
@@ -89,6 +112,14 @@ _HEADERS = {
 # ---------------------------------------------------------------------------
 
 SOURCES = [
+    # DB-21: graffpunks.live priority URLs — scanned FIRST every run
+    ("graffpunks-the-lore",         "https://graffpunks.live/the-lore/",          None, "lore-real"),
+    ("graffpunks-gk-factions",      "https://graffpunks.live/gk-factions/",       None, "gkdata-real"),
+    ("graffpunks-graffiti-kings",   "https://graffpunks.live/graffiti-kings-nfts/", None, "gkdata-real"),
+    ("graffpunks-free-nfts",        "https://graffpunks.live/free-nfts/",         None, "news-real"),
+    ("graffpunks-graffiti-nfts",    "https://graffpunks.live/graffiti-nfts/",     None, "gkdata-real"),
+    ("graffpunks-the-vision",       "https://graffpunks.live/the-vision/",        None, "gkdata-real"),
+    ("graffpunks-xrp-kids",         "https://graffpunks.live/xrp-kids/",          None, "news-real"),
     # GK & GraffPunks — Substack (has RSS)
     (
         "graffpunks-substack",
@@ -565,10 +596,17 @@ def _build_queue_entry(article: dict, update_type: str, source_label: str) -> di
         except Exception:
             pass
 
-    return {
+    # DB-21: Build <ref> citation for priority graffpunks.live URLs
+    article_url = article.get("url", "")
+    citation = ""
+    if article_url.startswith("https://graffpunks.live/"):
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        citation = f"<ref>{article_url} [accessed {today}]</ref>"
+
+    entry = {
         "title": article.get("title", "Unknown"),
-        "url": article.get("url", ""),
-        "source": article.get("url", ""),
+        "url": article_url,           # canonical article URL
+        "source": article_url,        # kept for wiki-smart-merger source-filter compatibility
         "source_label": source_label,
         "type": update_type,
         "content": f"Article detected by wiki-gap-detector from {source_label}. See source URL for full content.",
@@ -577,6 +615,9 @@ def _build_queue_entry(article: dict, update_type: str, source_label: str) -> di
         "wiki_done": False,
         "detected_by": "wiki-gap-detector",
     }
+    if citation:
+        entry["citation"] = citation
+    return entry
 
 
 # ---------------------------------------------------------------------------
@@ -675,6 +716,7 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
           "run_timestamp": str,
         }
     """
+    # DB-20: Never read Telegram data — wiki brain is blind to Telegram output
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
