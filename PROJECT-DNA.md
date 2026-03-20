@@ -95,3 +95,31 @@ gkniftyheads.com shows prominent "COUNTDOWN 2026" + Google sign-up form (officia
 
 === LOCKED WEBSITES (DB-26) ===
 graffpunks.live (7 subpages), gkniftyheads.com, graffpunks.substack.com, medium.com/@GKniftyHEADS, medium.com/@HODLWARRIORS, graffitikings.co.uk, linktr.ee/gkniftyheads, deliciousagainpeter.com, boneidolink socials, waxonedge.app, discord.gg/mMsaXpfdGm (awareness only), gkniftyheads.fandom.com (target only).
+
+=== NEW MISSING CANON — DB-33 ADDITIONS (March 2026 Scan) ===
+
+**New Real People (locked forever as per DB-33):**
+- Jonny Nelson — DJ / S.U.M. Sessions co-host (with Danny Young); GraffPUNKS Network Radio.
+- Laurence Nelson — Support DJ, GraffPUNKS Network Radio.
+- Trevor Fung — Godfather DJ, GraffPUNKS Network Radio anchor.
+- Momo Dunne — Official GK/GraffPUNKS community figure.
+- imkhaleesii — Official GKniftyHEADS community figure.
+- Pete (Charlie Buster) — GK community narrator/voice (already locked as Charlie Buster; Pete = community-facing alias).
+- Bone Idol Ink, Delicious Again Peter, Sarah PU51FLY — previously listed; reconfirmed locked.
+
+**New Locked Sites (additions to DB-26 crawl list):**
+- graffitikings.co.uk (reconfirmed)
+- Facebook GraffPUNKS Network (awareness-only)
+- GraffPUNKS Network social channels (awareness-only)
+
+**March 2026 Official Scans Completed:**
+- Substack @graffpunks: "CRYPTO MOONBOYS UNIVERSE: COMPREHENSIVE AUDIT REPORT" (Mar 17 2026) — confirmed canon.
+- Substack @graffpunks: "ALFIE 'THE BITCOIN KID' BLAZE" (Mar 15 2026) — confirmed canon.
+- Substack @graffpunks: "MEGA WHITE PAPER: THE GK BRAIN" (Mar 15 2026) — confirmed canon.
+- Medium @HODLWARRIORS: All four named posts confirmed canon (see LOCKED SUBSTACK / MEDIUM POSTS above).
+- gkniftyheads.com: "COUNTDOWN 2026" + Google sign-up form confirmed as official rocket ignition signal.
+- All 32 characters confirmed locked. All 40 factions confirmed locked. All 6 Pillars confirmed locked.
+- Queen Sarah P-fly, Alfie "The Bitcoin Kid" Blaze, NULL THE PROPHET — all reconfirmed primary canon roles.
+
+**DB-32 Creativity Boost:** Confirmed active in gk-brain.py generate_lore_pair() — Guardian creative boost injected into every Brain 3 cycle.
+**DB-34 Rate-Limit Fix:** Confirmed active in error-guardian-agent.py catch_and_fix() — 160s + growth_score×30 sleep, 3 retries.

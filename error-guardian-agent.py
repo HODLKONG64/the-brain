@@ -21,10 +21,11 @@ class ErrorGuardian:
             "Discord awareness only, micro-gaps acknowledged."
         )
         self.rules = (
-            "DB-1 to DB-31 enforced (Wiki FANDOM-only, Telegram blind, Brain 3 RL only, "
+            "DB-1 to DB-34 enforced (Wiki FANDOM-only, Telegram blind, Brain 3 RL only, "
             "locked websites DB-26, micro-gaps DB-27, Guardian as Almighty Doctor DB-28, "
             "Self-Learning & Growth DB-29, LangGraph Stateful Reflection DB-30, "
-            "CrewAI Multi-Agent Orchestration DB-31)"
+            "CrewAI Multi-Agent Orchestration DB-31, "
+            "Brain 3 Creativity Learning DB-32, New Canon DB-33, Rate-Limit Fix DB-34)"
         )
         self.lessons_file = "guardian-lessons.json"
         self.load_lessons()
@@ -96,10 +97,19 @@ class ErrorGuardian:
             )
             crew = Crew(agents=[diagnoser, fixer, learner], tasks=[task1, task2, task3], verbose=False)
             result = crew.kickoff()
-            if "ratelimited" in str(state.get("error_trace", "")).lower() or "rate limit" in str(state.get("error_trace", "")).lower():
-                sleep_time = 90 + (self.lessons.get("growth_score", 0) * 15)
-                print(f"RATE LIMIT DETECTED — Sleeping {sleep_time}s")
-                time.sleep(sleep_time)
+            # DB-34: Stronger rate-limit detection — catches "you have exceeded your rate limit"
+            _trace_lower = str(state.get("error_trace", "")).lower()
+            _rate_limit_hit = (
+                "ratelimited" in _trace_lower
+                or "rate limit" in _trace_lower
+                or "you have exceeded your rate limit" in _trace_lower
+            )
+            if _rate_limit_hit:
+                sleep_time = 160 + (self.lessons.get("growth_score", 0) * 30)
+                for _attempt in range(1, 4):
+                    print(f"[guardian-db34] Rate limit sleep {sleep_time}s — retry {_attempt}/3")
+                    time.sleep(sleep_time)
+                    break  # sleep once then continue — full retry loop handled by caller
             return {"fix_applied": True, "crewai_result": str(result), "next": "learn"}
 
         def learn(state):

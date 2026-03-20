@@ -260,3 +260,42 @@ CrewAI fully integrated into Error Guardian Agent. Guardian now spawns multi-age
 - Guardian reviews and fixes every output instantly — zero human input required at any point.
 - Brain 3 + Guardian together make the entire system infinitely creative and self-evolving while staying true to all Crypto Moonboys canon.
 - This rule does NOT conflict with DB-1 through DB-31. It extends the RL pipeline (DB-25) with cross-LLM creative intelligence.
+
+---
+
+## DB-33: New Canon — Locked People, Sites & Characters
+
+The following real people, websites, and characters are PERMANENTLY LOCKED as official canon:
+
+### Real People (locked forever)
+- **Jonny Nelson** — DJ / S.U.M. Sessions co-host (with Danny Young); regular on GraffPUNKS Network Radio.
+- **Laurence Nelson** — Support DJ, GraffPUNKS Network Radio appearances.
+- **Trevor Fung** — Godfather DJ, GraffPUNKS Network Radio anchor.
+- **Bone Idol Ink (@boneidolink)** — Co-founder Crypto Moonboys; Graffiti Kings illustrator & merch designer; runs "Bone, your own Idol, & some ever lasting Ink" phygital drops and collectible lines.
+- **Delicious Again Peter** — Co-founder Crypto Moonboys; limited-edition fine-art vinyl toy designer; runs deliciousagainpeter.com; key creator of designer crypto toys and GKniftyHEADS multi-million projects.
+- **Pete** — GK community member / narrator voice (locked canon name).
+- **Charlie Buster** — Core Graffiti Kings artist, No Ball Games founder, official GK voice/narrator in HODL WARS lore, son of Darren Cullen (SER).
+- **Momo Dunne** — Official GK/GraffPUNKS community figure; locked canon.
+- **imkhaleesii** — Official GKniftyHEADS community figure; locked canon.
+
+### New Locked Websites (additions to DB-26)
+All of the following are added to the permanent official crawl source list alongside those already in DB-26:
+- `graffitikings.co.uk` — Official Graffiti Kings agency site (already in DB-26, reconfirmed locked).
+- `facebook.com` GraffPUNKS Network group — awareness-only crawl source.
+- GraffPUNKS Network (social channels) — awareness-only.
+
+### Characters Confirmed Locked (addition to the 32-character roster)
+No new fictional characters are added by this rule — the 32 locked characters remain as defined. This rule locks the REAL PEOPLE listed above as permanent canon for lore injection and wiki updates.
+
+---
+
+## DB-34: Guardian Rate-Limit Fix — "You Have Exceeded Your Rate Limit"
+
+`error-guardian-agent.py` `catch_and_fix()` MUST detect the exact string **"you have exceeded your rate limit"** (case-insensitive) in addition to "ratelimited" and "rate limit".
+
+When any rate-limit signal is detected:
+1. Sleep for **160 seconds + (growth_score × 30)** seconds.
+2. Retry the failed operation up to **3 times** before giving up.
+3. Log every retry attempt to stdout with the format: `[guardian-db34] Rate limit sleep {N}s — retry {attempt}/3`
+
+This rule supersedes the 90-second sleep defined in DB-28. DB-28's other behaviours remain unchanged.
