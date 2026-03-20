@@ -174,6 +174,8 @@ _health_monitor        = _safe_load("health_monitor",         "system-health-mon
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 GROK_API_KEY = os.environ.get("GROK_API_KEY", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_BASE_URL = "https://api.anthropic.com/v1"
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 CHANNEL_CHAT_IDS_RAW = os.environ.get("CHANNEL_CHAT_IDS", "")
 CHANNEL_CHAT_IDS = [c.strip() for c in CHANNEL_CHAT_IDS_RAW.split(",") if c.strip()]
 
@@ -292,14 +294,41 @@ _DEDICATED_PAGE_TOKEN_THRESHOLD = 3
 # ---------------------------------------------------------------------------
 
 def _telegram_post(method: str, **params) -> dict:
-    """Make a Telegram Bot API call using requests."""
+    """Make a Telegram Bot API call using requests. Retries up to 3 times on 5xx/network errors.
+    On 429 Too Many Requests, honours the retry_after field then retries once (per TELEGRAM-BOT-API-RULES.md).
+    On 4xx errors (except 429), raises immediately without retry."""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/{method}"
-    resp = requests.post(url, json=params, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    if not data.get("ok"):
-        raise RuntimeError(f"Telegram API error: {data.get('description', data)}")
-    return data
+    last_exc: Exception = RuntimeError("No attempts made")
+    for attempt in range(1, 4):
+        try:
+            resp = requests.post(url, json=params, timeout=30)
+            if resp.status_code == 429:
+                # Honour retry_after field exactly (TELEGRAM-BOT-API-RULES.md)
+                try:
+                    retry_after = resp.json().get("parameters", {}).get("retry_after", 5)
+                except Exception:
+                    retry_after = 5
+                print(f"[telegram] 429 Too Many Requests — sleeping {retry_after}s (retry_after)…")
+                time.sleep(retry_after)
+                last_exc = RuntimeError(f"Telegram 429: retry_after={retry_after}")
+                continue  # retry once
+            resp.raise_for_status()
+            data = resp.json()
+            if not data.get("ok"):
+                raise RuntimeError(f"Telegram API error: {data.get('description', data)}")
+            return data
+        except requests.exceptions.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            if status is not None and status < 500:
+                raise  # 4xx errors (bad token, forbidden, bad request) — never retry
+            last_exc = exc
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            last_exc = exc
+        if attempt < 3:
+            wait = 2 ** attempt
+            print(f"[telegram] Attempt {attempt}/3 failed ({last_exc}); retrying in {wait}s…")
+            time.sleep(wait)
+    raise last_exc
 
 
 def _telegram_send_photo(chat_id: str, photo: bytes, caption: str | None = None) -> dict:
@@ -1362,10 +1391,10 @@ def save_brain1_update(update: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def check_brain2_sunday_reset() -> bool:
-    """Wipe brain2-telegram-lore.json if it's Sunday midnight UTC (Sunday = weekday 6).
+    """Wipe brain2-telegram-lore.json if it's Sunday midnight UTC (Sunday = isoweekday 7).
     Returns True if a reset was performed."""
     now = datetime.datetime.now(datetime.timezone.utc)
-    if now.weekday() == 6 and now.hour == 0:  # Sunday midnight window
+    if now.isoweekday() == 7 and now.hour == 0:  # Sunday midnight window — consistent with get_current_block()
         data = {"week_start": now.isoformat(), "posts": []}
         try:
             with open(BRAIN2_FILE, "w", encoding="utf-8") as fh:

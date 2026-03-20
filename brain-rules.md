@@ -299,3 +299,19 @@ When any rate-limit signal is detected:
 3. Log every retry attempt to stdout with the format: `[guardian-db34] Rate limit sleep {N}s — retry {attempt}/3`
 
 This rule supersedes the 90-second sleep defined in DB-28. DB-28's other behaviours remain unchanged.
+
+---
+
+## DB-35 — Rule Bloat Fix — brain-rules.md Core 15 Essential Rules Only
+
+`brain-rules.md` is NOW LIMITED to 15 core operational rules that the LLM system prompt MUST contain on every cycle. This prevents prompt truncation and token overload.
+
+**The 15 core rules are:** DB-1, DB-2, DB-3, DB-4, DB-5, DB-6, DB-7, DB-8, DB-9, DB-10, DB-11, DB-12, DB-13, DB-14, DB-15.
+
+All extended lore rules (DB-16 through DB-34), faction structure, character bible content, wiki pipeline rules, and real-people canon are stored in `project-dna.md` and `gk-brain-complete.md`. These files are loaded separately and are NOT injected into the LLM system prompt on every cycle — they are referenced on demand.
+
+`BRAIN_RULES_FILE` in `gk-brain.py` points to `gk-brain-complete.md` which is the FULL file. `brain-rules.md` is the lightweight prompt-safe subset.
+
+This rule is self-referential: DB-35 itself lives in `brain-rules.md` as rule #15 of the core 15 (it replaces DB-15 in the prompt-safe list, which is moved to `project-dna.md` for full detail).
+
+Zero conflicts with DB-1 through DB-34.
