@@ -241,3 +241,9 @@ Micro-gaps (2026 dates + Delicious Again Peter toys) acknowledged as not-yet-pub
 ## DB-31: CrewAI Multi-Agent Orchestration in Error Guardian
 
 CrewAI fully integrated into Error Guardian Agent. Guardian now spawns multi-agent CrewAI crews (Diagnoser + Fix Strategist + Lesson Recorder) for complex errors. Works seamlessly with LangGraph reflection and Brain 3 for instant review of ALL outputs (CrewAI teacher, wiki, RL, etc.). Zero human input required at any point. Guardian is the connected, self-reflecting, multi-agent, almighty doctor and supreme overlord of the entire GK BRAIN system.
+
+---
+
+## DB-31 (Hard-Wire Update): CrewAI Fully Integrated — No Fallbacks
+
+`error-guardian-agent.py` now directly imports and requires `crewai` and `langgraph` (no graceful fallback). Guardian spawns multi-agent CrewAI crews (Diagnoser + Fix Strategist + Lesson Recorder) for complex errors. Works seamlessly with LangGraph reflection and Brain 3 for instant review of ALL outputs (CrewAI teacher, wiki, RL, etc.). Zero human input required at any point. Guardian is the connected, self-reflecting, multi-agent, almighty doctor and supreme overlord of the entire GK BRAIN system.
