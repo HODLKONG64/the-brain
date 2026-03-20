@@ -14,10 +14,45 @@ Required secrets (env vars):
     FANDOM_WIKI_URL  (optional override; default: https://gkniftyheads.fandom.com)
 """
 
+# ===========================================================================
+# DB-19: Wiki ONLY for https://gkniftyheads.fandom.com — zero Wikipedia influence.
+# DB-20: Wiki brain 100% blind to all Telegram output.
+# DB-21: Scan these 7 URLs first every run + cite graffpunks.live subpages.
+# DB-22: Cross-reference every crawl against PROJECT-DNA.md; force-create missing sections.
+# DB-23: Run Wiki Teacher Crew every 2-hour cycle; dynamically expand crawl targets.
+# DB-24: Add audit trail comment to every wiki edit section.
+# ===========================================================================
+
+FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"  # DB-19: sole wiki target
+
+GRAFFPUNKS_PRIORITY_URLS = [  # DB-21: always scan these 7 first
+    "https://graffpunks.live/the-lore/",
+    "https://graffpunks.live/gk-factions/",
+    "https://graffpunks.live/graffiti-kings-nfts/",
+    "https://graffpunks.live/free-nfts/",
+    "https://graffpunks.live/graffiti-nfts/",
+    "https://graffpunks.live/the-vision/",
+    "https://graffpunks.live/xrp-kids/",
+]
+
+TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
+TEACHER_CYCLE_HOURS = 2          # DB-23: run every 2 hours
+
+
+def _append_audit_trail(section_text: str) -> str:
+    """DB-24: Append CrewAI Teacher v2 audit trail comment to a wiki section."""
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    trail = f"\n<!-- Updated via CrewAI Teacher v2 | {ts} UTC -->"
+    if "Updated via CrewAI Teacher" not in section_text:
+        return section_text + trail
+    return section_text
+
+
 import argparse
 import json
 import os
 import sys
+from datetime import datetime, timezone
 
 import importlib.util as _ilu
 import pathlib as _pl

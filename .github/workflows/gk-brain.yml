@@ -43,6 +43,10 @@ jobs:
         run: python crawl-brain.py
         continue-on-error: true
 
+      - name: Run Wiki Teacher Crew v2.0
+        run: python wiki-teacher-crew.py
+        continue-on-error: true
+
       # ── Brain 2: Analytics Brain ─────────────────────────────────────────
       - name: 📊 Run Analytics Brain
         id: analytics_brain
