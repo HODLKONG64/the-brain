@@ -25,6 +25,7 @@ import json
 import logging
 import os
 import sys
+from urllib.parse import urljoin, urlparse
 
 import requests
 
@@ -136,6 +137,74 @@ _HEADERS = {
         "+https://github.com/HODLKONG64/the-brain)"
     )
 }
+
+# ---------------------------------------------------------------------------
+# DB-23: Dynamic subpage discovery
+# ---------------------------------------------------------------------------
+
+
+def _discover_new_subpages(base_url: str = "https://graffpunks.live/") -> list:
+    """
+    DB-23: Crawl the graffpunks.live home page and detect any subpages not already
+    present in PRIORITY_CRAWL_URLS.  Returns a list of new URLs discovered.
+    """
+    known = set(PRIORITY_CRAWL_URLS)
+    discovered = []
+    try:
+        resp = requests.get(base_url, headers=_HEADERS, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        from bs4 import BeautifulSoup  # type: ignore[import]
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for a in soup.find_all("a", href=True):
+            href = a["href"].strip()
+            full = urljoin(base_url, href)
+            parsed = urlparse(full)
+            if (
+                parsed.netloc == urlparse(base_url).netloc
+                and len(parsed.path.strip("/")) > 0
+                and full not in known
+                and not full.endswith("#")
+                and not full.startswith("javascript:")
+            ):
+                discovered.append(full)
+                known.add(full)
+    except requests.RequestException as exc:
+        logger.warning("[wiki-teacher] DB-23 subpage discovery failed: %s", exc)
+    except ImportError:
+        logger.debug("[wiki-teacher] bs4 not installed — DB-23 subpage discovery skipped.")
+    logger.info("[wiki-teacher] DB-23: %d new subpage(s) discovered.", len(discovered))
+    return discovered
+
+
+# ---------------------------------------------------------------------------
+# DB-22: PROJECT DNA coverage checker
+# ---------------------------------------------------------------------------
+
+# DB-22: Keys used to cross-reference the wiki for missing sections.
+_DNA_KEY_TERMS = {
+    "founder": ["darren cullen", "ser", "graffiti kings"],
+    "graffiti_kings": ["graffiti kings", "1999"],
+    "gkniftyheads": ["gkniftyheads", "7th collection"],
+    "graffpunks": ["graffpunks", "midevil hero arena"],
+    "crypto_moonboys": ["crypto moonboys", "block topia", "alfie blaze"],
+    "music_radio": ["graffpunks.live", "blockchain radio"],
+    "web3_nft": ["waxp", "xrpl", "gk.$mart"],
+    "tokens": ["$punk", "$lfgk"],
+}
+
+
+def _check_dna_coverage(wiki_text: str) -> list:
+    """
+    DB-22: Cross-reference wiki_text against the PROJECT_DNA keys.
+    Returns list of DNA section keys whose core terms are absent from the wiki.
+    """
+    missing = []
+    wiki_lower = wiki_text.lower() if wiki_text else ""
+    for key, terms in _DNA_KEY_TERMS.items():
+        if not any(t in wiki_lower for t in terms):
+            missing.append(key)
+    return missing
+
 
 # ---------------------------------------------------------------------------
 # Crawl priority URLs
@@ -348,12 +417,29 @@ def run_teacher_agent(dry_run: bool = False, verbose: bool = False) -> dict:
     logger.info("[teacher-agent] 🎓 Wiki Master Teacher Agent starting…")
     logger.info("[teacher-agent] WIKI_TARGET: %s (DB-19)", WIKI_TARGET)
 
+    # DB-23: Discover any new graffpunks.live subpages beyond the fixed 7.
+    new_subpages = _discover_new_subpages()
+    if new_subpages:
+        logger.info("[teacher-agent] DB-23: appending %d new subpage URL(s) to crawl list.", len(new_subpages))
+
     crawled_pages = crawl_priority_urls()
-    logger.info("[teacher-agent] Crawled %d page(s).", len(crawled_pages))
+    # Also crawl any newly discovered subpages (dynamic DB-23 expansion).
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    for url in new_subpages:
+        logger.info("[teacher-agent] DB-23 crawling new subpage: %s", url)
+        page_data = _crawl_single_url(url)
+        if page_data:
+            page_data["citation"] = f"<ref>{url} [accessed {today}]</ref>"
+            page_data["url"] = url
+            crawled_pages.append(page_data)
+    logger.info("[teacher-agent] Crawled %d page(s) total.", len(crawled_pages))
 
     output_entries = []
     for page in crawled_pages:
         markup = build_wiki_markup(page)
+        # DB-22: Cross-reference each page's text against PROJECT DNA keys.
+        page_text = " ".join(page.get("paragraphs", []))
+        dna_missing = _check_dna_coverage(page_text)
         entry = {
             "url": page.get("url", ""),
             "citation": page.get("citation", ""),
@@ -362,6 +448,7 @@ def run_teacher_agent(dry_run: bool = False, verbose: bool = False) -> dict:
             "tables_found": len(page.get("tables", [])),
             "wiki_markup": markup,
             "wiki_target": WIKI_TARGET,  # DB-19
+            "dna_missing_sections": dna_missing,  # DB-22
         }
         output_entries.append(entry)
 
