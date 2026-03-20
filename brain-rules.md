@@ -62,3 +62,18 @@ The GK BRAIN system runs on exactly 4 active brains + 2 support agents. No other
 **brain-rules.md** is limited to exactly 12 core DB rules (DB-1 through DB-12) plus this rule (DB-37). All extended rules (DB-13 through DB-36), lore canon, faction data, real people, and wiki pipeline rules live in `PROJECT-DNA.md` and `gk-brain-complete.md`.
 
 This makes the Crypto Moonboys GK BRAIN fast, stable, and infinitely creative with zero conflicts and all canon locked forever.
+
+## DB-38 — Root Purity Lock (Zero Tolerance)
+**Implemented: 2026-03-20**
+
+The root of the repository contains exactly 6 Python files and nothing else:
+- `crawl-brain.py` — Brain 1
+- `analytics-brain.py` — Brain 2
+- `gk-brain.py` — Brain 3
+- `wiki-brain.py` — Brain 4
+- `error-guardian-agent.py` — Almighty Doctor
+- `master-backup-agent.py` — Backup Agent
+
+Any `.py` file found in root that is NOT in this list is a violation of DB-38 and must be deleted immediately. No stubs. No helpers. No extras. Zero tolerance. The archive/ folder holds all retired code permanently.
+
+This is the final state. Crypto Moonboys GK BRAIN is lean, locked, and creating canon every 2 hours.
