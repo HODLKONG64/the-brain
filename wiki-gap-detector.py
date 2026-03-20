@@ -90,6 +90,22 @@ _HEADERS = {
 #         create missing headings/tables.
 # ===========================================================================
 
+# ===========================================================================
+# DB-22: After every crawl, cross-reference new content against full
+#         expanded PROJECT DNA and force creation of missing subsections/tables
+#         even if gap-detector previously skipped them.
+# DB-23: Teacher agent runs every 2-hour cycle (not just once).
+#         Dynamically appends newly discovered graffpunks.live subpages
+#         to GRAFFPUNKS_PRIORITY_URLS while enforcing bible-read-once lock
+#         and zero code conflicts.
+# DB-24: All wiki edits must include audit trail signature at bottom of
+#         each edited section:
+#         <!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->
+# ===========================================================================
+
+TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
+TEACHER_CYCLE_HOURS = 2          # DB-23: run every 2 hours
+
 FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"  # DB-19: ONLY target
 
 # DB-21: 7 priority crawl targets — scanned FIRST every run
@@ -101,6 +117,30 @@ GRAFFPUNKS_PRIORITY_URLS = [
     "https://graffpunks.live/graffiti-nfts/",
     "https://graffpunks.live/the-vision/",
     "https://graffpunks.live/xrp-kids/",
+]
+
+# DB-22: Canonical topic keys — cross-referenced against wiki content every run
+PROJECT_DNA_COVERAGE_KEYS = [
+    # Founder
+    "Darren Cullen", "SER", "Graffiti Kings 1999", "London 2012 Olympics",
+    # Collections
+    "GKniftyHEADS", "GraffPUNKS", "Crypto Moonboys", "Crypto Moongirls",
+    "Bitcoin X Kids", "Bitcoin Kids", "HODL X Warriors",
+    # Characters
+    "Alfie Blaze", "Queen Sarah P-fly", "NULL THE PROPHET", "Elder Codex-7",
+    "Jodie ZOOM 2000", "Charlie Buster",
+    # Lore mechanics
+    "Triple Fork Event", "Block Topia", "HODL WARS", "MiDEViL HERO ARENA",
+    "Sacred Chain", "Echo Ink", "Null-Cipher", "AETHER CHAIN",
+    # Tokens
+    "PUNK", "LFGK", "GK MArT",
+    # Radio / music
+    "GraffPUNKS Radio", "DJ Trevor Fung", "DJ Skol",
+    # Chains
+    "WAXP", "Bitcoin Cash", "SOL", "XRPL",
+    # Factions (sample)
+    "HODL Warriors", "Squeaky Pinks", "AllCity Bulls", "Moonlords",
+    "Gasless Ghosts", "Chain Scribes", "Graffiti Queens",
 ]
 
 # ---------------------------------------------------------------------------
@@ -698,6 +738,36 @@ def _save_gap_report(report: dict) -> None:
         logger.warning("[gap-detector] Could not save gap report: %s", exc)
 
 
+def _check_dna_coverage(wiki_text_lower: str) -> list:
+    """
+    DB-22: Cross-reference wiki text against PROJECT_DNA_COVERAGE_KEYS.
+    Returns a list of force-create queue entries for any key missing from the wiki.
+    """
+    missing = []
+    ts_now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for key in PROJECT_DNA_COVERAGE_KEYS:
+        normalised = _normalise(key)
+        if normalised not in wiki_text_lower:
+            entry = {
+                "title": key,
+                "url": "",
+                "source": "PROJECT_DNA_COVERAGE_KEYS",
+                "source_label": "db22-dna-coverage",
+                "type": "gkdata-real",
+                "content": (
+                    f"PROJECT DNA topic '{key}' is missing from the wiki. "
+                    "Force-create a dedicated subsection or table for this topic."
+                ),
+                "timestamp": ts_now,
+                "wiki_update": True,
+                "wiki_done": False,
+                "detected_by": "db22-dna-coverage",
+                "force_create": True,
+            }
+            missing.append(entry)
+    return missing
+
+
 # ---------------------------------------------------------------------------
 # Main detector function
 # ---------------------------------------------------------------------------
@@ -851,6 +921,15 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
             f"[wiki-gap-detector] Stub check: {len(stub_gaps)} expected wiki page(s) missing, "
             f"{stub_queued} queued."
         )
+
+    # DB-22: Cross-reference crawled content against PROJECT DNA
+    #         Force-create any missing subsections/tables even if previously skipped
+    _dna_gaps = _check_dna_coverage(wiki_text_lower)
+    if _dna_gaps:
+        dna_queued = _queue_gaps(_dna_gaps, dry_run=dry_run)
+        queued += dna_queued
+        all_gaps.extend(_dna_gaps)
+        print(f"[wiki-gap-detector] DB-22: {len(_dna_gaps)} PROJECT DNA gap(s) force-queued.")
 
     # --- Summary ---
     result = {

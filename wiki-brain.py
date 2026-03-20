@@ -71,6 +71,22 @@ QUEUE_FILE          = os.path.join(BASE_DIR, "wiki-update-queue.json")
 #         create missing headings/tables.
 # ===========================================================================
 
+# ===========================================================================
+# DB-22: After every crawl, cross-reference new content against full
+#         expanded PROJECT DNA and force creation of missing subsections/tables
+#         even if gap-detector previously skipped them.
+# DB-23: Teacher agent runs every 2-hour cycle (not just once).
+#         Dynamically appends newly discovered graffpunks.live subpages
+#         to GRAFFPUNKS_PRIORITY_URLS while enforcing bible-read-once lock
+#         and zero code conflicts.
+# DB-24: All wiki edits must include audit trail signature at bottom of
+#         each edited section:
+#         <!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->
+# ===========================================================================
+
+TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
+TEACHER_CYCLE_HOURS = 2          # DB-23: run every 2 hours
+
 FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"  # DB-19: ONLY target
 
 # DB-21: 7 priority crawl targets — scanned FIRST every run
@@ -139,6 +155,21 @@ def _load_queue() -> list:
 
 
 # ---------------------------------------------------------------------------
+# DB-24: Audit trail helper
+# ---------------------------------------------------------------------------
+
+def _append_audit_trail(content: str) -> str:
+    """
+    DB-24: Append CrewAI Teacher v2 audit trail signature to wiki content.
+    Format: <!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->
+    """
+    import datetime
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    audit_tag = f"<!-- Updated via CrewAI Teacher {TEACHER_AGENT_VERSION} | {timestamp} UTC -->"
+    return content.rstrip() + "\n" + audit_tag + "\n"
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -158,6 +189,11 @@ def run(dry_run: bool = False) -> int:
     pending = [u for u in queue if u.get("wiki_update") and not u.get("wiki_done")]
     print(f"[wiki-brain] Pending updates: {len(pending)}")
 
+    # DB-22: Force-create entries marked with force_create flag
+    force_create = [u for u in pending if u.get("force_create")]
+    if force_create:
+        print(f"[wiki-brain] DB-22: {len(force_create)} force-create entries from DNA coverage check.")
+
     if not pending:
         print("[wiki-brain] Nothing to do.")
         return 0
@@ -167,6 +203,11 @@ def run(dry_run: bool = False) -> int:
         for u in pending:
             print(f"  • [DRY-RUN] Would push: {u.get('title', 'untitled')} ({u.get('type', '')})")
         return 0
+
+    # DB-24: Apply audit trail to all pending entry content before pushing
+    for u in pending:
+        if u.get("content"):
+            u["content"] = _append_audit_trail(u["content"])
 
     # Prefer smart merger; fall back to simple updater
     if _wiki_smart_merger is not None:
