@@ -6,3 +6,7 @@ filelock>=3.12.0
 scikit-learn>=1.3.0
 wikipedia>=1.4.0
 lxml>=4.9.0
+crewai
+crawl4ai
+mwclient
+langgraph

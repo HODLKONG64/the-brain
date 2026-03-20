@@ -186,3 +186,27 @@ No other agent or Python module in this repo may import from `master-backup-agen
 
 ### DB-19 — Backup Agent Self-Tracking Mandate
 `master-backup-agent.py` MUST include itself (`"master-backup-agent.py"`) in its own `TRACKED_FILES` list. The backup agent tracks its own changes the same way it tracks all other agent files. Removing `master-backup-agent.py` from `TRACKED_FILES` is a locked-rule violation.
+
+---
+
+## WIKI DB RULES (DB-19 to DB-24) — Wiki Python Pipeline Only
+
+**DB-19**: Wiki ONLY for https://gkniftyheads.fandom.com — zero Wikipedia influence ever.
+
+**DB-20**: Wiki brain 100% blind to all Telegram output. Telegram data must never influence wiki content.
+
+**DB-21**: Scan ONLY these 7 official graffpunks.live subpages first every run. Summarise new sections neutrally, add `<ref>https://graffpunks.live/[subpage]/ [accessed YYYY-MM-DD]</ref>`, create missing headings/tables.
+- https://graffpunks.live/the-lore/
+- https://graffpunks.live/gk-factions/
+- https://graffpunks.live/graffiti-kings-nfts/
+- https://graffpunks.live/free-nfts/
+- https://graffpunks.live/graffiti-nfts/
+- https://graffpunks.live/the-vision/
+- https://graffpunks.live/xrp-kids/
+
+**DB-22**: After every crawl, automatically cross-reference new content against full PROJECT-DNA.md and force creation of missing subsections/tables even if gap-detector previously skipped them.
+
+**DB-23**: Teacher agent must run every single 2-hour cycle (not just once) and dynamically append any newly discovered graffpunks.live subpages to the 7-URL list while still enforcing the read-once bible lock and zero code conflicts.
+
+**DB-24**: All wiki edits must include a short audit trail comment at the bottom of each edited section.
+Format: `<!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->`

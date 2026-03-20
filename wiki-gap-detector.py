@@ -31,6 +31,71 @@ Environment variables:
     WIKI_DRY_RUN      Set to "1" to skip queue writes
 """
 
+# ===========================================================================
+# DB-19: Wiki ONLY for https://gkniftyheads.fandom.com — zero Wikipedia influence.
+# DB-20: Wiki brain 100% blind to all Telegram output.
+# DB-21: Scan these 7 URLs first every run + cite graffpunks.live subpages.
+# DB-22: Cross-reference every crawl against PROJECT-DNA.md; force-create missing sections.
+# DB-23: Run Wiki Teacher Crew every 2-hour cycle; dynamically expand crawl targets.
+# DB-24: Add audit trail comment to every wiki edit section.
+# ===========================================================================
+
+FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"  # DB-19: sole wiki target
+
+GRAFFPUNKS_PRIORITY_URLS = [  # DB-21: always scan these 7 first
+    "https://graffpunks.live/the-lore/",
+    "https://graffpunks.live/gk-factions/",
+    "https://graffpunks.live/graffiti-kings-nfts/",
+    "https://graffpunks.live/free-nfts/",
+    "https://graffpunks.live/graffiti-nfts/",
+    "https://graffpunks.live/the-vision/",
+    "https://graffpunks.live/xrp-kids/",
+]
+
+TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
+TEACHER_CYCLE_HOURS = 2          # DB-23: run every 2 hours
+
+# DB-22: Full PROJECT DNA coverage keys — every crawl checks wiki for these
+PROJECT_DNA_COVERAGE_KEYS = [
+    # Founder
+    "Darren Cullen", "SER", "Graffiti Kings 1999", "London 2012 Olympics",
+    "South East Rockers", "Leake Street",
+    # Collections / brands
+    "GKniftyHEADS", "GraffPUNKS", "Crypto Moonboys", "Crypto Moongirls",
+    "Bitcoin X Kids", "Bitcoin Kids", "HODL X Warriors",
+    "graffk1ngsuk", "hodlmoonboys", "gr4ffitiking", "nocommentser",
+    # 32 Characters
+    "Alfie Blaze", "Queen Sarah P-fly", "Jodie ZOOM 2000", "Elder Codex-7",
+    "NULL THE PROPHET", "Thera-9", "Aleema", "Iris-7", "Lady-INK",
+    "Snipey D-Man Sirus", "Bit-Cap 5000", "Forksplit", "M1nTr K1ll",
+    "SatoRebel", "Thorne The Architect", "Billy the Goat Kid",
+    "HEX-TAGGER PRIME", "The Whitewasher", "GRIT", "PYRALITH",
+    "Loopfiend", "Samael.exe", "Forklord You", "Quell", "Sister Halcyon",
+    "Grit42", "Rune Tag", "Patchwork", "The Princess", "Dragan Volkov",
+    "Ava Chen", "Charlie Buster",
+    # 40 Factions
+    "Bitcoin Kid Army", "Nomad Bears", "AllCity Bulls", "BALLY BOYS",
+    "DUCKY BOYS", "NICE EASY BOIS", "Squeaky Pinks", "High Hats",
+    "HARD FORK ROCKERS", "BLOCKSTARS", "BLOCKCHAIN FURIES",
+    "RUGPULL MINERS", "AZTEC RAIDERS", "TUSKON OGS", "CRYPTO STONED BOYS",
+    "CODE ALCHEMISTS", "FINANCE GUILD", "INFORMATION MERCENARIES",
+    "SALVAGERS", "MOONLORDS", "SHARD MOTHERS OF MANHATTAN",
+    "CHAIN SCRIBES", "EVM PUNKS", "OG PIXEL SAINTS", "GASLESS GHOSTS",
+    "GRAFFPUNKS", "CRYPTO MOONGIRLS", "GKniftyHEADS",
+    # Tokens / mechanics
+    "$PUNK", "$LFGK", "GK.$MArT", "MiDEViL HERO ARENA",
+    "burn-to-earn", "phygital", "Triple Fork Event 2198", "Block Topia",
+    "HODL WARS", "Chat2Earn", "1M free NFTs",
+]
+
+
+def _check_dna_coverage(wiki_text: str) -> list:
+    """DB-22: Return list of PROJECT_DNA_COVERAGE_KEYS missing from wiki_text."""
+    lower_text = wiki_text.lower()
+    missing = [key for key in PROJECT_DNA_COVERAGE_KEYS if key.lower() not in lower_text]
+    return missing
+
+
 import argparse
 import datetime
 import hashlib
