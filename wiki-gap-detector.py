@@ -50,6 +50,15 @@ GRAFFPUNKS_PRIORITY_URLS = [  # DB-21: always scan these 7 first
     "https://graffpunks.live/graffiti-nfts/",
     "https://graffpunks.live/the-vision/",
     "https://graffpunks.live/xrp-kids/",
+    # DB-26: Additional locked crawl sources
+    "https://gkniftyheads.com",
+    "https://graffpunks.substack.com",
+    "https://medium.com/@GKniftyHEADS",
+    "https://medium.com/@HODLWARRIORS",
+    "https://graffitikings.co.uk",
+    "https://linktr.ee/gkniftyheads",
+    "https://deliciousagainpeter.com",
+    "https://waxonedge.app",
 ]
 
 TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
@@ -166,6 +175,15 @@ GRAFFPUNKS_PRIORITY_URLS = [
     "https://graffpunks.live/graffiti-nfts/",
     "https://graffpunks.live/the-vision/",
     "https://graffpunks.live/xrp-kids/",
+    # DB-26: Additional locked crawl sources
+    "https://gkniftyheads.com",
+    "https://graffpunks.substack.com",
+    "https://medium.com/@GKniftyHEADS",
+    "https://medium.com/@HODLWARRIORS",
+    "https://graffitikings.co.uk",
+    "https://linktr.ee/gkniftyheads",
+    "https://deliciousagainpeter.com",
+    "https://waxonedge.app",
 ]
 
 # ---------------------------------------------------------------------------
