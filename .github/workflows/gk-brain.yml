@@ -1,17 +1,13 @@
-name: GK BRAIN - 4 Brain System (2 Hour Cycle)
+name: GK BRAIN - PAUSED (Old Brain Stopped)
+
 on:
-  schedule:
-    - cron: '0 */2 * * *'
+  # PAUSED — remove the # lines below to re-enable the old 2-hour brain
+  # schedule:
+    # - cron: '0 */2 * * *'
   workflow_dispatch:
-    inputs:
-      force_run:
-        description: 'Force a lore post + wiki update right now'
-        required: false
-        default: 'false'
 
 permissions:
   contents: write
-
 concurrency:
   group: gk-brain
   cancel-in-progress: false
@@ -42,7 +38,6 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       # ── Brain 1: Crawl Brain ─────────────────────────────────────────────
       - name: 🕷️ Run Crawl Brain
         id: crawl_brain
@@ -52,7 +47,6 @@ jobs:
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
-
       # ── Brain 2: Analytics Brain ─────────────────────────────────────────
       - name: 📊 Run Analytics Brain
         id: analytics_brain
@@ -62,7 +56,6 @@ jobs:
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
-
       # ── Brain 3: Lore Brain ──────────────────────────────────────────────
       - name: 🧠 Run Lore Brain (GK BRAIN)
         id: lore_brain
@@ -72,7 +65,6 @@ jobs:
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
-
       # ── Brain 4: Wiki Brain ──────────────────────────────────────────────
       - name: 📖 Run Wiki Brain
         id: wiki_brain
@@ -82,7 +74,6 @@ jobs:
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
-
       # ── Master Backup Agent ───────────────────────────────────────────────
       - name: 🗄️ Run Master Backup Agent
         id: backup_agent
@@ -92,7 +83,6 @@ jobs:
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
-
       - name: Upload execution report
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,7 +93,6 @@ jobs:
             reports/analytics-report-*.json
           if-no-files-found: ignore
           retention-days: 14
-
       # ── Commit all updated state files ───────────────────────────────────
       - name: Commit updated state files
         if: always()
@@ -128,7 +117,6 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: GK BRAIN state update [skip ci]"
           git push
         continue-on-error: true
-
       # ── Failure notification ─────────────────────────────────────────────
       - name: 🚨 Notify failure via Telegram
         if: >
@@ -138,10 +126,10 @@ jobs:
           steps.wiki_brain.conclusion == 'failure'
         run: |
           FAILED_BRAINS=""
-          [ "${{ steps.crawl_brain.conclusion }}" = "failure" ]    && FAILED_BRAINS="${FAILED_BRAINS} CrawlBrain"
+          [ "${{ steps.crawl_brain.conclusion }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} CrawlBrain"
           [ "${{ steps.analytics_brain.conclusion }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} AnalyticsBrain"
-          [ "${{ steps.lore_brain.conclusion }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} LoreBrain"
-          [ "${{ steps.wiki_brain.conclusion }}" = "failure" ]      && FAILED_BRAINS="${FAILED_BRAINS} WikiBrain"
+          [ "${{ steps.lore_brain.conclusion }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} LoreBrain"
+          [ "${{ steps.wiki_brain.conclusion }}" = "failure" ] && FAILED_BRAINS="${FAILED_BRAINS} WikiBrain"
           MESSAGE="⚠️ GK BRAIN alert — brain(s) failed:${FAILED_BRAINS}%0ARun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=$(echo ${CHANNEL_CHAT_IDS} | cut -d',' -f1)" \
