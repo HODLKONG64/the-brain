@@ -48,7 +48,7 @@ jobs:
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
 
       # ── Brain 2: Analytics Brain ─────────────────────────────────────────
@@ -58,7 +58,7 @@ jobs:
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
 
       # ── Brain 3: Lore Brain ──────────────────────────────────────────────
@@ -68,7 +68,7 @@ jobs:
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
 
       # ── Wiki Gap Detector ────────────────────────────────────────────────
@@ -84,7 +84,7 @@ jobs:
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
 
       # ── Brain 4: Wiki Brain ──────────────────────────────────────────────
@@ -94,7 +94,7 @@ jobs:
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
       # ── Brain 5: Master Backup Agent ─────────────────────────────────────
       - name: 🗄️ Run Master Backup Agent
@@ -103,14 +103,14 @@ jobs:
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
       - name: Propagate Reinforcement Learning Updates from Brain 3
         run: python gk-brain.py --propagate-rl-updates
         continue-on-error: true
       - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
-        run: python error-guardian-agent.py "no-error"
+        run: python error-guardian-agent.py "${{ steps.previous_step.outputs.error_trace || 'no-error' }}"
         continue-on-error: true
       - name: Upload execution report
         if: always()
