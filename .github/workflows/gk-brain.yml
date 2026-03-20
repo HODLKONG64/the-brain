@@ -46,17 +46,29 @@ jobs:
       - name: Run Wiki Teacher Crew v2.0
         run: python wiki-teacher-crew.py
         continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
+        continue-on-error: true
 
       # ── Brain 2: Analytics Brain ─────────────────────────────────────────
       - name: 📊 Run Analytics Brain
         id: analytics_brain
         run: python analytics-brain.py
         continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
+        continue-on-error: true
 
       # ── Brain 3: Lore Brain ──────────────────────────────────────────────
       - name: 🧠 Run Lore Brain (GK BRAIN)
         id: lore_brain
         run: python gk-brain.py
+        continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
         continue-on-error: true
 
       # ── Wiki Gap Detector ────────────────────────────────────────────────
@@ -70,19 +82,35 @@ jobs:
           FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
           FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
         continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
+        continue-on-error: true
 
       # ── Brain 4: Wiki Brain ──────────────────────────────────────────────
       - name: 📖 Run Wiki Brain
         id: wiki_brain
         run: python wiki-brain.py
         continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
+        continue-on-error: true
       # ── Brain 5: Master Backup Agent ─────────────────────────────────────
       - name: 🗄️ Run Master Backup Agent
         id: backup_agent
         run: python master-backup-agent.py
         continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
+        continue-on-error: true
       - name: Propagate Reinforcement Learning Updates from Brain 3
         run: python gk-brain.py --propagate-rl-updates
+        continue-on-error: true
+      - name: Error Guardian Watchdog (Almighty Doctor)
+        if: always()
+        run: python error-guardian-agent.py "no-error"
         continue-on-error: true
       - name: Upload execution report
         if: always()
