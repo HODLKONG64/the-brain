@@ -1068,6 +1068,21 @@ def generate_lore_pair(
     except Exception as _rl_exc:
         print(f"[db25-rl] Reinforcement learning step skipped: {_rl_exc}")
 
+    # DB-32: Brain 3 Creativity Learning from All Open-Source LLMs
+    _creative_boost = ""
+    try:
+        _guardian_mod = _safe_load("error_guardian_agent", "error-guardian-agent.py")
+        if _guardian_mod is not None and hasattr(_guardian_mod, "ErrorGuardian"):
+            _guardian = _guardian_mod.ErrorGuardian()
+            _creative_boost = _guardian.get_creative_patterns_from_all_llms(
+                crawl_data=substack_context,
+                history=lore_history,
+            )
+            print(f"[db32-creativity] Guardian creative boost acquired ({len(_creative_boost)} chars).")
+    except Exception as _cb_exc:
+        print(f"[db32-creativity] Creative boost skipped: {_cb_exc}")
+        _creative_boost = ""
+
     now = datetime.datetime.now(datetime.timezone.utc)
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
@@ -1217,6 +1232,12 @@ def generate_lore_pair(
         "POST 2:\n[lore text]\n\n"
         "IMAGE PROMPT 2:\n[image prompt]"
     )
+
+    # DB-32: Inject Guardian creative boost into system prompt
+    if _creative_boost:
+        system_prompt = system_prompt + (
+            f"\n\nDB-32 CREATIVE BOOST FROM CREWAI/LANGGRAPH/CRAWL4AI:\n{_creative_boost}"
+        )
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -2397,7 +2418,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if "--propagate-rl-updates" in sys.argv:
+    if "--creativity-boost" in sys.argv:
+        print("[db32] --creativity-boost flag received — creativity learning runs inline during generate_lore_pair(). Exiting.")
+        sys.exit(0)
+    elif "--propagate-rl-updates" in sys.argv:
         _rl_state_path = os.path.join(BASE_DIR, "rl_state.json")
         if os.path.exists(_rl_state_path):
             print("[db25-rl] RL propagation triggered — rl_state.json found, propagating to all brains.")

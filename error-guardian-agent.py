@@ -138,6 +138,46 @@ class ErrorGuardian:
                 print(f"[guardian] Could not update master-backup-state.json: {e}")
         return "fixed_with_crewai_langgraph_reflection"
 
+    def get_creative_patterns_from_all_llms(self, crawl_data: str = "", history: str = "") -> str:
+        """
+        DB-32: Extract the most creative lore styles from all LLMs and crawl data
+        for Crypto Moonboys / HODL Wars backstory.
+
+        Fuses CrewAI multi-agent thinking, LangGraph reflection, Crawl4AI patterns,
+        Grok imagination, and Claude depth to create richer Moonboy stories.
+
+        Returns a creative boost string for Brain 3 prompt injection.
+        """
+        try:
+            creative_agent = Agent(
+                role="Creative Pattern Extractor",
+                goal="Extract the most creative lore styles from all LLMs and crawl data for Crypto Moonboys HODL Wars backstory",
+                backstory=(
+                    "You fuse CrewAI multi-agent thinking, LangGraph reflection, Crawl4AI patterns, "
+                    "Grok imagination and Claude depth to create richer Moonboy stories"
+                ),
+                expected_output="A creative boost paragraph of lore patterns, styles, and ideas",
+            )
+            task = Task(
+                description=(
+                    f"Analyze crawl data and history for new creative patterns for HODL Wars "
+                    f"and Crypto Moonboys lore.\n\nCRAWL DATA:\n{crawl_data[:1000]}\n\n"
+                    f"HISTORY:\n{history[:1000]}"
+                ),
+                agent=creative_agent,
+                expected_output="A creative boost paragraph of lore patterns, styles, and ideas",
+            )
+            crew = Crew(
+                agents=[creative_agent],
+                tasks=[task],
+                verbose=False,
+            )
+            result = crew.kickoff()
+            return str(result)
+        except Exception as exc:
+            print(f"[guardian-db32] get_creative_patterns_from_all_llms failed: {exc}")
+            return ""
+
 
 if __name__ == "__main__":
     guardian = ErrorGuardian()
