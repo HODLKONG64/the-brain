@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "created_at": "2026-03-18T19:22:46Z",
-  "last_updated": "2026-03-19T18:55:18Z",
-  "run_count": 5,
+  "last_updated": "2026-03-20T01:51:11Z",
+  "run_count": 6,
   "file_registry": {
     "brain-rules.md": {
       "sha": "2dd59a3486779f7be5cbc7cdaf91dbe87b84d8435bb97d745124eb1b21e917ae",
@@ -47,9 +47,9 @@
       "is_state_file": false
     },
     "cross-platform-consistency.md": {
-      "sha": "661a678b13b3ab5d4e377fa13052066c0695be72b38929a0c6a84f530840716d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 67,
+      "sha": "3d24aae13c8664e0fab02bee07866508db138ceffcc5bbddb83a31338b1d73e8",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 3784,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -61,16 +61,16 @@
       "is_state_file": false
     },
     "LORE-RULE-DETECTOR-DEEP-LOGIC.md": {
-      "sha": "661a678b13b3ab5d4e377fa13052066c0695be72b38929a0c6a84f530840716d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 67,
+      "sha": "083df687ea5aef038e9c8d68c50b8795b5cedc3f49e07dee49abd8e32d9c1d3a",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 3869,
       "rule_count": 0,
       "is_state_file": false
     },
     "HOW-TO.md": {
-      "sha": "661a678b13b3ab5d4e377fa13052066c0695be72b38929a0c6a84f530840716d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 67,
+      "sha": "9583ee6b24ac45db2dd5b6dcc99e7a60a1de7501ab7b1653d2a1f53d75fd07da",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 3351,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -110,30 +110,30 @@
       "is_state_file": false
     },
     "LLM-ORCHESTRATION-ARCHITECTURE.md": {
-      "sha": "661a678b13b3ab5d4e377fa13052066c0695be72b38929a0c6a84f530840716d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 67,
+      "sha": "947aab6570c27e2785a6a41cf132f57ebd40804ebb57a4d1af2e90eef3e3c8b5",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 3817,
       "rule_count": 0,
       "is_state_file": false
     },
     "TELEGRAM-NARRATOR-SYSTEM-ARCHITECTURE.md": {
-      "sha": "661a678b13b3ab5d4e377fa13052066c0695be72b38929a0c6a84f530840716d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 67,
+      "sha": "ff7c1cfcfeab71effabc83b35a6f0f6392a635c7e11cd48278be998ab383614d",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 4570,
       "rule_count": 0,
       "is_state_file": false
     },
     "gk-brain.py": {
-      "sha": "d57969a63bcd24df9fffd803e3cd3d953d58a94072faac7771a78f7ba79ce9bf",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 100885,
+      "sha": "55dcce3f88a07b42da50edeccfe5de9e6b7a0ae8fe6421c1790b6cf84843e54d",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 101173,
       "rule_count": 0,
       "is_state_file": false
     },
     "crawl-brain.py": {
-      "sha": "4b04c5efddccfaa4056a5417280739247bb9613f9b26a3633694679103915b8d",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 9787,
+      "sha": "96c03244ac148bb17a1ae0979e8e251e25f39c8a29776a0e983d0317c7201835",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 12152,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -159,9 +159,9 @@
       "is_state_file": false
     },
     "wiki-smart-merger.py": {
-      "sha": "c80f2ea30b7e1dae57af14794d56d6570075e48dd3e6cafdb6d6a3d9d18aa4e5",
-      "last_seen": "2026-03-19T18:55:18Z",
-      "size_bytes": 37670,
+      "sha": "0a1885231d5bff4f3aecae3e8bf60dce2e3766b4e2eef5b8a158bd72f8d01b8f",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 37839,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -243,16 +243,16 @@
       "is_state_file": false
     },
     "OFFICIAL-SOURCE-AUTHORITY-RULES.md": {
-      "sha": "08b1f052dbb880fb947da15c95b693bcaac6a7d9901b18a6d2e72ce3423c678e",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 2917,
+      "sha": "1a9da8ebaed4d3d1eba106947aab455fed74ce9b01d91eae65a035e6009db7e7",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 8493,
       "rule_count": 0,
       "is_state_file": false
     },
     "WEBLORERULES.md": {
-      "sha": "bd6e980ab3bef67b46dae55d1278b390cf5363b6dadf7f4503397c3e404c7b05",
-      "last_seen": "2026-03-19T06:56:58Z",
-      "size_bytes": 3539,
+      "sha": "b399ac64d130bca14516306b648c248362cefe10b7bf0204797decab368ddbb1",
+      "last_seen": "2026-03-20T01:51:11Z",
+      "size_bytes": 4825,
       "rule_count": 0,
       "is_state_file": false
     },
@@ -877,6 +877,30 @@
       "changed_file_list": [
         "wiki-smart-merger.py",
         "wiki-citation-checker.py"
+      ],
+      "missing_file_list": []
+    },
+    {
+      "run_at": "2026-03-20T01:51:11Z",
+      "run_number": 6,
+      "new_files": 0,
+      "changed_files": 10,
+      "unchanged_files": 33,
+      "missing_files": 0,
+      "rules_absorbed": 0,
+      "conflicts_quarantined": 0,
+      "new_file_list": [],
+      "changed_file_list": [
+        "OFFICIAL-SOURCE-AUTHORITY-RULES.md",
+        "WEBLORERULES.md",
+        "cross-platform-consistency.md",
+        "LORE-RULE-DETECTOR-DEEP-LOGIC.md",
+        "HOW-TO.md",
+        "LLM-ORCHESTRATION-ARCHITECTURE.md",
+        "TELEGRAM-NARRATOR-SYSTEM-ARCHITECTURE.md",
+        "gk-brain.py",
+        "crawl-brain.py",
+        "wiki-smart-merger.py"
       ],
       "missing_file_list": []
     }
