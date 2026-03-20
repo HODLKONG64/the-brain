@@ -235,3 +235,9 @@ Micro-gaps (2026 dates + Delicious Again Peter toys) acknowledged as not-yet-pub
 - Enforces DB-1 to DB-27 + full PROJECT DNA at all times.
 - Runs after EVERY brain step in `.github/workflows/gk-brain.yml` with `if: always()` and `continue-on-error: true`.
 - Zero conflict with any existing DB rule.
+
+---
+
+## DB-31: CrewAI Multi-Agent Orchestration in Error Guardian
+
+CrewAI fully integrated into Error Guardian Agent. Guardian now spawns multi-agent CrewAI crews (Diagnoser + Fix Strategist + Lesson Recorder) for complex errors. Works seamlessly with LangGraph reflection and Brain 3 for instant review of ALL outputs (CrewAI teacher, wiki, RL, etc.). Zero human input required at any point. Guardian is the connected, self-reflecting, multi-agent, almighty doctor and supreme overlord of the entire GK BRAIN system.

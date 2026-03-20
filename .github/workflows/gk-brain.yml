@@ -46,7 +46,7 @@ jobs:
       - name: Run Wiki Teacher Crew v2.0
         run: python wiki-teacher-crew.py
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
@@ -56,7 +56,7 @@ jobs:
         id: analytics_brain
         run: python analytics-brain.py
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
@@ -66,7 +66,7 @@ jobs:
         id: lore_brain
         run: python gk-brain.py
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
@@ -82,7 +82,7 @@ jobs:
           FANDOM_PASSWORD: ${{ secrets.FANDOM_PASSWORD }}
           FANDOM_WIKI_URL: ${{ secrets.FANDOM_WIKI_URL }}
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
@@ -92,7 +92,7 @@ jobs:
         id: wiki_brain
         run: python wiki-brain.py
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
@@ -101,14 +101,14 @@ jobs:
         id: backup_agent
         run: python master-backup-agent.py
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
       - name: Propagate Reinforcement Learning Updates from Brain 3
         run: python gk-brain.py --propagate-rl-updates
         continue-on-error: true
-      - name: Error Guardian Watchdog (Almighty Doctor)
+      - name: Error Guardian Watchdog (Almighty Doctor — CrewAI + LangGraph + Growth)
         if: always()
         run: python error-guardian-agent.py "no-error"
         continue-on-error: true
