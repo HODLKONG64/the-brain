@@ -90,6 +90,22 @@ _HEADERS = {
 #         create missing headings/tables.
 # ===========================================================================
 
+# ===========================================================================
+# DB-22: After every crawl, automatically cross-reference new content against
+#         full expanded PROJECT DNA and force creation of missing subsections/
+#         tables even if gap-detector previously skipped them.
+# DB-23: Teacher agent must now run every single 2-hour cycle (not just once)
+#         and dynamically append any newly discovered graffpunks.live subpages
+#         to the 7-URL list while still enforcing the read-once bible lock
+#         and zero code conflicts.
+# DB-24: All wiki edits must now include a short "Updated via CrewAI Teacher v2"
+#         signature comment at the bottom of each edited section for audit trail.
+#         Format: <!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->
+# ===========================================================================
+
+TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
+TEACHER_CYCLE_HOURS = 2          # DB-23: run every 2 hours
+
 FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"  # DB-19: ONLY target
 
 # DB-21: 7 priority crawl targets — scanned FIRST every run
@@ -101,6 +117,49 @@ GRAFFPUNKS_PRIORITY_URLS = [
     "https://graffpunks.live/graffiti-nfts/",
     "https://graffpunks.live/the-vision/",
     "https://graffpunks.live/xrp-kids/",
+]
+
+# DB-22: Full PROJECT DNA coverage keys — every crawl checks wiki for these
+PROJECT_DNA_COVERAGE_KEYS = [
+    # Founder
+    "Darren Cullen", "SER", "Graffiti Kings 1999", "London 2012 Olympics",
+    "South East Rockers", "Leake Street",
+    # Collections / brands
+    "GKniftyHEADS", "GraffPUNKS", "Crypto Moonboys", "Crypto Moongirls",
+    "Bitcoin X Kids", "Bitcoin Kids", "HODL X Warriors",
+    "graffk1ngsuk", "hodlmoonboys", "gr4ffitiking", "nocommentser",
+    # 32 Characters
+    "Alfie Blaze", "Queen Sarah P-fly", "Jodie ZOOM 2000", "Elder Codex-7",
+    "NULL THE PROPHET", "Thera-9", "Aleema", "Iris-7", "Lady-INK",
+    "Snipey D-Man Sirus", "Bit-Cap 5000", "Forksplit", "M1nTr K1ll",
+    "SatoRebel", "Thorne The Architect", "Billy the Goat Kid",
+    "HEX-TAGGER PRIME", "The Whitewasher", "GRIT", "PYRALITH",
+    "Loopfiend", "Samael.exe", "Forklord You", "Quell", "Sister Halcyon",
+    "Grit42", "Rune Tag", "Patchwork", "The Princess", "Dragan Volkov",
+    "Ava Chen", "Charlie Buster",
+    # 40 Factions
+    "Bitcoin Kid Army", "Nomad Bears", "AllCity Bulls", "BALLY BOYS",
+    "DUCKY BOYS", "NICE EASY BOIS", "Squeaky Pinks", "High Hats",
+    "HARD FORK ROCKERS", "BLOCKSTARS", "BLOCKCHAIN FURIES",
+    "RUGPULL MINERS", "AZTEC RAIDERS", "TUSKON OGS", "CRYPTO STONED BOYS",
+    "CODE ALCHEMISTS", "FINANCE GUILD", "INFORMATION MERCENARIES",
+    "SALVAGERS", "MOONLORDS", "SHARD MOTHERS OF MANHATTAN",
+    "CHAIN SCRIBES", "EVM PUNKS", "OG PIXEL SAINTS", "GASLESS GHOSTS",
+    "HODL Warriors", "Graffiti Queens",
+    # Lore mechanics
+    "Triple Fork Event", "Block Topia", "HODL WARS", "MiDEViL HERO ARENA",
+    "Sacred Chain", "Echo Ink", "Null-Cipher", "AETHER CHAIN",
+    "Hard Fork Games", "Dream Sovereign", "Writcode",
+    # Tokens
+    "PUNK", "LFGK", "GK MArT",
+    # Radio / music
+    "GraffPUNKS Radio", "DJ Trevor Fung", "DJ Skol",
+    "Jonny Nelson", "Danny Young", "S.U.M. Sessions",
+    # Chains
+    "WAXP", "Bitcoin Cash", "SOL", "XRPL",
+    # Mechanics
+    "Chat2Earn", "Play2Earn", "phygital", "burn-to-earn",
+    "1 million free NFTs",
 ]
 
 # ---------------------------------------------------------------------------
@@ -699,6 +758,42 @@ def _save_gap_report(report: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# DB-22: PROJECT DNA coverage checker
+# ---------------------------------------------------------------------------
+
+
+def _check_dna_coverage(wiki_text_lower: str) -> list:
+    """
+    DB-22: Cross-reference wiki text against PROJECT DNA coverage keys.
+    Returns queue entries for any DNA topic missing from the wiki.
+    force_create=True ensures wiki-brain creates the section even if skipped before.
+    """
+    ts_now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    missing = []
+    for key in PROJECT_DNA_COVERAGE_KEYS:
+        norm_key = _normalise(key)
+        if norm_key not in wiki_text_lower:
+            missing.append({
+                "title": key,
+                "url": "",
+                "source": "PROJECT_DNA_COVERAGE_KEYS",
+                "source_label": "db22-dna-coverage",
+                "type": "gkdata-real",
+                "content": (
+                    f"DB-22: PROJECT DNA topic '{key}' not found in wiki. "
+                    "Force-create a dedicated heading, 2-4 paragraphs and inline <ref> citation."
+                ),
+                "timestamp": ts_now,
+                "wiki_update": True,
+                "wiki_done": False,
+                "detected_by": "db22-dna-coverage",
+                "force_create": True,
+            })
+            logger.info("[DB-22] DNA gap: %s", key)
+    return missing
+
+
+# ---------------------------------------------------------------------------
 # Main detector function
 # ---------------------------------------------------------------------------
 
@@ -852,6 +947,18 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
             f"{stub_queued} queued."
         )
 
+    # --- DB-22: PROJECT DNA coverage check ---
+    # Force-queue any DNA topic missing from the wiki (even if previously skipped)
+    dna_gaps = _check_dna_coverage(wiki_text_lower)
+    if dna_gaps:
+        dna_queued = _queue_gaps(dna_gaps, dry_run=dry_run)
+        queued += dna_queued
+        all_gaps.extend(dna_gaps)
+        print(
+            f"[wiki-gap-detector] DB-22: {len(dna_gaps)} PROJECT DNA gap(s) detected, "
+            f"{dna_queued} queued."
+        )
+
     # --- Summary ---
     result = {
         "run_timestamp": run_ts,
@@ -863,6 +970,7 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
         "gap_details": all_gaps,
         "source_reports": source_reports,
         "stub_gaps": len(stub_gaps),
+        "dna_gaps": len(dna_gaps),
     }
 
     _save_gap_report(result)

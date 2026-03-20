@@ -15,6 +15,7 @@ Required secrets (env vars):
 """
 
 import argparse
+import datetime
 import json
 import os
 import sys
@@ -84,9 +85,22 @@ GRAFFPUNKS_PRIORITY_URLS = [
     "https://graffpunks.live/xrp-kids/",
 ]
 
+# ===========================================================================
+# DB-22: After every crawl, automatically cross-reference new content against
+#         full expanded PROJECT DNA and force creation of missing subsections/
+#         tables even if gap-detector previously skipped them.
+# DB-23: Teacher agent must now run every single 2-hour cycle (not just once)
+#         and dynamically append any newly discovered graffpunks.live subpages
+#         to the 7-URL list while still enforcing the read-once bible lock
+#         and zero code conflicts.
+# DB-24: All wiki edits must now include a short "Updated via CrewAI Teacher v2"
+#         signature comment at the bottom of each edited section for audit trail.
+#         Format: <!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->
+# ===========================================================================
 
-# ---------------------------------------------------------------------------
-# Health check
+TEACHER_AGENT_VERSION = "v2.0"  # DB-24 audit trail version tag
+TEACHER_CYCLE_HOURS = 2          # DB-23: run every 2 hours
+
 # ---------------------------------------------------------------------------
 
 def wiki_brain_health_check() -> bool:
@@ -139,6 +153,23 @@ def _load_queue() -> list:
 
 
 # ---------------------------------------------------------------------------
+# DB-24: Audit trail helper
+# ---------------------------------------------------------------------------
+
+
+def _append_audit_trail(content: str) -> str:
+    """
+    DB-24: Append CrewAI Teacher v2 audit trail signature to wiki content.
+    All wiki edits must carry this comment for traceability.
+    """
+    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M")
+    audit_tag = f"\n<!-- Updated via CrewAI Teacher {TEACHER_AGENT_VERSION} | {ts} UTC -->"
+    if audit_tag.strip() not in content:
+        return content + audit_tag
+    return content
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -157,6 +188,13 @@ def run(dry_run: bool = False) -> int:
     queue = _load_queue()
     pending = [u for u in queue if u.get("wiki_update") and not u.get("wiki_done")]
     print(f"[wiki-brain] Pending updates: {len(pending)}")
+
+    # DB-22: Log force-create entries from DNA coverage check
+    force_create_items = [u for u in pending if u.get("force_create")]
+    if force_create_items:
+        print(f"[wiki-brain] DB-22: {len(force_create_items)} force-create entries from PROJECT DNA coverage check.")
+    # DB-24: Wiki brain never processes Telegram data
+    # DB-20 guard: all queue items are from external sources only
 
     if not pending:
         print("[wiki-brain] Nothing to do.")
