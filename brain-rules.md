@@ -213,3 +213,12 @@ Format: `<!-- Updated via CrewAI Teacher v2 | YYYY-MM-DD HH:MM UTC -->`
 
 ### DB-25 — Brain 3 Reinforcement Learning Consolidation
 `gk-brain.py` is the SINGLE reinforcement learning brain. On EVERY Telegram ping/wake-up (every 2-hour workflow run), it loads `reinforcement-learning-optimizer.py` to continuously learn from the 4 art files in `assets/layers/`, previous Telegram engagement metrics, and lore performance. `master-backup-agent.py` then propagates the new learned parameters (via `rl_state.json`) to `analytics-brain.py`, `wiki-brain.py` and all other brains for the next cycle. Creates infinite self-improvement without conflicting any existing rules.
+
+---
+
+### DB-26 — All Websites from Chat Locked Eternal as Permanent Official Crawl Sources
+ALL WEBSITES FROM CHAT LOCKED ETERNAL as permanent official crawl sources:
+graffpunks.live (7 subpages), gkniftyheads.com, graffpunks.substack.com, medium.com/@GKniftyHEADS, medium.com/@HODLWARRIORS, graffitikings.co.uk, linktr.ee/gkniftyheads, deliciousagainpeter.com, boneidolink socials, waxonedge.app, discord.gg/mMsaXpfdGm (awareness only), gkniftyheads.fandom.com (target only).
+
+### DB-27 — Micro-Gaps Acknowledged as Not-Yet-Public
+Micro-gaps (2026 dates + Delicious Again Peter toys) acknowledged as not-yet-public. No crawl required. Final canon status. When these details go public, they will be added to PROJECT-DNA.md and crawled automatically via DB-26.

@@ -157,3 +157,20 @@
 - For `news-real`: only flag crypto, political, or street art news published within the last 2 hours.
 - For `gkdata-real`: flag any new post, image, NFT listing, or page text change.
 - For `rave-real`: flag any new event or DJ booking in the next 30 days.
+
+---
+
+## DB-26 LOCKED WEBSITES — Permanent Official Crawl Sources (added 2026-03-20)
+
+- https://graffpunks.live/ (+ 7 subpages: /the-lore/, /gk-factions/, /graffiti-kings-nfts/, /free-nfts/, /graffiti-nfts/, /the-vision/, /xrp-kids/)
+- https://gkniftyheads.com
+- https://graffpunks.substack.com
+- https://medium.com/@GKniftyHEADS
+- https://medium.com/@HODLWARRIORS
+- https://graffitikings.co.uk
+- https://linktr.ee/gkniftyheads
+- https://deliciousagainpeter.com
+- https://boneidolink socials (awareness)
+- https://waxonedge.app
+- https://discord.gg/mMsaXpfdGm (awareness only)
+- https://gkniftyheads.fandom.com (TARGET WIKI — DB-19, write target only)

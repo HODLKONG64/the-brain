@@ -57,3 +57,41 @@ Triple Fork Event 2198, Block Topia, HODL WARS every-2-hour saga, phygital mural
 5. https://graffpunks.live/graffiti-nfts/
 6. https://graffpunks.live/the-vision/
 7. https://graffpunks.live/xrp-kids/
+
+---
+
+## MISSING CANON BLOCK — FULL REAL PEOPLE + COMPLETE LORE NAMED ELEMENTS + LOCKED POSTS + MICRO-GAPS
+
+=== REAL PEOPLE DEEP DIVES (100% verified official) ===
+- Darren Cullen (SER): Founder Graffiti Kings 1999, born 26 Oct 1973 Croydon, started graffiti 1983 age 10, London 2012 Olympics artist, pro commissions (Adidas/Red Bull/Microsoft), leads GKniftyHEADS Web3 evolution.
+- Charlie Buster: Core Graffiti Kings artist, No Ball Games founder, official GK voice/narrator in HODL WARS lore, son of Darren Cullen.
+- Bone Idol Ink (@boneidolink): Co-founder Crypto Moonboys, Graffiti Kings illustrator & merch designer, runs "Bone, your own Idol, & some ever lasting Ink" phygital drops and collectible lines.
+- Delicious Again Peter: Co-founder Crypto Moonboys, limited-edition fine-art vinyl toy designer, runs deliciousagainpeter.com, key creator of designer crypto toys and GKniftyHEADS multi-million projects.
+- Sarah PU51FLY: Real-life partner of Darren Cullen (SER) and mother of Charlie Buster, direct inspiration for Queen Sarah P-fly (matriarch of Block Topia and HODL X Warriors golden ticket system).
+- Radio DJs: DJ Trevor Fung (Godfather), DJ Skol (Tank Funk Hard House Fridays), Jonny Nelson & Danny Young (S.U.M. Sessions), Laurence Nelson (support).
+
+=== COMPLETE LORE BREAKDOWN — EVERY NAMED ELEMENT ===
+Major Sagas: The Hard Fork – Rise of the HODL Warriors, Triple Fork Event 2198, The Age of the Crypto Moongirls, The Hard Fork Initiative, The Street Kingdoms & Rise of the #GRAFFPUNKS, The Hard Fork Games & Price of Survival-3008, The Return of NULL THE PROPHET and the Echo Fork, The Coming War: Fork or Fall 3008, Spheres of Influence (live Substack), HODL WARS (every-2-hour + playable game).
+
+Named Characters (32): Alfie "The Bitcoin Kid" Blaze, Queen Sarah P-fly, Jodie ZOOM 2000, NULL THE PROPHET, Elder Codex-7, Thera-9, Aleema (Child of the Shard), Iris-7, Lady-INK, Snipey "D-Man" Sirus, Bit-Cap 5000, Forksplit, M1nTr_K1ll, SatoRebel, Thorne The Architect, Billy the Goat Kid, HEX-TAGGER PRIME, The Whitewasher, GRIT, PYRALITH, Loopfiend, Samael.exe, Forklord You, Quell, Sister Halcyon, Grit42, Rune Tag, Patchwork, The Princess, Dragan Volkov, Ava Chen, Darren Cullen (SER), Charlie Buster.
+
+Named Factions (40): Bitcoin Kid Army, GKniftyHEADS, Nomad Bears, AllCity Bulls, GRAFFPUNKS, BALLY BOYS, CRYPTO MOONGIRLS, DUCKY BOYS, NICE & EASY BOIS, Squeaky Pinks, High Hats, HARD FORK ROCKERS, BLOCKSTARS, BLOCKCHAIN FURIES, RUGPULL MINERS, AZTEC RAIDERS, TUSKON OGS, CRYPTO STONED BOYS, CODE ALCHEMISTS, FINANCE GUILD, INFORMATION MERCENARIES, SALVAGERS, MOONLORDS, SHARD MOTHERS of MANHATTAN, CHAIN SCRIBES, EVM PUNKS, OG PIXEL SAINTS, GASLESS GHOSTS + 12 expanding live in HODL WARS.
+
+Named Locations: Block Topia (Queens fortress), Manhattan, Brooklyn, The Bronx, Staten Island, Mars/Saturn/Moon colonies, Dream Sovereign, Outer Boroughs, Bronx Wastelands.
+
+Named Mechanics/Items: Bitbone chips, Theta Protocols, HARD FORK Program, Seeding ritual, Chainlight reactors, Meta-sigil, Glitch-bombs, Data-paint, Peace Protocols, Code cuffs, Cloud Palaces, Data-Spears, Sacred Chain, Genesis Kernel, MemeCoin, Digital Duct Tape, Wrench-bots, Forkborn order, Writcode murals, Phygital wallets, AllCity Games, Chat2Earn, Burn-to-Earn, Spraycode (official GraffPUNK faction ability).
+
+Named Tokens: $PUNK (security/utility), $LFGK (staking/rewards with on-chain NFT wrappers e.g. "500 MILLION $LFGK" collectibles), GK.$MArT (AI NFTs only).
+
+=== LOCKED SUBSTACK / MEDIUM POSTS (must be referenced in wiki) ===
+Substack @graffpunks: "CRYPTO MOONBOYS UNIVERSE: COMPREHENSIVE AUDIT REPORT" (Mar 17 2026), "ALFIE 'THE BITCOIN KID' BLAZE" (Mar 15 2026), "MEGA WHITE PAPER: THE GK BRAIN" (Mar 15 2026).
+Medium @HODLWARRIORS: "The Legend of Charlie Buster: From London's Walls to the Digital Grid", "Chapter I: Blocktopia Ascendant: The Reign of PFLY", "The Fracturing of Belief: The $WAXP Hodl Split", "The $99% Oath: Chronicles of the $WAXP Hodl Warriors".
+
+gkniftyheads.com shows prominent "COUNTDOWN 2026" + Google sign-up form (official 2026 rocket ignition signal).
+
+=== MICRO-GAP CLOSURE (2026 teaser level) ===
+- 2026 physical events / London drops: Currently teaser "COUNTDOWN 2026" on gkniftyheads.com — exact dates/schedule not yet public.
+- Current status of new physical toy releases with Delicious Again Peter: General mentions only — detailed production/release calendar not yet public.
+
+=== LOCKED WEBSITES (DB-26) ===
+graffpunks.live (7 subpages), gkniftyheads.com, graffpunks.substack.com, medium.com/@GKniftyHEADS, medium.com/@HODLWARRIORS, graffitikings.co.uk, linktr.ee/gkniftyheads, deliciousagainpeter.com, boneidolink socials, waxonedge.app, discord.gg/mMsaXpfdGm (awareness only), gkniftyheads.fandom.com (target only).
