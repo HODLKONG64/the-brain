@@ -117,6 +117,9 @@ STATE_ONLY_FILES = {
     "crawl-results.json",
 }
 
+# DB-25: rl_state.json (written by gk-brain.py) is included in state propagation
+# and automatically pushed to all brains on the next cycle.
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
