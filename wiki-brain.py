@@ -61,6 +61,20 @@ FANDOM_WIKI_URL     = os.environ.get("FANDOM_WIKI_URL", "https://gkniftyheads.fa
 BASE_DIR            = os.path.dirname(__file__)
 QUEUE_FILE          = os.path.join(BASE_DIR, "wiki-update-queue.json")
 
+# DB-19: Wiki ONLY for https://gkniftyheads.fandom.com — zero Wikipedia influence.
+# DB-20: Wiki brain 100% blind to all Telegram output.
+# DB-21: Scan 7 URLs first every run.
+FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"
+GRAFFPUNKS_PRIORITY_URLS = [
+    "https://graffpunks.live/the-lore/",
+    "https://graffpunks.live/gk-factions/",
+    "https://graffpunks.live/graffiti-kings-nfts/",
+    "https://graffpunks.live/free-nfts/",
+    "https://graffpunks.live/graffiti-nfts/",
+    "https://graffpunks.live/the-vision/",
+    "https://graffpunks.live/xrp-kids/",
+]
+
 
 # ---------------------------------------------------------------------------
 # Health check
@@ -72,6 +86,14 @@ def wiki_brain_health_check() -> bool:
     Returns True if credentials are present and the wiki API is reachable.
     """
     import requests
+
+    # DB-19: Hard-fail if FANDOM_WIKI_URL is not the authorised GKniftyHEADS wiki.
+    if not FANDOM_WIKI_URL.startswith(FANDOM_WIKI_TARGET):
+        print(
+            f"[wiki-brain] ❌ DB-19 violation: FANDOM_WIKI_URL '{FANDOM_WIKI_URL}' "
+            f"does not target '{FANDOM_WIKI_TARGET}'. Aborting."
+        )
+        return False
 
     if not FANDOM_BOT_USER or not FANDOM_BOT_PASSWORD:
         print("[wiki-brain] ❌ FANDOM_BOT_USER or FANDOM_BOT_PASSWORD not set.")
@@ -114,6 +136,10 @@ def _load_queue() -> list:
 def run(dry_run: bool = False) -> int:
     """
     Process all pending wiki updates.
+
+    DB-20: Wiki brain is 100% blind to all Telegram output — no Telegram state,
+    bot-state.json, or reply-tracker.json is read or written here.
+
     Returns exit code (0 = success, 1 = partial failure, 2 = fatal error).
     """
     print("[wiki-brain] 🧠 Wiki Brain starting…")

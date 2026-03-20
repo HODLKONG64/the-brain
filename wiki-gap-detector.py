@@ -73,6 +73,20 @@ MAX_ARTICLES_PER_SOURCE = 30  # cap per source to avoid overloading queue
 
 DRY_RUN: bool = os.environ.get("WIKI_DRY_RUN", "0") == "1"
 
+# DB-19: Wiki ONLY for https://gkniftyheads.fandom.com — zero Wikipedia influence.
+# DB-20: Wiki brain 100% blind to all Telegram output.
+# DB-21: Scan 7 URLs first every run.
+FANDOM_WIKI_TARGET = "https://gkniftyheads.fandom.com"
+GRAFFPUNKS_PRIORITY_URLS = [
+    "https://graffpunks.live/the-lore/",
+    "https://graffpunks.live/gk-factions/",
+    "https://graffpunks.live/graffiti-kings-nfts/",
+    "https://graffpunks.live/free-nfts/",
+    "https://graffpunks.live/graffiti-nfts/",
+    "https://graffpunks.live/the-vision/",
+    "https://graffpunks.live/xrp-kids/",
+]
+
 _HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (compatible; GKBrainWikiGapBot/1.0; "
@@ -89,6 +103,49 @@ _HEADERS = {
 # ---------------------------------------------------------------------------
 
 SOURCES = [
+    # DB-21: GraffPUNKS priority URLs — scanned first every run
+    (
+        "graffpunks-live-the-lore",
+        "https://graffpunks.live/the-lore/",
+        None,
+        "lore-real",
+    ),
+    (
+        "graffpunks-live-gk-factions",
+        "https://graffpunks.live/gk-factions/",
+        None,
+        "lore-real",
+    ),
+    (
+        "graffpunks-live-graffiti-kings-nfts",
+        "https://graffpunks.live/graffiti-kings-nfts/",
+        None,
+        "gkdata-real",
+    ),
+    (
+        "graffpunks-live-free-nfts",
+        "https://graffpunks.live/free-nfts/",
+        None,
+        "gkdata-real",
+    ),
+    (
+        "graffpunks-live-graffiti-nfts",
+        "https://graffpunks.live/graffiti-nfts/",
+        None,
+        "gkdata-real",
+    ),
+    (
+        "graffpunks-live-the-vision",
+        "https://graffpunks.live/the-vision/",
+        None,
+        "lore-real",
+    ),
+    (
+        "graffpunks-live-xrp-kids",
+        "https://graffpunks.live/xrp-kids/",
+        None,
+        "gkdata-real",
+    ),
     # GK & GraffPunks — Substack (has RSS)
     (
         "graffpunks-substack",
@@ -551,7 +608,7 @@ def _is_in_wiki(article: dict, wiki_text_lower: str) -> bool:
     return False
 
 
-def _build_queue_entry(article: dict, update_type: str, source_label: str) -> dict:
+def _build_queue_entry(article: dict, update_type: str, source_label: str, homepage_url: str = "") -> dict:
     """Build a wiki-update-queue.json entry for a gap article."""
     ts = article.get("published", "")
     if not ts:
@@ -565,7 +622,7 @@ def _build_queue_entry(article: dict, update_type: str, source_label: str) -> di
         except Exception:
             pass
 
-    return {
+    entry = {
         "title": article.get("title", "Unknown"),
         "url": article.get("url", ""),
         "source": article.get("url", ""),
@@ -577,6 +634,13 @@ def _build_queue_entry(article: dict, update_type: str, source_label: str) -> di
         "wiki_done": False,
         "detected_by": "wiki-gap-detector",
     }
+
+    # DB-21: Add citation for GraffPUNKS priority URLs
+    if homepage_url and "graffpunks.live" in homepage_url:
+        accessed = datetime.date.today().strftime("%Y-%m-%d")
+        entry["citation"] = f"<ref>{homepage_url} [accessed {accessed}]</ref>"
+
+    return entry
 
 
 # ---------------------------------------------------------------------------
@@ -665,6 +729,9 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
     """
     Run the full wiki gap detection pass.
 
+    DB-20: Wiki brain is 100% blind to all Telegram output — no Telegram data
+    is read or written during gap detection.
+
     Returns:
         {
           "sources_checked": int,
@@ -728,7 +795,7 @@ def detect_wiki_gaps(dry_run: bool = False, verbose: bool = False) -> dict:
         for article in articles:
             total_articles += 1
             if not _is_in_wiki(article, wiki_text_lower):
-                gap_entry = _build_queue_entry(article, update_type, label)
+                gap_entry = _build_queue_entry(article, update_type, label, homepage_url)
                 source_gaps.append(gap_entry)
                 logger.info(
                     "[GAP] %-30s | %s",
