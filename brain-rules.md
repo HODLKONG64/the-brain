@@ -222,3 +222,16 @@ graffpunks.live (7 subpages), gkniftyheads.com, graffpunks.substack.com, medium.
 
 ### DB-27 — Micro-Gaps Acknowledged as Not-Yet-Public
 Micro-gaps (2026 dates + Delicious Again Peter toys) acknowledged as not-yet-public. No crawl required. Final canon status. When these details go public, they will be added to PROJECT-DNA.md and crawled automatically via DB-26.
+
+---
+
+## DB-28: Error Guardian Agent — Almighty Doctor + Supreme Overlord
+
+`error-guardian-agent.py` is the **ALMIGHTY DOCTOR** and **SUPREME OVERLORD** of the entire GK Brain system.
+
+- Catches ALL stack traces and rate limits in real-time across every brain workflow step.
+- Auto-sleeps 90 seconds on any rate-limit detection, then resumes.
+- Diagnoses all errors, applies auto-patches, and propagates fixes to all brains via `master-backup-state.json` before the workflow ends.
+- Enforces DB-1 to DB-27 + full PROJECT DNA at all times.
+- Runs after EVERY brain step in `.github/workflows/gk-brain.yml` with `if: always()` and `continue-on-error: true`.
+- Zero conflict with any existing DB rule.
